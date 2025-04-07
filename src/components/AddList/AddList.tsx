@@ -9,8 +9,8 @@ export function AddList() {
     <Dialog>
       <DialogTrigger asChild>
         <div>
-          <Button className="rounded-full bg-[#f97171] hover:bg-[#f85e5e]">
-            <PlusCircle className="h-4 w-4 mr-2" />
+          <Button className="bg-accent hover:bg-accent/90">
+            <PlusCircle className="h-4 w-4 mr-1" />
             New List
           </Button>
         </div>
@@ -48,7 +48,7 @@ export function AddList() {
           <Button variant="outline" className="dark:border-gray-700 dark:text-gray-300">
             Cancel
           </Button>
-          <Button className="bg-[#f97171] hover:bg-[#f85e5e]">Create List</Button>
+          <Button className="bg-accent hover:bg-accent/90">Create List</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

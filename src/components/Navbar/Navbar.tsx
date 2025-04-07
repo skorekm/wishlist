@@ -5,11 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 
 export function Navbar() {
   return (
-    <nav className="bg-white border-b border-[#e8e4de] py-3">
+    <nav className="bg-white border-b border-gray-200 py-3">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <motion.div className="flex items-center gap-2" variants={fadeIn("right")}>
-          <GiftIcon className="h-5 w-5 text-[#f97171]" />
-          <span className="font-medium text-[#3a3a3a] dark:text-gray-100">Wishlist</span>
+          <GiftIcon className="h-5 w-5 text-accent" />
+          <span className="font-medium dark:text-gray-100">Wishlist</span>
         </motion.div>
         <motion.div className="flex items-center gap-3" variants={fadeIn("left")}>
           <Avatar className="h-8 w-8">

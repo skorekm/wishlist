@@ -44,17 +44,17 @@ function LoginPage() {
       <div className="max-w-md">
         <Card className="border-none shadow-lg">
           <CardHeader className="text-center space-y-1">
-            <CardTitle className="text-2xl font-medium text-[#3a3a3a]">Welcome to Wishlist</CardTitle>
-            <CardDescription className="text-[#6b6b6b]">
+            <CardTitle className="text-2xl font-medium">Welcome to Wishlist</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Create and share your wishlists with friends and family
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2 text-center">
-              <div className="h-20 w-20 rounded-full bg-[#f0ede8] flex items-center justify-center mx-auto mb-4">
-                <Gift className="h-10 w-10 text-[#f97171]" />
+              <div className="h-20 w-20 rounded-full bg-background flex items-center justify-center mx-auto mb-4">
+                <Gift className="h-10 w-10 text-accent" />
               </div>
-              <p className="text-sm text-[#6b6b6b]">Sign in or create an account to start building your wishlists</p>
+              <p className="text-sm text-muted-foreground">Sign in or create an account to start building your wishlists</p>
             </div>
 
             <div className="space-y-4">
@@ -74,7 +74,7 @@ function LoginPage() {
                     name="email"
                     type="email"
                     required
-                    className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -85,7 +85,7 @@ function LoginPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    variant="outline" className="w-full rounded-full"
+                    variant="outline" className="w-full"
                   >
                     {loading ? 'Sending magic link...' : 'Send magic link'}
                   </Button>
@@ -95,17 +95,17 @@ function LoginPage() {
             </div>
 
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2 border-t border-[#e8e4de] pt-6">
-            <p className="text-xs text-center text-[#8a8a8a]">
+          <CardFooter className="flex flex-col space-y-2 border-t border-muted-foreground/20 pt-6">
+            <p className="text-xs text-center text-muted-foreground">
               By continuing, you agree to our Terms of Service and Privacy Policy.
             </p>
           </CardFooter>
         </Card>
 
         <div className="mt-8 text-center">
-          <p className="text-sm text-[#6b6b6b]">
+          <p className="text-sm text-muted-foreground">
             Need help?{" "}
-            <a href="#" className="text-[#f97171] hover:underline">
+            <a href="#" className="text-accent hover:underline">
               Contact Support
             </a>
           </p>
