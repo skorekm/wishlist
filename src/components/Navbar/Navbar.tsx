@@ -6,7 +6,7 @@ export function Navbar() {
     <nav className="bg-white border-b border-[#e8e4de] py-3">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <GiftIcon className="h-5 w-5 text-[#f97171]" />
+          <GiftIcon className="h-5 w-5 text-accent" />
           <span className="font-medium text-[#3a3a3a]">Wishlist</span>
         </div>
         <div className="flex items-center gap-3">
