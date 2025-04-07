@@ -40,8 +40,8 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <main className="flex-1 flex items-center justify-center p-4 w-full h-full">
+      <div className="max-w-md">
         <Card className="border-none shadow-lg">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-2xl font-medium text-[#3a3a3a]">Welcome to Wishlist</CardTitle>
