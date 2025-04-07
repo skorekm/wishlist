@@ -2,6 +2,8 @@ import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-
 import { supabase } from "../supabaseClient"
 import { useEffect } from "react"
 import { Navbar } from "@/components/Navbar/Navbar"
+import { fadeIn } from "@/lib/motion"
+import { motion } from "motion/react"
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ location }) => {
@@ -38,11 +40,16 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <div className="min-h-screen">
+    <motion.div
+      className="min-h-screen transition-colors duration-300"
+      initial="hidden"
+      animate="show"
+      variants={fadeIn()}
+    >
       <Navbar />
       <main className="container mx-auto px-4 py-6">
         <Outlet />
       </main>
-    </div>
+    </motion.div>
   )
 }
