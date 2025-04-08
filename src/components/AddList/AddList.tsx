@@ -1,10 +1,48 @@
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { PlusCircle } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { PlusCircle } from 'lucide-react'
+import { createWishlist } from '@/services'
+
+
+const listFormSchema = z.object({
+  name: z.string()
+    .min(1, "List name is required")
+    .max(50, "List name cannot be longer than 50 characters")
+    .trim(),
+  description: z.string()
+    .max(250, "Description cannot be longer than 250 characters")
+    .trim()
+    .optional()
+    .transform(val => val === '' ? null : val)
+    .nullable()
+})
+
+type AddListForm = z.infer<typeof listFormSchema>
 
 export function AddList() {
+  const { 
+    register, 
+    handleSubmit,
+    formState: { errors }
+  } = useForm<AddListForm>({
+    resolver: zodResolver(listFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+    }
+  })
+
+  const onSubmit = async (data: AddListForm) => {
+    createWishlist(data).then((list) => {
+      console.log('list', list)
+    })
+  }
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -16,40 +54,54 @@ export function AddList() {
         </div>
       </DialogTrigger>
       <DialogContent className="dark:bg-gray-900 dark:border-gray-800">
-        <DialogHeader>
-          <DialogTitle className="dark:text-gray-100">Create New List</DialogTitle>
-          <DialogDescription className="dark:text-gray-400">
-            Give your new wishlist a name and description
-          </DialogDescription>
-        </DialogHeader>
-        <div className="py-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="list-name" className="dark:text-gray-300">
-              List Name
-            </Label>
-            <Input
-              id="list-name"
-              placeholder="e.g., Birthday Wishlist"
-              className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-            />
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogHeader>
+            <DialogTitle className="dark:text-gray-100">Create New List</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              Give your new wishlist a name and description
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="list-name" className="dark:text-gray-300">
+                List Name
+              </Label>
+              <Input
+                id="list-name"
+                placeholder="e.g., Birthday Wishlist"
+                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                  errors.name ? 'border-red-500' : ''
+                }`}
+                {...register('name')}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="list-description" className="dark:text-gray-300">
+                Description (optional)
+              </Label>
+              <Input
+                id="list-description"
+                placeholder="e.g., Things I'd love to receive for my birthday"
+                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                  errors.description ? 'border-red-500' : ''
+                }`}
+                {...register('description')}
+              />
+              {errors.description && (
+                <p className="text-sm text-red-500">{errors.description.message}</p>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="list-description" className="dark:text-gray-300">
-              Description (optional)
-            </Label>
-            <Input
-              id="list-description"
-              placeholder="e.g., Things I'd love to receive for my birthday"
-              className="dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" className="dark:border-gray-700 dark:text-gray-300">
-            Cancel
-          </Button>
-          <Button className="bg-accent hover:bg-accent/90">Create List</Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button variant="outline" className="dark:border-gray-700 dark:text-gray-300">
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-accent hover:bg-accent/90">Create List</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

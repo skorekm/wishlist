@@ -1,17 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
-
+import { getWishlists } from '@/services'
+import { Tables } from '@/database.types'
 export const Route = createFileRoute('/_authenticated/lists')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [wishlists, setWishlists] = useState<Tables<'wishlists'>[]>([])
 
+  useEffect(() => {
+    getWishlists().then((data) => {
+      setWishlists(data)
+    })
+  }, [])
   return (
     <div>
       <div

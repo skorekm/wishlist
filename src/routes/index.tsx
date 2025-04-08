@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Gift } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { Input } from '@/components/ui/input'
 
 export const Route = createFileRoute('/')({
   component: LoginPage,
@@ -69,13 +70,12 @@ function LoginPage() {
                   <label htmlFor="email" className="sr-only">
                     Email address
                   </label>
-                  <input
+                  <Input
                     id="email"
                     name="email"
                     type="email"
-                    required
-                    className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                     placeholder="Email address"
+                    required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -85,7 +85,8 @@ function LoginPage() {
                   <Button
                     type="submit"
                     disabled={loading}
-                    variant="outline" className="w-full"
+                    variant="default"
+                    className="w-full"
                   >
                     {loading ? 'Sending magic link...' : 'Send magic link'}
                   </Button>
