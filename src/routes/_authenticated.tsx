@@ -6,8 +6,6 @@ import { fadeIn } from "@/lib/motion"
 import { motion } from "motion/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-const queryClient = new QueryClient()
-
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getSession()
@@ -25,6 +23,7 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
+  const queryClient = new QueryClient()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -36,11 +35,6 @@ function AuthenticatedLayout() {
 
     return () => subscription.unsubscribe()
   }, [navigate])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate({ to: '/' })
-  }
 
   return (
     <QueryClientProvider client={queryClient}>

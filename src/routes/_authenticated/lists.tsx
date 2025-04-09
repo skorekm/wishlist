@@ -55,8 +55,9 @@ function RouteComponent() {
         {isLoading && <div>Loading...</div>}
         {!isLoading && wishlists?.map((list) => (
           <WishlistCard
+            key={list.id}
             list={list}
-            onClick={() => { }}
+            onClick={() => null}
           />
         ))}
       </div>
