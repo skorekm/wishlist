@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Search } from 'lucide-react'
-import { useState } from 'react'
+import { Search, List } from 'lucide-react'
+import { motion } from 'motion/react'
 import { Input } from '@/components/ui/input'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
@@ -57,10 +58,25 @@ function RouteComponent() {
           <WishlistCard
             key={list.id}
             list={list}
+            refetchWishlists={refetchWishlists}
             onClick={() => null}
           />
         ))}
       </div>
+      {!isLoading && wishlists?.length === 0 && <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center justify-center py-12 px-4 text-center bg-card rounded-xl"
+        >
+          <div className="p-4 rounded-full bg-secondary flex items-center justify-center mb-4">
+            <List className="h-12 w-12 text-accent" />
+          </div>
+          <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no shared lists</h3>
+          <p className="text-muted-foreground mb-6 max-w-md">Create a new list to get started</p>
+          <AddList
+            onSuccess={refetchWishlists}
+          />
+        </motion.div>}
     </div>
   )
 }

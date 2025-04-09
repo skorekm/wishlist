@@ -27,3 +27,16 @@ export async function createWishlist(list: Database['public']['Tables']['wishlis
   }
   return data;
 }
+
+export async function deleteWishlist(id: number) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to delete a wishlist');
+  }
+
+  const { data, error } = await supabase.from('wishlists').delete().eq('id', id)// .eq('author_id', user.id);
+  if (error) {
+    throw error;
+  }
+  return data;
+}
