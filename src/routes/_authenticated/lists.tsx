@@ -1,24 +1,31 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
 import { getWishlists } from '@/services'
-import { Tables } from '@/database.types'
+
 export const Route = createFileRoute('/_authenticated/lists')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [wishlists, setWishlists] = useState<Tables<'wishlists'>[]>([])
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    getWishlists().then((data) => {
-      setWishlists(data)
-    })
-  }, [])
+  const { data: wishlists, isLoading } = useQuery({
+    queryKey: ['wishlists'],
+    queryFn: getWishlists,
+  })
+
+  const refetchWishlists = () => {
+    queryClient.invalidateQueries({ queryKey: ['wishlists'] });
+  }
+
+
+  const [searchQuery, setSearchQuery] = useState('')
+
   return (
     <div>
       <div
@@ -39,22 +46,19 @@ function RouteComponent() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
-          <AddList />
+          <AddList
+            onSuccess={refetchWishlists}
+          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <WishlistCard
-          list={{
-            id: 1,
-            name: 'Test List',
-            description: 'Test Description',
-            owner: 'Test Owner',
-            ownerName: 'Test Owner Name',
-            itemCount: 10,
-          }}
-          onClick={() => { }}
-        />
+        {isLoading && <div>Loading...</div>}
+        {!isLoading && wishlists?.map((list) => (
+          <WishlistCard
+            list={list}
+            onClick={() => { }}
+          />
+        ))}
       </div>
     </div>
   )

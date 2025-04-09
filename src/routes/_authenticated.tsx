@@ -4,6 +4,9 @@ import { useEffect } from "react"
 import { Navbar } from "@/components/Navbar/Navbar"
 import { fadeIn } from "@/lib/motion"
 import { motion } from "motion/react"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
+const queryClient = new QueryClient()
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ location }) => {
@@ -40,16 +43,18 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <motion.div
-      className="min-h-screen transition-colors duration-300"
-      initial="hidden"
-      animate="show"
-      variants={fadeIn()}
-    >
-      <Navbar />
-      <main className="container mx-auto px-4 py-6">
-        <Outlet />
-      </main>
-    </motion.div>
+    <QueryClientProvider client={queryClient}>
+      <motion.div
+        className="min-h-screen transition-colors duration-300"
+        initial="hidden"
+        animate="show"
+        variants={fadeIn()}
+      >
+        <Navbar />
+        <main className="container mx-auto px-4 py-6">
+          <Outlet />
+        </main>
+      </motion.div>
+    </QueryClientProvider>
   )
 }

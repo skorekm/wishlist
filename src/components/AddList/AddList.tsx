@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -7,7 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { createWishlist } from '@/services'
+import { Database } from '@/database.types'
 
+type WishlistFormData = Pick<Database['public']['Tables']['wishlists']['Insert'], 'name' | 'description'>
 
 const listFormSchema = z.object({
   name: z.string()
@@ -20,16 +23,17 @@ const listFormSchema = z.object({
     .optional()
     .transform(val => val === '' ? null : val)
     .nullable()
-})
+});
 
-type AddListForm = z.infer<typeof listFormSchema>
+export function AddList({ onSuccess }: { onSuccess: () => void }) {
+  const [open, setOpen] = useState(false);
 
-export function AddList() {
   const { 
     register, 
     handleSubmit,
-    formState: { errors }
-  } = useForm<AddListForm>({
+    formState: { errors },
+    reset,
+  } = useForm<WishlistFormData>({
     resolver: zodResolver(listFormSchema),
     defaultValues: {
       name: '',
@@ -37,14 +41,23 @@ export function AddList() {
     }
   })
 
-  const onSubmit = async (data: AddListForm) => {
-    createWishlist(data).then((list) => {
-      console.log('list', list)
-    })
+  const onSubmit = async (data: WishlistFormData) => {
+    try {
+      await createWishlist(data);
+      onSuccess();
+    } catch (error) {
+      // Handle error (show error message, etc.)
+      console.error('Error creating wishlist', error)
+    }
+  }
+
+  const closeDialog = () => {
+    reset();
+    setOpen(false);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <div>
           <Button className="bg-accent hover:bg-accent/90">
@@ -96,7 +109,7 @@ export function AddList() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" className="dark:border-gray-700 dark:text-gray-300">
+            <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
             <Button type="submit" className="bg-accent hover:bg-accent/90">Create List</Button>

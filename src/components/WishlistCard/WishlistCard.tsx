@@ -1,22 +1,15 @@
 import { motion } from "motion/react"
-import { Clock } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+// import { Clock } from "lucide-react"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Database } from "@/database.types"
 
 interface WishlistCardProps {
-  list: {
-    id: number
-    name: string
-    description: string
-    owner: string
-    ownerName: string
-    itemCount: number
-  }
+  list: Database['public']['Tables']['wishlists']['Row']
   onClick: () => void
-  lastViewed?: string
 }
 
-export function WishlistCard({ list, onClick, lastViewed }: WishlistCardProps) {
+export function WishlistCard({ list, onClick }: WishlistCardProps) {
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -30,7 +23,7 @@ export function WishlistCard({ list, onClick, lastViewed }: WishlistCardProps) {
           <CardTitle className="text-lg font-medium text-foreground">{list.name}</CardTitle>
           <CardDescription className="text-muted-foreground mt-1 line-clamp-1">{list.description}</CardDescription>
         </CardHeader>
-        <CardContent>
+        {/* <CardContent>
           <div className="flex items-center gap-2 mb-3">
             <Avatar className="h-5 w-5">
               <AvatarImage src="/placeholder.svg?height=20&width=20" alt={list.ownerName} />
@@ -42,15 +35,8 @@ export function WishlistCard({ list, onClick, lastViewed }: WishlistCardProps) {
             <div className="text-sm text-muted-foreground">
               {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
             </div>
-
-            {lastViewed && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                <Clock className="h-3 w-3" />
-                {lastViewed}
-              </div>
-            )}
           </div>
-        </CardContent>
+        </CardContent> */}
       </Card>
     </motion.div>
   )
