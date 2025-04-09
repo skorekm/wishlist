@@ -7,6 +7,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { deleteWishlist } from "@/services"
+import { cardHover } from "@/lib/motion"
 interface WishlistCardProps {
   list: Database['public']['Tables']['wishlists']['Row']
   onClick: () => void
@@ -23,8 +24,9 @@ export function WishlistCard({ list, onClick, refetchWishlists }: WishlistCardPr
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      variants={cardHover}
+      whileHover="hover"
+      whileTap="rest"
     >
       <Card
         className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground cursor-pointer h-full flex flex-col"
@@ -42,9 +44,9 @@ export function WishlistCard({ list, onClick, refetchWishlists }: WishlistCardPr
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem className="cursor-pointer">Edit List</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Duplicate List</DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">Share List</DropdownMenuItem>
+                <DropdownMenuItem disabled className="cursor-pointer">Edit List</DropdownMenuItem>
+                <DropdownMenuItem disabled className="cursor-pointer">Duplicate List</DropdownMenuItem>
+                <DropdownMenuItem disabled className="cursor-pointer">Share List</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={deleteList} className="text-destructive cursor-pointer">Delete List</DropdownMenuItem>
               </DropdownMenuContent>
