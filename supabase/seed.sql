@@ -21,3 +21,8 @@ create policy "Users can insert new wishlists when authenticated"
   for insert
   to authenticated
   with check (true);
+
+create policy "Users can only delete their own wishlists"
+  on public.wishlists
+  for delete
+  using (auth.uid() = author_id);

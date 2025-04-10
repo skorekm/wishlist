@@ -45,6 +45,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
     try {
       await createWishlist(data);
       onSuccess();
+      closeDialog();
     } catch (error) {
       // Handle error (show error message, etc.)
       console.error('Error creating wishlist', error)

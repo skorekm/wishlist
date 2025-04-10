@@ -21,3 +21,27 @@ export const fadeIn = (direction: "up" | "down" | "left" | "right" = "up", delay
   }
 }
 
+export const stagger = {
+  hidden: {
+    scale: 0.8,
+    opacity: 0,
+  },
+  show: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      staggerChildren: 0.1,
+    }
+  }
+}
+
+export const listItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+}
+
+export const cardHover = {
+  hover: { scale: 1.02, transition: { duration: 0.2, type: "tween", ease: "easeInOut" } },
+  rest: { scale: 1, transition: { duration: 0.2, type: "tween", ease: "easeInOut" } },
+}

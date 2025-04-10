@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Search } from 'lucide-react'
-import { useState } from 'react'
-import { Input } from '@/components/ui/input'
+import { useQuery } from '@tanstack/react-query'
+import { List } from 'lucide-react'
+import { motion } from 'motion/react'
+import { listItem, stagger } from '@/lib/motion'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
 import { getWishlists } from '@/services'
@@ -12,19 +12,11 @@ export const Route = createFileRoute('/_authenticated/lists')({
 })
 
 function RouteComponent() {
-  const queryClient = useQueryClient();
-
-  const { data: wishlists, isLoading } = useQuery({
+  const { data: wishlists, isLoading, refetch } = useQuery({
     queryKey: ['wishlists'],
     queryFn: getWishlists,
   })
 
-  const refetchWishlists = () => {
-    queryClient.invalidateQueries({ queryKey: ['wishlists'] });
-  }
-
-
-  const [searchQuery, setSearchQuery] = useState('')
 
   return (
     <div>
@@ -37,7 +29,7 @@ function RouteComponent() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 md:w-64">
+          {/* <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-500" />
             <Input
               placeholder="Search lists..."
@@ -45,22 +37,50 @@ function RouteComponent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </div> */}
           <AddList
-            onSuccess={refetchWishlists}
+            onSuccess={refetch}
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {isLoading && <div>Loading...</div>}
-        {!isLoading && wishlists?.map((list) => (
-          <WishlistCard
-            key={list.id}
-            list={list}
-            onClick={() => null}
-          />
-        ))}
-      </div>
+      {isLoading && <div>Loading...</div>}
+      {!isLoading && wishlists && wishlists?.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+            className="contents"
+          >
+            {wishlists.map((list) => (
+              <motion.div
+                key={list.id}
+                variants={listItem}
+              >
+                <WishlistCard
+                  list={list}
+                  refetchWishlists={refetch}
+                  onClick={() => null}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      )}
+      {!isLoading && wishlists?.length === 0 && <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-center justify-center py-12 px-4 text-center bg-card rounded-xl"
+      >
+        <div className="p-4 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <List className="h-12 w-12 text-accent" />
+        </div>
+        <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no shared lists</h3>
+        <p className="text-muted-foreground mb-6 max-w-md">Create a new list to get started</p>
+        <AddList
+          onSuccess={refetch}
+        />
+      </motion.div>}
     </div>
   )
 }
