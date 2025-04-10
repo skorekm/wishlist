@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Search, List } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { List } from 'lucide-react'
 import { motion } from 'motion/react'
 import { listItem, stagger } from '@/lib/motion'
-import { Input } from '@/components/ui/input'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
 import { getWishlists } from '@/services'
@@ -14,19 +12,11 @@ export const Route = createFileRoute('/_authenticated/lists')({
 })
 
 function RouteComponent() {
-  const queryClient = useQueryClient();
-
-  const { data: wishlists, isLoading } = useQuery({
+  const { data: wishlists, isLoading, refetch } = useQuery({
     queryKey: ['wishlists'],
     queryFn: getWishlists,
   })
 
-  const refetchWishlists = () => {
-    queryClient.invalidateQueries({ queryKey: ['wishlists'] });
-  }
-
-
-  const [searchQuery, setSearchQuery] = useState('')
 
   return (
     <div>
@@ -39,7 +29,7 @@ function RouteComponent() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 md:w-64">
+          {/* <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-gray-500" />
             <Input
               placeholder="Search lists..."
@@ -47,9 +37,9 @@ function RouteComponent() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
+          </div> */}
           <AddList
-            onSuccess={refetchWishlists}
+            onSuccess={refetch}
           />
         </div>
       </div>
@@ -69,7 +59,7 @@ function RouteComponent() {
               >
                 <WishlistCard
                   list={list}
-                  refetchWishlists={refetchWishlists}
+                  refetchWishlists={refetch}
                   onClick={() => null}
                 />
               </motion.div>
@@ -88,7 +78,7 @@ function RouteComponent() {
         <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no shared lists</h3>
         <p className="text-muted-foreground mb-6 max-w-md">Create a new list to get started</p>
         <AddList
-          onSuccess={refetchWishlists}
+          onSuccess={refetch}
         />
       </motion.div>}
     </div>
