@@ -61,6 +61,53 @@ export type Database = {
         }
         Relationships: []
       }
+      wishlists_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: number
+          link: string | null
+          name: string
+          notes: string | null
+          price: number
+          priority: Database["public"]["Enums"]["priority"]
+          updated_at: string
+          wishlist_id: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: number
+          link?: string | null
+          name: string
+          notes?: string | null
+          price?: number
+          priority?: Database["public"]["Enums"]["priority"]
+          updated_at?: string
+          wishlist_id: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: number
+          link?: string | null
+          name?: string
+          notes?: string | null
+          price?: number
+          priority?: Database["public"]["Enums"]["priority"]
+          updated_at?: string
+          wishlist_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -69,7 +116,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      priority: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -187,7 +234,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      priority: ["low", "medium", "high"],
+    },
   },
 } as const
 

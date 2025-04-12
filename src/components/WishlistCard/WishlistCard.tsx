@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { motion } from "motion/react"
-// import { Clock } from "lucide-react"
 import { MoreHorizontal } from "lucide-react"
 import { deleteWishlist } from "@/services"
 import { Database } from "@/database.types"
@@ -12,13 +11,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 interface WishlistCardProps {
   list: Database['public']['Tables']['wishlists']['Row']
-  onClick: () => void
   refetchWishlists: () => void
 }
 
-export function WishlistCard({ list, onClick, refetchWishlists }: WishlistCardProps) {
+export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   const [actionModal, setActionModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDropdownClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent the Link navigation
+    e.stopPropagation(); // Stop the event from bubbling
+  };
 
   const deleteList = () => {
     setIsDeleting(true);
@@ -37,7 +40,6 @@ export function WishlistCard({ list, onClick, refetchWishlists }: WishlistCardPr
     >
       <Card
         className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground cursor-pointer h-full flex flex-col"
-        onClick={onClick}
       >
         <CardHeader className="flex justify-between items-start">
           <div>
@@ -46,7 +48,7 @@ export function WishlistCard({ list, onClick, refetchWishlists }: WishlistCardPr
           </div>
           <Dialog open={actionModal} onOpenChange={setActionModal}>
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuTrigger asChild onClick={handleDropdownClick}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>

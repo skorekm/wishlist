@@ -13,7 +13,8 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
-import { Route as AuthenticatedListsImport } from './routes/_authenticated/lists'
+import { Route as AuthenticatedWishlistsIndexImport } from './routes/_authenticated/wishlists.index'
+import { Route as AuthenticatedWishlistsIdImport } from './routes/_authenticated/wishlists.$id'
 
 // Create/Update Routes
 
@@ -28,9 +29,16 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthenticatedListsRoute = AuthenticatedListsImport.update({
-  id: '/lists',
-  path: '/lists',
+const AuthenticatedWishlistsIndexRoute =
+  AuthenticatedWishlistsIndexImport.update({
+    id: '/wishlists/',
+    path: '/wishlists/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+
+const AuthenticatedWishlistsIdRoute = AuthenticatedWishlistsIdImport.update({
+  id: '/wishlists/$id',
+  path: '/wishlists/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
@@ -52,11 +60,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImport
       parentRoute: typeof rootRoute
     }
-    '/_authenticated/lists': {
-      id: '/_authenticated/lists'
-      path: '/lists'
-      fullPath: '/lists'
-      preLoaderRoute: typeof AuthenticatedListsImport
+    '/_authenticated/wishlists/$id': {
+      id: '/_authenticated/wishlists/$id'
+      path: '/wishlists/$id'
+      fullPath: '/wishlists/$id'
+      preLoaderRoute: typeof AuthenticatedWishlistsIdImport
+      parentRoute: typeof AuthenticatedImport
+    }
+    '/_authenticated/wishlists/': {
+      id: '/_authenticated/wishlists/'
+      path: '/wishlists'
+      fullPath: '/wishlists'
+      preLoaderRoute: typeof AuthenticatedWishlistsIndexImport
       parentRoute: typeof AuthenticatedImport
     }
   }
@@ -65,11 +80,13 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedListsRoute: typeof AuthenticatedListsRoute
+  AuthenticatedWishlistsIdRoute: typeof AuthenticatedWishlistsIdRoute
+  AuthenticatedWishlistsIndexRoute: typeof AuthenticatedWishlistsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedListsRoute: AuthenticatedListsRoute,
+  AuthenticatedWishlistsIdRoute: AuthenticatedWishlistsIdRoute,
+  AuthenticatedWishlistsIndexRoute: AuthenticatedWishlistsIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -79,28 +96,36 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
-  '/lists': typeof AuthenticatedListsRoute
+  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
-  '/lists': typeof AuthenticatedListsRoute
+  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/_authenticated/lists': typeof AuthenticatedListsRoute
+  '/_authenticated/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/_authenticated/wishlists/': typeof AuthenticatedWishlistsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/lists'
+  fullPaths: '/' | '' | '/wishlists/$id' | '/wishlists'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/lists'
-  id: '__root__' | '/' | '/_authenticated' | '/_authenticated/lists'
+  to: '/' | '' | '/wishlists/$id' | '/wishlists'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/wishlists/$id'
+    | '/_authenticated/wishlists/'
   fileRoutesById: FileRoutesById
 }
 
@@ -134,11 +159,16 @@ export const routeTree = rootRoute
     "/_authenticated": {
       "filePath": "_authenticated.tsx",
       "children": [
-        "/_authenticated/lists"
+        "/_authenticated/wishlists/$id",
+        "/_authenticated/wishlists/"
       ]
     },
-    "/_authenticated/lists": {
-      "filePath": "_authenticated/lists.tsx",
+    "/_authenticated/wishlists/$id": {
+      "filePath": "_authenticated/wishlists.$id.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/wishlists/": {
+      "filePath": "_authenticated/wishlists.index.tsx",
       "parent": "/_authenticated"
     }
   }

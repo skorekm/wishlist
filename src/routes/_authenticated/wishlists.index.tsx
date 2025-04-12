@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { List } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -6,8 +6,10 @@ import { listItem, stagger } from '@/lib/motion'
 import { AddList } from '@/components/AddList/AddList'
 import { WishlistCard } from '@/components/WishlistCard/WishlistCard'
 import { getWishlists } from '@/services'
+import { Fragment } from 'react/jsx-runtime'
 
-export const Route = createFileRoute('/_authenticated/lists')({
+// the trailing slash is important
+export const Route = createFileRoute('/_authenticated/wishlists/')({
   component: RouteComponent,
 })
 
@@ -17,9 +19,8 @@ function RouteComponent() {
     queryFn: getWishlists,
   })
 
-
   return (
-    <div>
+    <Fragment>
       <div
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
       >
@@ -57,11 +58,12 @@ function RouteComponent() {
                 key={list.id}
                 variants={listItem}
               >
-                <WishlistCard
-                  list={list}
-                  refetchWishlists={refetch}
-                  onClick={() => null}
-                />
+                <Link to="/wishlists/$id" params={{ id: list.id }}>
+                  <WishlistCard
+                    list={list}
+                    refetchWishlists={refetch}
+                  />
+                </Link>
               </motion.div>
             ))}
           </motion.div>
@@ -75,12 +77,12 @@ function RouteComponent() {
         <div className="p-4 rounded-full bg-secondary flex items-center justify-center mb-4">
           <List className="h-12 w-12 text-accent" />
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no shared lists</h3>
-        <p className="text-muted-foreground mb-6 max-w-md">Create a new list to get started</p>
+        <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no wishlists found</h3>
+        <p className="text-muted-foreground mb-6 max-w-md">Create a new wishlist to get started</p>
         <AddList
           onSuccess={refetch}
         />
       </motion.div>}
-    </div>
+    </Fragment>
   )
 }
