@@ -42,6 +42,6 @@ export const listItem = {
 }
 
 export const cardHover = {
-  hover: { scale: 1.02, transition: { duration: 0.2, type: "tween", ease: "easeInOut" } },
-  rest: { scale: 1, transition: { duration: 0.2, type: "tween", ease: "easeInOut" } },
+  rest: { scale: 1, transition: { type: "spring", stiffness: 400, damping: 10 } },
+  hover: { scale: 1.02, transition: { type: "spring", stiffness: 400, damping: 10 } },
 }

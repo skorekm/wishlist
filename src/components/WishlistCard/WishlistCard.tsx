@@ -4,13 +4,18 @@ import { MoreHorizontal } from "lucide-react"
 import { deleteWishlist } from "@/services"
 import { Database } from "@/database.types"
 import { cardHover } from "@/lib/motion"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 // import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+
+type WishlistCard = Database['public']['Tables']['wishlists']['Row'] & {
+  items: number
+}
+
 interface WishlistCardProps {
-  list: Database['public']['Tables']['wishlists']['Row']
+  list: WishlistCard
   refetchWishlists: () => void
 }
 
@@ -77,20 +82,20 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
             </DialogContent>
           </Dialog>
         </CardHeader>
-        {/* <CardContent>
-          <div className="flex items-center gap-2 mb-3">
+        <CardContent>
+          {/* <div className="flex items-center gap-2 mb-3">
             <Avatar className="h-5 w-5">
               <AvatarImage src="/placeholder.svg?height=20&width=20" alt={list.ownerName} />
               <AvatarFallback>{list.ownerName.charAt(0)}</AvatarFallback>
             </Avatar>
             <span className="text-xs text-muted-foreground">Created by {list.ownerName}</span>
-          </div>
+          </div> */}
           <div className="flex justify-between items-center mt-auto">
             <div className="text-sm text-muted-foreground">
-              {list.itemCount} {list.itemCount === 1 ? "item" : "items"}
+              {list.items} {list.items === 1 ? "item" : "items"}
             </div>
           </div>
-        </CardContent> */}
+        </CardContent>
       </Card>
     </motion.div>
   )
