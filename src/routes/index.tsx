@@ -26,7 +26,7 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/lists`,
+          emailRedirectTo: `${window.location.origin}/wishlists`,
         },
       })
 

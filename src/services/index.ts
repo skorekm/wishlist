@@ -2,11 +2,16 @@ import { Database } from "@/database.types";
 import { supabase } from "@/supabaseClient";
 
 export async function getWishlists() {
-  const { data, error } = await supabase.from('wishlists').select('*, item_count:wishlists_items(count)');
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(count)');
   if (error) {
     throw error;
   }
-  return data;
+  const wishlists = data.map((wishlist) => ({
+    ...wishlist,
+    items: wishlist.items[0].count,
+  }));
+
+  return wishlists;
 }
 
 export async function createWishlist(list: Database['public']['Tables']['wishlists']['Insert']) {
@@ -42,16 +47,15 @@ export async function deleteWishlist(id: number) {
 }
 
 export async function getWishlist(id: number) {
-  // TODO: Include items in the wishlist
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlists_items(*)').eq('id', id).single()
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('id', id).single()
   if (error) {
     throw error;
   }
   return data;
 }
 
-export async function createWishlistItem(item: Database['public']['Tables']['wishlists_items']['Insert']) {
-  const { data, error } = await supabase.from('wishlists_items').insert(item);
+export async function createWishlistItem(item: Database['public']['Tables']['wishlist_items']['Insert']) {
+  const { data, error } = await supabase.from('wishlist_items').insert(item);
   if (error) {
     throw error;
   }
