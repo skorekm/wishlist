@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { List } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -58,12 +58,10 @@ function RouteComponent() {
                 key={list.id}
                 variants={listItem}
               >
-                <Link to="/wishlists/$id" params={{ id: list.id }}>
-                  <WishlistCard
-                    list={list}
-                    refetchWishlists={refetch}
-                  />
-                </Link>
+                <WishlistCard
+                  list={list}
+                  refetchWishlists={refetch}
+                />
               </motion.div>
             ))}
           </motion.div>

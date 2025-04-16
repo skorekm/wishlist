@@ -10,6 +10,8 @@ import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Database } from '@/database.types'
 import { createWishlistItem } from '@/services'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { PRIORITY_OPTIONS } from '@/constants'
 
 type WishlistItemFormData = {
   name: string
@@ -46,8 +48,8 @@ const listFormSchema = z.object({
     .nullable(),
 });
 
-export function AddWishlistItem({ onSuccess, wishlistId }: { onSuccess: () => void, wishlistId: number }) {
-  const [open, setOpen] = useState(false);
+export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
+  const [open, setOpen] = useState(isOpen);
 
   const { 
     handleSubmit,
@@ -112,7 +114,18 @@ export function AddWishlistItem({ onSuccess, wishlistId }: { onSuccess: () => vo
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
-                <Input id="priority" placeholder="e.g., low" {...register('priority')} />
+                <Select {...register('priority')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRIORITY_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
               {errors.price && <p className="text-red-500">{errors.price.message}</p>}
