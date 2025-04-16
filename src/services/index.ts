@@ -61,3 +61,11 @@ export async function createWishlistItem(item: Database['public']['Tables']['wis
   }
   return data;
 }
+
+export async function deleteWishlistItem(id: number) {
+  const { data, error } = await supabase.from('wishlist_items').delete().eq('id', id);
+  if (error) {
+    throw error;
+  }
+  return data;
+}

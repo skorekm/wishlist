@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
+import { deleteWishlistItem } from "@/services"
+
 interface WishlistItemCardProps {
   item: {
     id: number
@@ -15,11 +17,21 @@ interface WishlistItemCardProps {
     notes: string | null
     priority: Database["public"]["Enums"]["priority"]
   }
+  refetchItems: () => void
 }
 
-export function WishlistItemCard({ item }: WishlistItemCardProps) {
-  const [actionModal, setActionModal] = useState(false)
+export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
+  const [deleteModal, setDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteItem = () => {
+    setIsDeleting(true);
+    deleteWishlistItem(item.id).then(() => {
+      refetchItems();
+      setIsDeleting(false);
+      setDeleteModal(false);
+    });
+  }
 
   return (
     <motion.div
@@ -33,7 +45,7 @@ export function WishlistItemCard({ item }: WishlistItemCardProps) {
             <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
             <div className="flex items-start">
               <span className="font-medium text-foreground mr-2">{item.price.toFixed(2)}</span>
-              <Dialog open={actionModal} onOpenChange={setActionModal}>
+              <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
@@ -46,7 +58,7 @@ export function WishlistItemCard({ item }: WishlistItemCardProps) {
                   <DropdownMenuItem disabled className="cursor-pointer">Share List</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DialogTrigger asChild>
-                    <DropdownMenuItem onClick={() => setIsDeleting(true)} className="cursor-pointer text-destructive">Delete List</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">Delete List</DropdownMenuItem>
                   </DialogTrigger>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -89,7 +101,7 @@ export function WishlistItemCard({ item }: WishlistItemCardProps) {
           </div> */}
         </CardContent>
       </Card>
-      <Dialog open={actionModal} onOpenChange={setActionModal}>
+      <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center">
@@ -101,8 +113,8 @@ export function WishlistItemCard({ item }: WishlistItemCardProps) {
               Are you sure you want to delete <strong>"{item.name}"</strong> from your wishlist? This action cannot be undone.
           </DialogDescription>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setActionModal(false)}>Cancel</Button>
-            <Button disabled={isDeleting} variant="default">Delete</Button>
+            <Button variant="outline" onClick={() => setDeleteModal(false)}>Cancel</Button>
+            <Button disabled={isDeleting} onClick={deleteItem} variant="default">Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
