@@ -7,21 +7,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
 import { deleteWishlistItem } from "@/services"
+import { EditWishlistItem } from "@/components/EditWishlistItem/EditWishlistItem"
 
 interface WishlistItemCardProps {
-  item: {
-    id: number
-    name: string
-    price: number
-    link: string | null
-    notes: string | null
-    priority: Database["public"]["Enums"]["priority"]
-  }
+  item: Database['public']['Tables']['wishlist_items']['Row']
   refetchItems: () => void
 }
 
 export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
+  const [editModal, setEditModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false);
 
   const deleteItem = () => {
@@ -46,23 +41,21 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
             <div className="flex items-start">
               <span className="font-medium text-foreground mr-2">{item.price.toFixed(2)}</span>
               <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled className="cursor-pointer">Edit List</DropdownMenuItem>
-                  <DropdownMenuItem disabled className="cursor-pointer">Duplicate List</DropdownMenuItem>
-                  <DropdownMenuItem disabled className="cursor-pointer">Share List</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">Delete List</DropdownMenuItem>
-                  </DialogTrigger>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </Dialog>
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">Edit Item</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DialogTrigger asChild>
+                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">Delete Item</DropdownMenuItem>
+                    </DialogTrigger>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </Dialog>
             </div>
           </div>
           {/* <div className="flex flex-wrap gap-1 mb-3">
@@ -118,6 +111,12 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <EditWishlistItem 
+        item={item} 
+        isOpen={editModal} 
+        onOpenChange={setEditModal} 
+        onSuccess={refetchItems} 
+      />
     </motion.div>
   )
 }

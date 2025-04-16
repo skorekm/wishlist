@@ -69,3 +69,30 @@ export async function deleteWishlistItem(id: number) {
   }
   return data;
 }
+
+export async function updateWishlistItem(id: number, item: Database['public']['Tables']['wishlist_items']['Update']) {
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .update(item)
+    .eq('id', id);
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
+export async function updateWishlist(id: number, list: Database['public']['Tables']['wishlists']['Update']) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to update a wishlist');
+  }
+
+  const { data, error } = await supabase
+    .from('wishlists')
+    .update(list)
+    .eq('id', id);
+  if (error) {
+    throw error;
+  }
+  return data;
+}

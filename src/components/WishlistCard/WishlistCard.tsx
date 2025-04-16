@@ -10,6 +10,7 @@ import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/com
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { EditList } from "@/components/EditList/EditList"
 
 type WishlistCard = Database['public']['Tables']['wishlists']['Row'] & {
   items: number
@@ -22,12 +23,18 @@ interface WishlistCardProps {
 
 export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   const [actionModal, setActionModal] = useState(false);
+  const [editModal, setEditModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDropdownClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
   };
+
+  const openEditModal = (e: React.MouseEvent) => {
+    handleDropdownClick(e);
+    setEditModal(true);
+  }
 
   const openDeleteModal = (e: React.MouseEvent) => {
     handleDropdownClick(e);
@@ -70,9 +77,9 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem disabled className="cursor-pointer">Edit List</DropdownMenuItem>
-                  <DropdownMenuItem disabled className="cursor-pointer">Duplicate List</DropdownMenuItem>
-                  <DropdownMenuItem disabled className="cursor-pointer">Share List</DropdownMenuItem>
+                  <DropdownMenuItem onClick={openEditModal} className="cursor-pointer">Edit List</DropdownMenuItem>
+                  {/* <DropdownMenuItem disabled className="cursor-pointer">Duplicate List</DropdownMenuItem>
+                  <DropdownMenuItem disabled className="cursor-pointer">Share List</DropdownMenuItem> */}
                   <DropdownMenuSeparator />
                   <DialogTrigger asChild>
                     <DropdownMenuItem onClick={openDeleteModal} className="cursor-pointer text-destructive">Delete List</DropdownMenuItem>
@@ -114,6 +121,12 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <EditList 
+        list={list} 
+        isOpen={editModal} 
+        onOpenChange={setEditModal} 
+        onSuccess={refetchWishlists} 
+      />
     </motion.div>
   )
 }
