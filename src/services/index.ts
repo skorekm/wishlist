@@ -2,7 +2,12 @@ import { Database } from "@/database.types";
 import { supabase } from "@/supabaseClient";
 
 export async function getWishlists() {
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(count)');
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to get wishlists');
+  }
+
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(count)').eq('author_id', user.id);
   if (error) {
     throw error;
   }
@@ -47,6 +52,11 @@ export async function deleteWishlist(id: number) {
 }
 
 export async function getWishlist(id: number) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to get a wishlist');
+  }
+
   const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('id', id).single()
   if (error) {
     throw error;
@@ -55,6 +65,11 @@ export async function getWishlist(id: number) {
 }
 
 export async function createWishlistItem(item: Database['public']['Tables']['wishlist_items']['Insert']) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to create a wishlist item');
+  }
+
   const { data, error } = await supabase.from('wishlist_items').insert(item);
   if (error) {
     throw error;
@@ -63,6 +78,11 @@ export async function createWishlistItem(item: Database['public']['Tables']['wis
 }
 
 export async function deleteWishlistItem(id: number) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to delete a wishlist item');
+  }
+
   const { data, error } = await supabase.from('wishlist_items').delete().eq('id', id);
   if (error) {
     throw error;
@@ -71,6 +91,11 @@ export async function deleteWishlistItem(id: number) {
 }
 
 export async function updateWishlistItem(id: number, item: Database['public']['Tables']['wishlist_items']['Update']) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to update a wishlist item');
+  }
+
   const { data, error } = await supabase
     .from('wishlist_items')
     .update(item)
