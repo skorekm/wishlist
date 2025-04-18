@@ -15,7 +15,7 @@ alter table public.wishlists enable row level security;
 create policy "Users can view their own wishlists"
   on public.wishlists
   for select
-  using (auth.uid() = author_id);
+  using ((select auth.uid()) = author_id);
 
 create policy "Users can insert new wishlists when authenticated"
   on public.wishlists
@@ -26,4 +26,12 @@ create policy "Users can insert new wishlists when authenticated"
 create policy "Users can only delete their own wishlists"
   on public.wishlists
   for delete
-  using (auth.uid() = author_id);
+  using ((select auth.uid()) = author_id);
+
+create policy "Users can update their own wishlists"
+  on public.wishlists
+  for update
+  using ((select auth.uid()) = author_id);
+
+-- Add index on author_id
+create index wishlists_author_id_idx on public.wishlists (author_id);
