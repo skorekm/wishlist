@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-router"
 import { supabase } from "../supabaseClient"
 import { useEffect } from "react"
-import { Navbar } from "@/components/Navbar/Navbar"
+import { Navbar } from "@/components/modules/Navbar/Navbar"
 import { fadeIn } from "@/lib/motion"
 import { motion } from "motion/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
