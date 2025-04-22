@@ -3,10 +3,10 @@ import { List } from 'lucide-react'
 import { Fragment } from 'react/jsx-runtime'
 import { getWishlist } from '@/services'
 import { createFileRoute } from '@tanstack/react-router'
-import { AddWishlistItem } from '@/components/AddWishlistItem/AddWishlistItem'
-import { WishlistItemCard } from '@/components/WishlistItemCard/WishlistItemCard'
+import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlistItem'
+import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { useQuery } from '@tanstack/react-query'
-
+import { listItem, stagger } from '@/lib/motion'
 export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
     parse: (params) => {
@@ -47,9 +47,21 @@ function WishlistDetailed() {
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        {wishlist.items.length > 0 && wishlist.items.map((item) => (
-          <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
-        ))}
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          animate="show"
+          className="contents"
+        >
+          {wishlist.items.length > 0 && wishlist.items.map((item) => (
+            <motion.div
+              key={item.id}
+              variants={listItem}
+            >
+              <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
       {wishlist.items.length === 0 && (
         <motion.div

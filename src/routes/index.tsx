@@ -43,7 +43,7 @@ function LoginPage() {
   return (
     <main className="flex-1 flex items-center justify-center p-4 w-full h-full">
       <div className="max-w-md">
-        <Card className="border-none shadow-lg p-6">
+        <Card className="border-none shadow-lg px-4 py-6">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-2xl font-medium">Welcome to Wishlist</CardTitle>
             <CardDescription className="text-muted-foreground">
