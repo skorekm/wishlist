@@ -10,7 +10,7 @@ import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/com
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { EditList } from "@/components/EditList/EditList"
+import { EditList } from "@/components/modules/EditList/EditList"
 
 type WishlistCard = Database['public']['Tables']['wishlists']['Row'] & {
   items: number
