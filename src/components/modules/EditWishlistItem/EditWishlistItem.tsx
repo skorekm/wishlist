@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -61,6 +61,7 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
     handleSubmit,
     reset,
     register,
+    control,
     formState: { errors },
   } = useForm<WishlistItemFormData>({
     resolver: zodResolver(listFormSchema),
@@ -115,18 +116,27 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
-                <Select {...register('priority')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
               {errors.price && <p className="text-red-500">{errors.price.message}</p>}

@@ -9,6 +9,7 @@ import { Database } from "@/database.types"
 import { deleteWishlistItem } from "@/services"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
 import { Badge } from "../../ui/badge"
+import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
   item: Database['public']['Tables']['wishlist_items']['Row']
@@ -57,7 +58,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                     variant="outline"
                     className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
-                    {item.priority}
+                    {getPriorityLabel(item.priority)}
                   </Badge>
                 )}
               </div>

@@ -51,20 +51,20 @@ export async function deleteWishlist(id: number) {
   return data;
 }
 
-export async function getWishlist(id: number) {
+export async function getWishlist(id: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('Authentication required to get a wishlist');
   }
 
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('id', id).single()
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('uuid', id).single()
   if (error) {
     throw error;
   }
   return data;
 }
 
-export async function createWishlistItem(item: Database['public']['Tables']['wishlist_items']['Insert']) {
+export async function createWishlistItem(item: Omit<Database['public']['Tables']['wishlist_items']['Insert'], 'author_id'>) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     throw new Error('Authentication required to create a wishlist item');
