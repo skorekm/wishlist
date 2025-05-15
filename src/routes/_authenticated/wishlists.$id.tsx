@@ -11,11 +11,11 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
     parse: (params) => {
       return {
-        id: Number(params.id),
+        id: params.id,
       }
     },
   },
-  loader: async ({ params }: { params: { id: number } }) => {
+  loader: async ({ params }: { params: { id: string } }) => {
     const wishlist = await getWishlist(params.id)
     return { wishlist }
   },

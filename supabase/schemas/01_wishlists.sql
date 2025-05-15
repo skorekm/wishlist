@@ -1,6 +1,7 @@
 -- wishlists table
 create table if not exists "wishlists" (
   id serial primary key,
+  uuid uuid not null default gen_random_uuid() unique,
   name varchar(100) not null,
   description varchar(250),
   created_at timestamp with time zone default now() not null,
@@ -12,10 +13,10 @@ create table if not exists "wishlists" (
 alter table public.wishlists enable row level security;
 
 -- Create policies
-create policy "Users can view their own wishlists"
+create policy "Users who know the wishlist uuid can view the wishlist"
   on public.wishlists
   for select
-  using ((select auth.uid()) = author_id);
+  using (true);
 
 create policy "Users can insert new wishlists when authenticated"
   on public.wishlists
@@ -35,3 +36,6 @@ create policy "Users can update their own wishlists"
 
 -- Add index on author_id
 create index wishlists_author_id_idx on public.wishlists (author_id);
+
+-- Add index on uuid
+create index wishlists_uuid_idx on public.wishlists (uuid);

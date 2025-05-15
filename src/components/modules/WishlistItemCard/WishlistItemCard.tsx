@@ -9,10 +9,11 @@ import { Database } from "@/database.types"
 import { deleteWishlistItem } from "@/services"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
 import { Badge } from "../../ui/badge"
+import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
   item: Database['public']['Tables']['wishlist_items']['Row']
-  refetchItems: () => void
+  refetchItems?: () => void
 }
 
 export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
@@ -23,7 +24,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
   const deleteItem = () => {
     setIsDeleting(true);
     deleteWishlistItem(item.id).then(() => {
-      refetchItems();
+      refetchItems?.();
       setIsDeleting(false);
       setDeleteModal(false);
     });
@@ -57,7 +58,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                     variant="outline"
                     className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
-                    {item.priority}
+                    {getPriorityLabel(item.priority)}
                   </Badge>
                 )}
               </div>
@@ -117,7 +118,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
         item={item}
         isOpen={editModal}
         onOpenChange={setEditModal}
-        onSuccess={refetchItems}
+        onSuccess={() => refetchItems?.()}
       />
     </motion.div>
   )

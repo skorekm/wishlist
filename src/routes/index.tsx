@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +8,14 @@ import { Input } from '@/components/ui/input'
 
 export const Route = createFileRoute('/')({
   component: LoginPage,
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      throw redirect({
+        to: '/wishlists',
+      })
+    }
+  }
 })
 
 function LoginPage() {

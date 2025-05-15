@@ -58,7 +58,7 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
     >
       <Link
         to="/wishlists/$id"
-        params={{ id: list.id }}
+        params={{ id: list.uuid }}
         className="block"
       >
         <Card

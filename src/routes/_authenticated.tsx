@@ -27,13 +27,14 @@ function AuthenticatedLayout() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
         navigate({ to: '/' })
       }
-    })
+    }
+    checkAuth()
 
-    return () => subscription.unsubscribe()
   }, [navigate])
 
   return (

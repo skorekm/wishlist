@@ -19,7 +19,7 @@ export function Navbar() {
     navigate({ to: '/wishlists' })
   }
 
-  const isDetailedPage = pathname.match(/^\/.+\/\d+$/)
+  const isDetailedPage = pathname.match(/\/[^/]+\/[^/]+$/)
   
   return (
     <nav className="bg-white border-b border-gray-200 py-3">
