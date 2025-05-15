@@ -18,7 +18,7 @@ type WishlistItemFormData = {
   price: number
   priority: Database["public"]["Enums"]["priority"]
   category: string
-  link?: string | null
+  link: string | null
   notes?: string | null
 }
 
@@ -37,10 +37,11 @@ const listFormSchema = z.object({
     .trim(),
   link: z.string()
     .trim()
-    .url("Invalid URL")
-    .optional()
+    .transform(val => val === '' ? null : val)
     .nullable()
-    .transform((val) => val || null),
+    .pipe(
+      z.string().url("Invalid link address").nullable()
+    ),
   notes: z.string()
     .max(250, "Notes cannot be longer than 250 characters")
     .trim()

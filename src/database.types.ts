@@ -36,6 +36,7 @@ export type Database = {
     Tables: {
       wishlist_items: {
         Row: {
+          author_id: string
           category: string | null
           created_at: string
           id: number
@@ -48,6 +49,7 @@ export type Database = {
           wishlist_id: number
         }
         Insert: {
+          author_id: string
           category?: string | null
           created_at?: string
           id?: number
@@ -60,6 +62,7 @@ export type Database = {
           wishlist_id: number
         }
         Update: {
+          author_id?: string
           category?: string | null
           created_at?: string
           id?: number
@@ -89,6 +92,7 @@ export type Database = {
           id: number
           name: string
           updated_at: string
+          uuid: string
         }
         Insert: {
           author_id: string
@@ -97,6 +101,7 @@ export type Database = {
           id?: number
           name: string
           updated_at?: string
+          uuid?: string
         }
         Update: {
           author_id?: string
@@ -105,55 +110,9 @@ export type Database = {
           id?: number
           name?: string
           updated_at?: string
+          uuid?: string
         }
         Relationships: []
-      }
-      wishlists_items: {
-        Row: {
-          category: string | null
-          created_at: string
-          id: number
-          link: string | null
-          name: string
-          notes: string | null
-          price: number
-          priority: Database["public"]["Enums"]["priority"]
-          updated_at: string
-          wishlist_id: number
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          id?: number
-          link?: string | null
-          name: string
-          notes?: string | null
-          price?: number
-          priority?: Database["public"]["Enums"]["priority"]
-          updated_at?: string
-          wishlist_id: number
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          id?: number
-          link?: string | null
-          name?: string
-          notes?: string | null
-          price?: number
-          priority?: Database["public"]["Enums"]["priority"]
-          updated_at?: string
-          wishlist_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "wishlists_items_wishlist_id_fkey"
-            columns: ["wishlist_id"]
-            isOneToOne: false
-            referencedRelation: "wishlists"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {
