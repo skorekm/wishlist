@@ -51,10 +51,12 @@ export async function deleteWishlist(id: number) {
   return data;
 }
 
-export async function getWishlist(id: string) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error('Authentication required to get a wishlist');
+export async function getWishlist(id: string, skipAuth = false) {
+  if (!skipAuth) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('Authentication required to get a wishlist');
+    }
   }
 
   const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('uuid', id).single()

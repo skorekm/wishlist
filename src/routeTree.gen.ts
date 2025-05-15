@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthenticatedWishlistsIndexImport } from './routes/_authenticated/wishlists.index'
+import { Route as WishlistsSharedIdImport } from './routes/wishlists.shared.$id'
 import { Route as AuthenticatedWishlistsIdImport } from './routes/_authenticated/wishlists.$id'
 
 // Create/Update Routes
@@ -35,6 +36,12 @@ const AuthenticatedWishlistsIndexRoute =
     path: '/wishlists/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+
+const WishlistsSharedIdRoute = WishlistsSharedIdImport.update({
+  id: '/wishlists/shared/$id',
+  path: '/wishlists/shared/$id',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AuthenticatedWishlistsIdRoute = AuthenticatedWishlistsIdImport.update({
   id: '/wishlists/$id',
@@ -67,6 +74,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWishlistsIdImport
       parentRoute: typeof AuthenticatedImport
     }
+    '/wishlists/shared/$id': {
+      id: '/wishlists/shared/$id'
+      path: '/wishlists/shared/$id'
+      fullPath: '/wishlists/shared/$id'
+      preLoaderRoute: typeof WishlistsSharedIdImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated/wishlists/': {
       id: '/_authenticated/wishlists/'
       path: '/wishlists'
@@ -97,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
   '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/wishlists': typeof AuthenticatedWishlistsIndexRoute
 }
 
@@ -104,6 +119,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthenticatedRouteWithChildren
   '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/wishlists': typeof AuthenticatedWishlistsIndexRoute
 }
 
@@ -112,19 +128,26 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/_authenticated/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/_authenticated/wishlists/': typeof AuthenticatedWishlistsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/wishlists/$id' | '/wishlists'
+  fullPaths:
+    | '/'
+    | ''
+    | '/wishlists/$id'
+    | '/wishlists/shared/$id'
+    | '/wishlists'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/wishlists/$id' | '/wishlists'
+  to: '/' | '' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/wishlists/$id'
+    | '/wishlists/shared/$id'
     | '/_authenticated/wishlists/'
   fileRoutesById: FileRoutesById
 }
@@ -132,11 +155,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  WishlistsSharedIdRoute: typeof WishlistsSharedIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  WishlistsSharedIdRoute: WishlistsSharedIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -150,7 +175,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/_authenticated"
+        "/_authenticated",
+        "/wishlists/shared/$id"
       ]
     },
     "/": {
@@ -166,6 +192,9 @@ export const routeTree = rootRoute
     "/_authenticated/wishlists/$id": {
       "filePath": "_authenticated/wishlists.$id.tsx",
       "parent": "/_authenticated"
+    },
+    "/wishlists/shared/$id": {
+      "filePath": "wishlists.shared.$id.tsx"
     },
     "/_authenticated/wishlists/": {
       "filePath": "_authenticated/wishlists.index.tsx",

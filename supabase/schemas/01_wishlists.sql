@@ -13,10 +13,10 @@ create table if not exists "wishlists" (
 alter table public.wishlists enable row level security;
 
 -- Create policies
-create policy "Unauthenticated users can view wishlists"
+create policy "Users can view their own wishlists"
   on public.wishlists
   for select
-  using (true);
+  using ((select auth.uid()) = author_id);
 
 create policy "Users can insert new wishlists when authenticated"
   on public.wishlists
