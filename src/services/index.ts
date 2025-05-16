@@ -30,7 +30,9 @@ export async function createWishlist(list: Omit<Database['public']['Tables']['wi
     .insert({
       ...list,
       author_id: user.id,
-    });
+    })
+    .select()
+    .single();
 
   if (error) {
     throw error;
