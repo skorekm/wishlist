@@ -4,7 +4,7 @@ import { GiftIcon, ArrowLeft } from "lucide-react"
 import { motion } from "motion/react"
 import { fadeIn } from "@/lib/motion"
 import { Button } from "@/components/ui/button";
-// import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export function Navbar() {
   const isDetailedPage = pathname.match(/\/[^/]+\/[^/]+$/)
   
   return (
-    <nav className="bg-white border-b border-gray-200 py-3">
+    <nav className="bg-background border-b border-border py-3">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <motion.div className="flex items-center gap-2" variants={fadeIn("right")}>
           {isDetailedPage && <Button onClick={handleBack} variant="ghost">
@@ -32,10 +32,7 @@ export function Navbar() {
           <span className="font-medium dark:text-gray-100">Wishlist</span>
         </motion.div>
         <motion.div className="flex items-center gap-3" variants={fadeIn("left")}>
-          {/* <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar> */}
+          <ThemeToggle />
           <Button onClick={handleLogout} variant="ghost">Logout</Button>
         </motion.div>
       </div>
