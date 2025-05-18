@@ -3,19 +3,21 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Database } from '@/database.types'
-import { createWishlistItem } from '@/services'
+import { createWishlistItem, getCurrencies } from '@/services'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PRIORITY_OPTIONS } from '@/constants'
 
 type WishlistItemFormData = {
   name: string
   price: number
+  currency: number
   priority: Database["public"]["Enums"]["priority"]
   category: string
   link: string | null
@@ -27,9 +29,15 @@ const listFormSchema = z.object({
     .min(1, "List name is required")
     .max(50, "List name cannot be longer than 50 characters")
     .trim(),
-  price: z.coerce.number()
+  price: z.number({
+    invalid_type_error: "Price must be a number",
+    required_error: "Price is required"
+  })
     .min(0, "Price must be greater than 0")
     .max(10000, "Price cannot be greater than 10000"),
+  currency: z.number({
+    required_error: "Currency is required"
+  }),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string()
     .min(1, "Category is required")
@@ -52,7 +60,12 @@ const listFormSchema = z.object({
 export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
   const [open, setOpen] = useState(isOpen);
 
-  const { 
+  const { data: currency, isLoading } = useQuery({
+    queryKey: ['currencies'],
+    queryFn: getCurrencies
+  });
+
+  const {
     handleSubmit,
     reset,
     register,
@@ -61,7 +74,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
     resolver: zodResolver(listFormSchema),
     defaultValues: {
       name: '',
-      price: 0,
+      price: undefined,
+      currency: undefined,
       priority: 'low',
       category: '',
       link: null,
@@ -86,6 +100,10 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
     setOpen(false);
   }
 
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -105,15 +123,35 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
           <div className="py-4 space-y-4">
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="name">Item Name</Label>
-              <Input id="name" placeholder="e.g., wireless charger" {...register('name')} />
+              <Input id="name" placeholder="e.g., Wireless charger" {...register('name')} />
               {errors.name && <p className="text-red-500">{errors.name.message}</p>}
             </div>
             <div className="mb-4 flex items-center gap-2">
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="price">Price</Label>
                 <Input id="price" type="number" placeholder="e.g., 100" {...register('price')} />
+                {errors.price && <p className="text-red-500">{errors.price.message}</p>}
               </div>
               <div className="w-1/2">
+                <Label className='font-semibold' htmlFor="currency">Currency</Label>
+                <Select {...register('currency')}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currency?.map((currency) => (
+                      <SelectItem key={currency.value} value={currency.value}>
+                        {currency.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+              </div>
+            </div>
+            
+            <div className="mb-4 flex items-center gap-2">
+              <div className='w-1/2'>
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
                 <Select {...register('priority')}>
                   <SelectTrigger>
@@ -127,14 +165,13 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
               </div>
-            </div>
-              {errors.price && <p className="text-red-500">{errors.price.message}</p>}
-              {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
-            <div className="mb-4">
-              <Label className='font-semibold' htmlFor="category">Category</Label>
-              <Input id="category" placeholder="e.g., electronics" {...register('category')} />
-              {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+              <div className="w-1/2">
+                <Label className='font-semibold' htmlFor="category">Category</Label>
+                <Input id="category" placeholder="e.g., Electronics" {...register('category')} />
+                {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+              </div>
             </div>
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="link">Link</Label>

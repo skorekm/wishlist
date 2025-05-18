@@ -34,11 +34,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      currencies: {
+        Row: {
+          code: string
+          currency: string
+          entity: string
+          id: number
+          minor_unit: string | null
+          numeric: string | null
+          withdrawal_date: string | null
+        }
+        Insert: {
+          code: string
+          currency: string
+          entity: string
+          id?: number
+          minor_unit?: string | null
+          numeric?: string | null
+          withdrawal_date?: string | null
+        }
+        Update: {
+          code?: string
+          currency?: string
+          entity?: string
+          id?: number
+          minor_unit?: string | null
+          numeric?: string | null
+          withdrawal_date?: string | null
+        }
+        Relationships: []
+      }
       wishlist_items: {
         Row: {
           author_id: string
           category: string | null
           created_at: string
+          currency: number
           id: number
           link: string | null
           name: string
@@ -52,6 +83,7 @@ export type Database = {
           author_id: string
           category?: string | null
           created_at?: string
+          currency: number
           id?: number
           link?: string | null
           name: string
@@ -65,6 +97,7 @@ export type Database = {
           author_id?: string
           category?: string | null
           created_at?: string
+          currency?: number
           id?: number
           link?: string | null
           name?: string
@@ -75,6 +108,13 @@ export type Database = {
           wishlist_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "wishlist_items_currency_fkey"
+            columns: ["currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wishlist_items_wishlist_id_fkey"
             columns: ["wishlist_id"]
