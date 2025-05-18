@@ -16,6 +16,12 @@ interface WishlistItemCardProps {
   refetchItems?: () => void
 }
 
+const priorityColors: Record<string, string> = {
+  low: "border-yellow-500 bg-yellow-500/20",
+  medium: "border-orange-500 bg-orange-500/20",
+  high: "border-red-500 bg-red-500/20",
+};
+
 export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
@@ -56,7 +62,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                   <Badge
                     key={item.priority}
                     variant="outline"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 ${priorityColors[item.priority.toLowerCase()] || ""}`}
                   >
                     {getPriorityLabel(item.priority)}
                   </Badge>
