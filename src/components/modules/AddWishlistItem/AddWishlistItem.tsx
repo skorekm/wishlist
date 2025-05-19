@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
@@ -17,7 +17,7 @@ import { PRIORITY_OPTIONS } from '@/constants'
 type WishlistItemFormData = {
   name: string
   price: number
-  currency: number
+  currency: string;
   priority: Database["public"]["Enums"]["priority"]
   category: string
   link: string | null
@@ -35,7 +35,7 @@ const listFormSchema = z.object({
   })
     .min(0, "Price must be greater than 0")
     .max(10000, "Price cannot be greater than 10000"),
-  currency: z.number({
+  currency: z.string({
     required_error: "Currency is required"
   }),
   priority: z.enum(['low', 'medium', 'high']),
@@ -69,6 +69,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
     handleSubmit,
     reset,
     register,
+    control,
     formState: { errors },
   } = useForm<WishlistItemFormData>({
     resolver: zodResolver(listFormSchema),
@@ -84,9 +85,12 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
   })
 
   const onSubmit = async (data: WishlistItemFormData) => {
-    console.log(data);
     try {
-      await createWishlistItem({ ...data, wishlist_id: wishlistId });
+      const payload = {
+        ...data,
+        currency: Number(data.currency),
+      }
+      await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       onSuccess();
       closeDialog();
     } catch (error) {
@@ -128,28 +132,48 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
             </div>
             <div className="mb-4 flex items-center gap-2">
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="price">Price</Label>
-                <Input id="price" type="number" placeholder="e.g., 100" {...register('price')} />
-                {errors.price && <p className="text-red-500">{errors.price.message}</p>}
+                <Controller
+                  control={control}
+                  name="price"
+                  render={({ field }) => (
+                    <>
+                      <Label className='font-semibold' htmlFor="price">Price</Label>
+                      <Input id="price" type="number" placeholder="e.g., 100" onChange={e => field.onChange(Number(e.target.value))} value={field.value} />
+                      {
+                        errors.price && <p className="text-red-500">{errors.price.message}</p>}
+                    </>
+                  )}
+                />
               </div>
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="currency">Currency</Label>
-                <Select {...register('currency')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currency?.map((currency) => (
-                      <SelectItem key={currency.value} value={currency.value}>
-                        {currency.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+                <Controller
+                  control={control}
+                  name="currency"
+                  render={({ field }) => (
+                    <>
+                      <Label className='font-semibold' htmlFor="currency">Currency</Label>
+                      <Select 
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currency?.map((currency) => (
+                            <SelectItem key={currency.value} value={currency.value}>
+                              {currency.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+                    </>
+                  )}
+                />
               </div>
             </div>
-            
+
             <div className="mb-4 flex items-center gap-2">
               <div className='w-1/2'>
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>

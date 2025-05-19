@@ -12,7 +12,7 @@ import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
-  item: Database['public']['Tables']['wishlist_items']['Row']
+  item: Database['public']['Tables']['wishlist_items']['Row'] & { currency: Database['public']['Tables']['currencies']['Row'] }
   refetchItems?: () => void
 }
 
@@ -36,6 +36,8 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
     });
   }
 
+  console.log(item);
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -48,7 +50,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
             <div>
               <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
               <div className="flex flex-wrap gap-1 mt-2">
-                <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} zł</Badge>
+                <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
                 {item.category && (
                   <Badge
                     key={item.category}

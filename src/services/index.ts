@@ -61,7 +61,7 @@ export async function getWishlist(id: string, skipAuth = false) {
     }
   }
 
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*)').eq('uuid', id).single()
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*, currency:currencies(code))').eq('uuid', id).single()
   if (error) {
     throw error;
   }
@@ -75,7 +75,7 @@ export async function createWishlistItem(item: Omit<Database['public']['Tables']
   }
 
   const wishlistItem = {
-    ...item,  
+    ...item,
     author_id: user.id,
   }
 
