@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { List } from 'lucide-react'
 import { Fragment } from 'react/jsx-runtime'
 import { getWishlist } from '@/services'
@@ -53,14 +53,19 @@ function WishlistDetailed() {
           animate="show"
           className="contents"
         >
-          {wishlist.items.length > 0 && wishlist.items.map((item) => (
-            <motion.div
-              key={item.id}
-              variants={listItem}
-            >
-              <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
-            </motion.div>
-          ))}
+          <AnimatePresence mode="popLayout">
+            {wishlist.items.length > 0 && wishlist.items.map((item) => (
+              <motion.div
+                key={item.id}
+                variants={listItem}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                layout
+              >
+                <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
       </div>
       {wishlist.items.length === 0 && (

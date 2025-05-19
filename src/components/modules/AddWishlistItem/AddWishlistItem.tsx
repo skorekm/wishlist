@@ -77,14 +77,23 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
       name: '',
       price: undefined,
       currency: undefined,
-      priority: 'low',
+      priority: PRIORITY_OPTIONS[1].value as Database["public"]["Enums"]["priority"],
       category: '',
       link: null,
       notes: null,
     }
   })
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: number) => void) => {
+    const parsedValue = Number(e.target.value);
+    if (isNaN(parsedValue)) {
+      return;
+    }
+    onChange(parsedValue);
+  }
+
   const onSubmit = async (data: WishlistItemFormData) => {
+    console.log(data);
     try {
       const payload = {
         ...data,
@@ -138,9 +147,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                   render={({ field }) => (
                     <>
                       <Label className='font-semibold' htmlFor="price">Price</Label>
-                      <Input id="price" type="number" placeholder="e.g., 100" onChange={e => field.onChange(Number(e.target.value))} value={field.value} />
-                      {
-                        errors.price && <p className="text-red-500">{errors.price.message}</p>}
+                      <Input id="price" type="number" placeholder="e.g., 100" onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
+                      {errors.price && <p className="text-red-500">{errors.price.message}</p>}
                     </>
                   )}
                 />
@@ -177,18 +185,27 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
             <div className="mb-4 flex items-center gap-2">
               <div className='w-1/2'>
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
-                <Select {...register('priority')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
               </div>
               <div className="w-1/2">

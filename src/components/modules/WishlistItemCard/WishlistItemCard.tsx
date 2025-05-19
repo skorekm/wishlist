@@ -12,7 +12,7 @@ import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
-  item: Database['public']['Tables']['wishlist_items']['Row'] & { currency: Database['public']['Tables']['currencies']['Row'] }
+  item: Database['public']['Tables']['wishlist_items']['Row'] & { currency: { code: string } }
   refetchItems?: () => void
 }
 
@@ -35,8 +35,6 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
       setDeleteModal(false);
     });
   }
-
-  console.log(item);
 
   return (
     <motion.div

@@ -220,6 +220,14 @@ grant truncate on table "public"."wishlists" to "service_role";
 
 grant update on table "public"."wishlists" to "service_role";
 
+create policy "Users can only read the currencies"
+on "public"."currencies"
+as permissive
+for select
+to public
+using (true);
+
+
 create policy "Users can insert new wishlist items when authenticated"
 on "public"."wishlist_items"
 as permissive

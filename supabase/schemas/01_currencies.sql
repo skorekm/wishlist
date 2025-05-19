@@ -9,3 +9,7 @@ create table if not exists "currencies" (
 );
 
 create index currencies_code_idx on public.currencies (code);
+
+create policy "Users can only read the currencies" on public.currencies
+    for select
+    using (true);
