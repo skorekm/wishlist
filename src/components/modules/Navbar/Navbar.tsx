@@ -33,7 +33,7 @@ export function Navbar() {
         </motion.div>
         <motion.div className="flex items-center gap-3" variants={fadeIn("left")}>
           <ThemeToggle />
-          <Button onClick={handleLogout} variant="ghost">Logout</Button>
+          <Button onClick={handleLogout} variant="outline">Logout</Button>
         </motion.div>
       </div>
     </nav>

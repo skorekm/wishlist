@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Database } from '@/database.types'
-import { createWishlistItem } from '@/services'
+import { createWishlistItem, getCurrencies } from '@/services'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PRIORITY_OPTIONS } from '@/constants'
 
 type WishlistItemFormData = {
   name: string
   price: number
+  currency: string;
   priority: Database["public"]["Enums"]["priority"]
   category: string
   link: string | null
@@ -27,9 +29,15 @@ const listFormSchema = z.object({
     .min(1, "List name is required")
     .max(50, "List name cannot be longer than 50 characters")
     .trim(),
-  price: z.coerce.number()
+  price: z.number({
+    invalid_type_error: "Price must be a number",
+    required_error: "Price is required"
+  })
     .min(0, "Price must be greater than 0")
     .max(10000, "Price cannot be greater than 10000"),
+  currency: z.string({
+    required_error: "Currency is required"
+  }),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string()
     .min(1, "Category is required")
@@ -52,27 +60,46 @@ const listFormSchema = z.object({
 export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
   const [open, setOpen] = useState(isOpen);
 
-  const { 
+  const { data: currency, isLoading } = useQuery({
+    queryKey: ['currencies'],
+    queryFn: getCurrencies
+  });
+
+  const {
     handleSubmit,
     reset,
     register,
+    control,
     formState: { errors },
   } = useForm<WishlistItemFormData>({
     resolver: zodResolver(listFormSchema),
     defaultValues: {
       name: '',
-      price: 0,
-      priority: 'low',
+      price: undefined,
+      currency: undefined,
+      priority: PRIORITY_OPTIONS[1].value as Database["public"]["Enums"]["priority"],
       category: '',
       link: null,
       notes: null,
     }
   })
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (value: number) => void) => {
+    const parsedValue = Number(e.target.value);
+    if (isNaN(parsedValue)) {
+      return;
+    }
+    onChange(parsedValue);
+  }
+
   const onSubmit = async (data: WishlistItemFormData) => {
     console.log(data);
     try {
-      await createWishlistItem({ ...data, wishlist_id: wishlistId });
+      const payload = {
+        ...data,
+        currency: Number(data.currency),
+      }
+      await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       onSuccess();
       closeDialog();
     } catch (error) {
@@ -84,6 +111,10 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
   const closeDialog = () => {
     reset();
     setOpen(false);
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -105,36 +136,83 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
           <div className="py-4 space-y-4">
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="name">Item Name</Label>
-              <Input id="name" placeholder="e.g., wireless charger" {...register('name')} />
+              <Input id="name" placeholder="e.g., Wireless charger" {...register('name')} />
               {errors.name && <p className="text-red-500">{errors.name.message}</p>}
             </div>
             <div className="mb-4 flex items-center gap-2">
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="price">Price</Label>
-                <Input id="price" type="number" placeholder="e.g., 100" {...register('price')} />
+                <Controller
+                  control={control}
+                  name="price"
+                  render={({ field }) => (
+                    <>
+                      <Label className='font-semibold' htmlFor="price">Price</Label>
+                      <Input id="price" type="number" placeholder="e.g., 100" onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
+                      {errors.price && <p className="text-red-500">{errors.price.message}</p>}
+                    </>
+                  )}
+                />
               </div>
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="priority">Priority</Label>
-                <Select {...register('priority')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITY_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  control={control}
+                  name="currency"
+                  render={({ field }) => (
+                    <>
+                      <Label className='font-semibold' htmlFor="currency">Currency</Label>
+                      <Select 
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currency?.map((currency) => (
+                            <SelectItem key={currency.value} value={currency.value}>
+                              {currency.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+                    </>
+                  )}
+                />
               </div>
             </div>
-              {errors.price && <p className="text-red-500">{errors.price.message}</p>}
-              {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
-            <div className="mb-4">
-              <Label className='font-semibold' htmlFor="category">Category</Label>
-              <Input id="category" placeholder="e.g., electronics" {...register('category')} />
-              {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+
+            <div className="mb-4 flex items-center gap-2">
+              <div className='w-1/2'>
+                <Label className='font-semibold' htmlFor="priority">Priority</Label>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
+              </div>
+              <div className="w-1/2">
+                <Label className='font-semibold' htmlFor="category">Category</Label>
+                <Input id="category" placeholder="e.g., Electronics" {...register('category')} />
+                {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+              </div>
             </div>
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="link">Link</Label>

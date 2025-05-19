@@ -29,7 +29,7 @@ export function ThemeToggle() {
   const isDark = resolvedTheme === 'dark'
 
   return (
-    <Button variant="outline" size="icon" onClick={toggleTheme}>
+    <Button variant="ghost" size="icon" onClick={toggleTheme}>
       <AnimatePresence mode="wait" initial={false}>
         {isDark ? (
           <motion.div

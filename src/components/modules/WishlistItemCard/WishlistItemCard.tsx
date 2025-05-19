@@ -12,9 +12,15 @@ import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
-  item: Database['public']['Tables']['wishlist_items']['Row']
+  item: Database['public']['Tables']['wishlist_items']['Row'] & { currency: { code: string } }
   refetchItems?: () => void
 }
+
+const priorityColors: Record<string, string> = {
+  low: "border-yellow-500 bg-yellow-500/20",
+  medium: "border-orange-500 bg-orange-500/20",
+  high: "border-red-500 bg-red-500/20",
+};
 
 export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
@@ -42,7 +48,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
             <div>
               <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
               <div className="flex flex-wrap gap-1 mt-2">
-                <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} zł</Badge>
+                <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
                 {item.category && (
                   <Badge
                     key={item.category}
@@ -56,7 +62,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                   <Badge
                     key={item.priority}
                     variant="outline"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 ${priorityColors[item.priority.toLowerCase()] || ""}`}
                   >
                     {getPriorityLabel(item.priority)}
                   </Badge>
