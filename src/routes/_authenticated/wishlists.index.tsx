@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { List } from 'lucide-react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { listItem, stagger } from '@/lib/motion'
 import { AddList } from '@/components/modules/AddList/AddList'
 import { WishlistCard } from '@/components/modules/WishlistCard/WishlistCard'
@@ -53,17 +53,22 @@ function RouteComponent() {
             animate="show"
             className="contents"
           >
-            {wishlists.map((list) => (
-              <motion.div
-                key={list.id}
-                variants={listItem}
-              >
-                <WishlistCard
-                  list={list}
-                  refetchWishlists={refetch}
-                />
-              </motion.div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {wishlists.map((list) => (
+                <motion.div
+                  key={list.id}
+                  variants={listItem}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                  layout
+                >
+                  <WishlistCard
+                    list={list}
+                    refetchWishlists={refetch}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </motion.div>
         </div>
       )}
