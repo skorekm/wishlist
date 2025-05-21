@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
@@ -99,9 +100,11 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
       await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       onSuccess();
       closeDialog();
+      toast.success("Wishlist item added successfully!");
     } catch (error) {
       // Handle error (show error message, etc.)
-      console.error('Error creating wishlist', error)
+      console.error('Error creating wishlist item', error)
+      toast.error("Failed to add item to wishlist. Please try again.");
     }
   }
 

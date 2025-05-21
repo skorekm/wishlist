@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
@@ -57,8 +58,10 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
       await updateWishlist(list.id, data);
       onSuccess();
       onOpenChange(false);
+      toast.success("Wishlist updated successfully!");
     } catch (error) {
       console.error('Error updating wishlist', error)
+      toast.error("Failed to update wishlist. Please try again.");
     } finally {
       setIsUpdating(false);
     }

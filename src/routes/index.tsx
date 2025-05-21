@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'react-toastify';
 import { supabase } from '../supabaseClient'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Gift } from 'lucide-react'
@@ -23,12 +24,10 @@ function LoginPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setMessage(null)
     setLoading(true)
 
     try {
@@ -41,7 +40,7 @@ function LoginPage() {
 
       if (error) throw error
 
-      setMessage('Check your email for the login link!')
+      toast.success('Check your email for the login link!');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
@@ -73,10 +72,7 @@ function LoginPage() {
             <div className="space-y-4">
               <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                 {error && (
-                  <div className="text-red-500 text-sm text-center">{error}</div>
-                )}
-                {message && (
-                  <div className="text-green-500 text-sm text-center">{message}</div>
+                  toast.error(error)
                 )}
                 <div>
                   <label htmlFor="email" className="sr-only">

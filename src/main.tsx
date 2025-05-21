@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ThemeProvider } from 'next-themes'
 import './index.css'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -17,6 +20,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const queryClient = new QueryClient()
+
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
@@ -24,7 +29,10 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <ThemeProvider attribute="class" defaultTheme="system" storageKey="wishlist-theme" enableSystem>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <ToastContainer position="bottom-right" />
+        </QueryClientProvider>
       </ThemeProvider>
     </StrictMode>,
   )
