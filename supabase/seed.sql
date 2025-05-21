@@ -1,23 +1,46 @@
-create table if not exists public.wishlists (
-  id serial primary key,
-  name varchar(100) not null,
-  description varchar(250),
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null,
-  author_id uuid references auth.users(id)
+-- Insert a user into auth.users
+INSERT INTO auth.users (
+  id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  created_at,
+  updated_at
+) VALUES (
+  'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', -- static UUID for reproducibility
+  'test@example.com',
+  crypt('password', gen_salt('bf')),
+  now(),
+  now(),
+  now()
 );
 
--- Add row-level security policies
-alter table public.wishlists enable row level security;
+-- create wishlists for the user
+INSERT INTO public.wishlists (name, description, author_id) VALUES 
+  ('Sample wishlist 1', 'This is a sample wishlist', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  ('Sample wishlist 2', 'This is a sample wishlist', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  ('Sample wishlist 3', 'This is a sample wishlist', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
 
--- Create policies
-create policy "Users can view their own wishlists"
-  on public.wishlists
-  for select
-  using (auth.uid() = author_id);
+-- create wishlist items for the wishlists
+INSERT INTO public.wishlist_items (wishlist_id, name, price, currency, priority, category, link, notes, author_id) VALUES 
+  (1, 'Sample item 1', 100, 226, 'low', 'Electronics', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (1, 'Sample item 2', 200, 226, 'medium', 'Books', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (1, 'Sample item 3', 300, 226, 'high', 'Clothing', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
 
-create policy "Users can insert new wishlists when authenticated"
-  on public.wishlists
-  for insert
-  to authenticated
-  with check (true);
+INSERT INTO public.wishlist_items (wishlist_id, name, price, currency, priority, category, link, notes, author_id) VALUES 
+  (2, 'Sample item 1', 150, 226, 'low', 'Electronics', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (2, 'Sample item 2', 250, 226, 'medium', 'Books', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (2, 'Sample item 3', 350, 226, 'high', 'Clothing', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+
+INSERT INTO public.wishlist_items (wishlist_id, name, price, currency, priority, category, link, notes, author_id) VALUES 
+  (3, 'Sample item 1', 120, 226, 'low', 'Electronics', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (3, 'Sample item 2', 220, 226, 'medium', 'Books', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'),
+  (3, 'Sample item 3', 320, 226, 'high', 'Clothing', 'https://example.com', 'This is a sample item', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
+
+
+
+
+
+
+
+

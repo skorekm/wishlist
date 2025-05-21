@@ -34,30 +34,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      currencies: {
+        Row: {
+          code: string
+          currency: string
+          entity: string
+          id: number
+          minor_unit: string | null
+          numeric: string | null
+          withdrawal_date: string | null
+        }
+        Insert: {
+          code: string
+          currency: string
+          entity: string
+          id?: number
+          minor_unit?: string | null
+          numeric?: string | null
+          withdrawal_date?: string | null
+        }
+        Update: {
+          code?: string
+          currency?: string
+          entity?: string
+          id?: number
+          minor_unit?: string | null
+          numeric?: string | null
+          withdrawal_date?: string | null
+        }
+        Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          author_id: string
+          category: string | null
+          created_at: string
+          currency: number
+          id: number
+          link: string | null
+          name: string
+          notes: string | null
+          price: number
+          priority: Database["public"]["Enums"]["priority"]
+          updated_at: string
+          wishlist_id: number
+        }
+        Insert: {
+          author_id: string
+          category?: string | null
+          created_at?: string
+          currency: number
+          id?: number
+          link?: string | null
+          name: string
+          notes?: string | null
+          price: number
+          priority: Database["public"]["Enums"]["priority"]
+          updated_at?: string
+          wishlist_id: number
+        }
+        Update: {
+          author_id?: string
+          category?: string | null
+          created_at?: string
+          currency?: number
+          id?: number
+          link?: string | null
+          name?: string
+          notes?: string | null
+          price?: number
+          priority?: Database["public"]["Enums"]["priority"]
+          updated_at?: string
+          wishlist_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_currency_fkey"
+            columns: ["currency"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlists: {
         Row: {
-          author_id: string | null
+          author_id: string
           created_at: string
           description: string | null
           id: number
           name: string
           updated_at: string
+          uuid: string
         }
         Insert: {
-          author_id?: string | null
+          author_id: string
           created_at?: string
           description?: string | null
           id?: number
           name: string
           updated_at?: string
+          uuid?: string
         }
         Update: {
-          author_id?: string | null
+          author_id?: string
           created_at?: string
           description?: string | null
           id?: number
           name?: string
           updated_at?: string
+          uuid?: string
         }
         Relationships: []
       }
@@ -69,7 +162,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      priority: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -187,7 +280,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      priority: ["low", "medium", "high"],
+    },
   },
 } as const
 
