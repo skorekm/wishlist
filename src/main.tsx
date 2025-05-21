@@ -1,11 +1,10 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { ThemeProvider } from 'next-themes'
-import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ThemeProvider } from 'next-themes'
+import './index.css'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
