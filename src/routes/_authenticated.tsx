@@ -1,10 +1,10 @@
 import { createFileRoute, redirect, useNavigate, Outlet } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { supabase } from "../supabaseClient"
 import { useEffect } from "react"
 import { Navbar } from "@/components/modules/Navbar/Navbar"
 import { fadeIn } from "@/lib/motion"
 import { motion } from "motion/react"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ location }) => {
@@ -23,7 +23,6 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
-  const queryClient = new QueryClient()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -38,18 +37,17 @@ function AuthenticatedLayout() {
   }, [navigate])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <motion.div
-        className="min-h-screen transition-colors duration-300"
-        initial="hidden"
-        animate="show"
-        variants={fadeIn()}
-      >
-        <Navbar />
-        <main className="container mx-auto px-4 py-6">
-          <Outlet />
-        </main>
-      </motion.div>
-    </QueryClientProvider>
+    <motion.div
+      className="min-h-screen transition-colors duration-300"
+      initial="hidden"
+      animate="show"
+      variants={fadeIn()}
+    >
+      <Navbar />
+      <main className="container mx-auto px-4 py-6">
+        <Outlet />
+        <TanStackRouterDevtools />
+      </main>
+    </motion.div>
   )
 }

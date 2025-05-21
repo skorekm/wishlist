@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { ExternalLink, MoreHorizontal, TriangleAlert } from "lucide-react"
+import { toast } from 'react-toastify';
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -31,6 +32,11 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
     setIsDeleting(true);
     deleteWishlistItem(item.id).then(() => {
       refetchItems?.();
+      toast.success("Wishlist item deleted successfully!");
+    }).catch((error) => {
+      console.error('Error deleting wishlist item', error);
+      toast.error("Failed to delete wishlist item. Please try again.");
+    }).finally(() => {
       setIsDeleting(false);
       setDeleteModal(false);
     });

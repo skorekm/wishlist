@@ -4,6 +4,7 @@ import { useRouter } from '@tanstack/react-router'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusCircle } from 'lucide-react'
+import { toast } from 'react-toastify';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -49,9 +50,11 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
       onSuccess();
       closeDialog();
       router.navigate({to: `/wishlists/${wishlist.uuid}`});
+      toast.success("Wishlist created successfully!");
     } catch (error) {
       // Handle error (show error message, etc.)
       console.error('Error creating wishlist', error)
+      toast.error("Failed to create wishlist. Please try again.");
     }
   }
 
