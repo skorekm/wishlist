@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Gift } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from '@/components/ui/input'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export const Route = createFileRoute('/')({
   component: LoginPage,
@@ -49,7 +50,10 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-4 w-full h-full">
+    <main className="flex-1 flex flex-col items-center justify-center p-4 w-full h-full">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md">
         <Card className="border-none shadow-lg px-4 py-6">
           <CardHeader className="text-center space-y-1">

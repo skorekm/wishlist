@@ -12,7 +12,7 @@ import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
-  item: Database['public']['Tables']['wishlist_items']['Row'] & { currency: { code: string } }
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   refetchItems?: () => void
 }
 

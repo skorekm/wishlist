@@ -36,6 +36,3 @@ create policy "Users can update their own wishlists"
 
 -- Add index on author_id
 create index wishlists_author_id_idx on public.wishlists (author_id);
-
--- Add index on uuid
-create index wishlists_uuid_idx on public.wishlists (uuid);

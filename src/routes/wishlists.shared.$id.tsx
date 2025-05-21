@@ -14,6 +14,9 @@ function SharedWishlist() {
   const { data: wishlist, isLoading } = useQuery({
     queryKey: ['shared-wishlist', wishlistId],
     queryFn: () => getWishlist(wishlistId, true),
+    retry: 2,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
   if (isLoading) return <div>Loading...</div>

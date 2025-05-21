@@ -48,7 +48,7 @@ const listFormSchema = z.object({
 });
 
 interface EditWishlistItemProps {
-  item: Database['public']['Tables']['wishlist_items']['Row']
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void

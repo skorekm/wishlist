@@ -17,6 +17,9 @@ function RouteComponent() {
   const { data: wishlists, isLoading, refetch } = useQuery({
     queryKey: ['wishlists'],
     queryFn: getWishlists,
+    retry: 2,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
   return (
