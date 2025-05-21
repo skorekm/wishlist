@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { Moon, Sun } from 'lucide-react'
-import { Button } from '@/components/ui/button' // Assuming you have a Button component
+import { Button } from '@/components/ui/button'
 import { AnimatePresence, motion } from 'motion/react'
 
 export function ThemeToggle() {
@@ -15,14 +15,11 @@ export function ThemeToggle() {
   }, [])
 
   if (!mounted) {
-    // Avoid rendering mismatch during hydration,
-    // you can return a placeholder or null
+    // Avoid rendering mismatch during hydration
     return <Button variant="outline" size="icon" disabled><Sun className="h-[1.2rem] w-[1.2rem]" /></Button>;
   }
 
   const toggleTheme = () => {
-    // If the current theme is light (or system resolves to light), switch to dark.
-    // If the current theme is dark (or system resolves to dark), switch to light.
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
   }
 

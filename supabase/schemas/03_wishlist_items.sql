@@ -24,7 +24,12 @@ alter table public.wishlist_items enable row level security;
 create policy "Users who know the wishlist uuid can view the wishlist items"
   on public.wishlist_items
   for select
-  using (true);
+  using (
+    exists (
+      select 1 from public.wishlists where public.wishlists.id = public.wishlist_items.wishlist_id
+      )
+  );
+  
 
 create policy "Users can insert new wishlist items when authenticated"
   on public.wishlist_items

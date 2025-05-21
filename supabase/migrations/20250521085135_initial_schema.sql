@@ -66,8 +66,6 @@ CREATE INDEX wishlists_author_id_idx ON public.wishlists USING btree (author_id)
 
 CREATE UNIQUE INDEX wishlists_pkey ON public.wishlists USING btree (id);
 
-CREATE INDEX wishlists_uuid_idx ON public.wishlists USING btree (uuid);
-
 CREATE UNIQUE INDEX wishlists_uuid_key ON public.wishlists USING btree (uuid);
 
 alter table "public"."currencies" add constraint "currencies_pkey" PRIMARY KEY using index "currencies_pkey";
@@ -257,7 +255,9 @@ on "public"."wishlist_items"
 as permissive
 for select
 to public
-using (true);
+using ((EXISTS ( SELECT 1
+   FROM wishlists
+  WHERE (wishlists.id = wishlist_items.wishlist_id))));
 
 
 create policy "Users can insert new wishlists when authenticated"

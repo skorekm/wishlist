@@ -23,8 +23,8 @@ type WishlistItemFormData = {
 
 const listFormSchema = z.object({
   name: z.string()
-    .min(1, "List name is required")
-    .max(50, "List name cannot be longer than 50 characters")
+    .min(1, "Item name is required")
+    .max(50, "Item name cannot be longer than 50 characters")
     .trim(),
   price: z.coerce.number()
     .min(0, "Price must be greater than 0")
@@ -48,7 +48,7 @@ const listFormSchema = z.object({
 });
 
 interface EditWishlistItemProps {
-  item: Database['public']['Tables']['wishlist_items']['Row']
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void

@@ -28,6 +28,9 @@ function WishlistDetailed() {
   const { data: wishlist, isLoading, refetch } = useQuery({
     queryKey: ['wishlist', wishlistId],
     queryFn: () => getWishlist(wishlistId),
+    retry: 2,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
   if (isLoading) {

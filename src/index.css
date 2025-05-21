@@ -19,6 +19,7 @@
   --radius: 0.625rem;
   --background: #f8f6f3;
   --foreground: #3a3a3a;
+  --accent-foreground: #fff;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);

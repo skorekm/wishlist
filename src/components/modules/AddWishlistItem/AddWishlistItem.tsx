@@ -75,8 +75,6 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
     resolver: zodResolver(listFormSchema),
     defaultValues: {
       name: '',
-      price: undefined,
-      currency: undefined,
       priority: PRIORITY_OPTIONS[1].value as Database["public"]["Enums"]["priority"],
       category: '',
       link: null,
@@ -93,7 +91,6 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
   }
 
   const onSubmit = async (data: WishlistItemFormData) => {
-    console.log(data);
     try {
       const payload = {
         ...data,
