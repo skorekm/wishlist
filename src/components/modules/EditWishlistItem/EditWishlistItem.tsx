@@ -23,8 +23,8 @@ type WishlistItemFormData = {
 
 const listFormSchema = z.object({
   name: z.string()
-    .min(1, "List name is required")
-    .max(50, "List name cannot be longer than 50 characters")
+    .min(1, "Item name is required")
+    .max(50, "Item name cannot be longer than 50 characters")
     .trim(),
   price: z.coerce.number()
     .min(0, "Price must be greater than 0")
