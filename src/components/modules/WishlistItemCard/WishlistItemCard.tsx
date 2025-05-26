@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion } from "motion/react"
 import { ExternalLink, MoreHorizontal, TriangleAlert } from "lucide-react"
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"

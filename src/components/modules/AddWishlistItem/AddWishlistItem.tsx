@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
@@ -160,7 +160,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                   render={({ field }) => (
                     <>
                       <Label className='font-semibold' htmlFor="currency">Currency</Label>
-                      <Select 
+                      <Select
                         value={field.value}
                         onValueChange={field.onChange}
                       >

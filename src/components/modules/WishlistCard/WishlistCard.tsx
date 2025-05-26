@@ -2,7 +2,7 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import { MoreHorizontal, TriangleAlert } from "lucide-react"
 import { Link } from "@tanstack/react-router"
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { deleteWishlist } from "@/services"
 import { Database } from "@/database.types"
 import { cardHover } from "@/lib/motion"

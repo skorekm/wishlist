@@ -4,7 +4,7 @@ import { useRouter } from '@tanstack/react-router'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusCircle } from 'lucide-react'
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
