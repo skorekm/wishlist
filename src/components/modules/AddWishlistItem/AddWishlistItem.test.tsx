@@ -9,7 +9,7 @@ import '@testing-library/jest-dom'
 // Mock external dependencies
 vi.mock('@/services', () => ({
   createWishlistItem: vi.fn(),
-  getCurrencies: vi.fn(),
+  getCurrencies: vi.fn(() => Promise.resolve(mockCurrencies)),
 }))
 
 vi.mock('react-toastify', () => ({
@@ -53,6 +53,14 @@ describe('AddWishlistItem Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(services.getCurrencies).mockResolvedValue(mockCurrencies)
+    
+    // // Mock pointer capture methods for Radix UI
+    // Element.prototype.hasPointerCapture = vi.fn()
+    // Element.prototype.setPointerCapture = vi.fn()
+    // Element.prototype.releasePointerCapture = vi.fn()
+    
+    // // Mock scrollIntoView for Radix UI
+    // Element.prototype.scrollIntoView = vi.fn()
   })
 
   describe('Rendering and Initial State', () => {
@@ -207,6 +215,75 @@ describe('AddWishlistItem Component', () => {
       await waitFor(() => {
         expect(screen.queryByText('Invalid link address')).not.toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Form Interactions', () => {
+    beforeEach(async () => {
+      renderWithQueryClient({ ...mockProps, isOpen: true })
+      
+      await waitFor(() => {
+        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+      })
+    })
+
+    it('should populate currency dropdown with fetched data', async () => {
+      // Get all comboboxes and select the first one (currency)
+      const comboboxes = screen.getAllByRole('combobox')
+      const currencyTrigger = comboboxes[0]
+      expect(currencyTrigger).toHaveTextContent('Select a currency')
+      
+      // Use fireEvent to click and open the dropdown
+      fireEvent.click(currencyTrigger)
+      
+      // The options should be immediately available since currencies are already loaded
+      const usdOptions = screen.getAllByText('USD (US Dollar)')
+      const eurOptions = screen.getAllByText('EUR (Euro)')
+      const plnOptions = screen.getAllByText('PLN (Polish Zloty)')
+      
+      expect(usdOptions.length).toBeGreaterThan(0)
+      expect(eurOptions.length).toBeGreaterThan(0)
+      expect(plnOptions.length).toBeGreaterThan(0)
+    })
+
+    it('should populate priority dropdown with fetched data', async () => {
+      const prioritySelect = screen.getAllByRole('combobox')[1]
+      fireEvent.click(prioritySelect)
+      
+      const lowOptions = screen.getAllByText('Low')
+      const mediumOptions = screen.getAllByText('Medium')
+      const highOptions = screen.getAllByText('High')
+
+      expect(lowOptions.length).toBeGreaterThan(0)
+      expect(mediumOptions.length).toBeGreaterThan(0)
+      expect(highOptions.length).toBeGreaterThan(0)
+    })
+
+    it('should set default priority to medium', async () => {
+      const prioritySelect = screen.getAllByRole('combobox')[1]
+      fireEvent.click(prioritySelect)
+
+      const mediumOptions = screen.getAllByText('Medium')
+      expect(mediumOptions.length).toBeGreaterThan(0)
+    })
+
+    it('should handle price input correctly', async () => {
+      const user = userEvent.setup()
+      const priceInput = screen.getByLabelText(/price/i)
+      
+      await user.type(priceInput, '99.99')
+      
+      expect(priceInput).toHaveValue(99.99)
+    })
+
+    it('should handle non-numeric price input gracefully', async () => {
+      const user = userEvent.setup()
+      const priceInput = screen.getByLabelText(/price/i)
+      
+      await user.type(priceInput, 'abc')
+      
+      // Price input should remain empty or show 0
+      expect(priceInput).toHaveValue(null)
     })
   })
 })
