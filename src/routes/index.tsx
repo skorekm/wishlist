@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { supabase } from '../supabaseClient'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Gift } from 'lucide-react'
