@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useRouter } from '@tanstack/react-router'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PlusCircle } from 'lucide-react'
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,7 @@ const listFormSchema = z.object({
 
 export function AddList({ onSuccess }: { onSuccess: () => void }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const { 
     register, 
@@ -43,11 +46,15 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
 
   const onSubmit = async (data: WishlistFormData) => {
     try {
-      await createWishlist(data);
+      const wishlist = await createWishlist(data);
       onSuccess();
+      closeDialog();
+      router.navigate({to: `/wishlists/${wishlist.uuid}`});
+      toast.success("Wishlist created successfully!");
     } catch (error) {
       // Handle error (show error message, etc.)
       console.error('Error creating wishlist', error)
+      toast.error("Failed to create wishlist. Please try again.");
     }
   }
 

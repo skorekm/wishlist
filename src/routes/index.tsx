@@ -1,38 +1,46 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
+import { toast } from 'sonner';
 import { supabase } from '../supabaseClient'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Gift } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from '@/components/ui/input'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export const Route = createFileRoute('/')({
   component: LoginPage,
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      throw redirect({
+        to: '/wishlists',
+      })
+    }
+  }
 })
 
 function LoginPage() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setMessage(null)
     setLoading(true)
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/lists`,
+          emailRedirectTo: `${window.location.origin}/wishlists`,
         },
       })
 
       if (error) throw error
 
-      setMessage('Check your email for the login link!')
+      toast.success('Check your email for the login link!');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
@@ -41,9 +49,12 @@ function LoginPage() {
   }
 
   return (
-    <main className="flex-1 flex items-center justify-center p-4 w-full h-full">
+    <main className="flex-1 flex flex-col items-center justify-center p-4 w-full h-full">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md">
-        <Card className="border-none shadow-lg">
+        <Card className="border-none shadow-lg px-4 py-6">
           <CardHeader className="text-center space-y-1">
             <CardTitle className="text-2xl font-medium">Welcome to Wishlist</CardTitle>
             <CardDescription className="text-muted-foreground">
@@ -61,10 +72,7 @@ function LoginPage() {
             <div className="space-y-4">
               <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                 {error && (
-                  <div className="text-red-500 text-sm text-center">{error}</div>
-                )}
-                {message && (
-                  <div className="text-green-500 text-sm text-center">{message}</div>
+                  toast.error(error)
                 )}
                 <div>
                   <label htmlFor="email" className="sr-only">
