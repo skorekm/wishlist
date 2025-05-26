@@ -160,7 +160,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                   render={({ field }) => (
                     <>
                       <Label className='font-semibold' htmlFor="currency">Currency</Label>
-                      <Select 
+                      <Select
                         value={field.value}
                         onValueChange={field.onChange}
                       >
