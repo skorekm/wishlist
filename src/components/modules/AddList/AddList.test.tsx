@@ -20,6 +20,10 @@ const mockProps = {
 }
 
 describe('AddList Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('should open the AddList modal', async () => {
     render(<AddList {...mockProps} />)
     const newList = screen.getByText('New List')
@@ -35,7 +39,7 @@ describe('AddList Component', () => {
     const createButton = screen.getByText('Create List')
     await userEvent.click(createButton)
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText('List name is required')).not.toBeNull()
     })
   })
@@ -57,7 +61,7 @@ describe('AddList Component', () => {
     const createButton = screen.getByText('Create List')
     await userEvent.click(createButton)
 
-    waitFor(() => {
+    await waitFor(() => {
       expect(mockProps.onSuccess).toHaveBeenCalled()
     })
   })

@@ -53,14 +53,6 @@ describe('AddWishlistItem Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(services.getCurrencies).mockResolvedValue(mockCurrencies)
-    
-    // // Mock pointer capture methods for Radix UI
-    // Element.prototype.hasPointerCapture = vi.fn()
-    // Element.prototype.setPointerCapture = vi.fn()
-    // Element.prototype.releasePointerCapture = vi.fn()
-    
-    // // Mock scrollIntoView for Radix UI
-    // Element.prototype.scrollIntoView = vi.fn()
   })
 
   describe('Rendering and Initial State', () => {
@@ -100,10 +92,8 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should show validation errors when submitting empty form', async () => {
-      const user = userEvent.setup()
-      
       const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
-      await user.click(submitButton)
+      fireEvent.click(submitButton)
       
       await waitFor(() => {
         expect(screen.getByText('List name is required')).toBeInTheDocument()
@@ -114,12 +104,11 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should validate item name length constraints', async () => {
-      const user = userEvent.setup()
       const nameInput = screen.getByLabelText(/item name/i)
       
       // Test minimum length (empty string)
-      await user.clear(nameInput)
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(nameInput, { target: { value: '' } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('List name is required')).toBeInTheDocument()
@@ -127,9 +116,8 @@ describe('AddWishlistItem Component', () => {
       
       // Test maximum length (51 characters)
       const longName = 'a'.repeat(51)
-      await user.clear(nameInput)
-      await user.type(nameInput, longName)
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(nameInput, { target: { value: longName } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('List name cannot be longer than 50 characters')).toBeInTheDocument()
@@ -137,21 +125,20 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should validate price constraints', async () => {
-      const user = userEvent.setup()
       const priceInput = screen.getByLabelText(/price/i)
       
       // Test negative price
-      await user.type(priceInput, '-10')
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(priceInput, { target: { value: '-10' } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('Price must be greater than 0')).toBeInTheDocument()
       })
       
       // Test price too high
-      await user.clear(priceInput)
-      await user.type(priceInput, '10001')
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(priceInput, { target: { value: '' } })
+      fireEvent.change(priceInput, { target: { value: '10001' } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('Price cannot be greater than 10000')).toBeInTheDocument()
@@ -159,13 +146,12 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should validate category length constraints', async () => {
-      const user = userEvent.setup()
       const categoryInput = screen.getByLabelText(/category/i)
       
       // Test maximum length (51 characters)
       const longCategory = 'a'.repeat(51)
-      await user.type(categoryInput, longCategory)
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(categoryInput, { target: { value: longCategory } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('Category cannot be longer than 50 characters')).toBeInTheDocument()
@@ -173,11 +159,10 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should validate link format', async () => {
-      const user = userEvent.setup()
       const linkInput = screen.getByLabelText(/link/i)
       
-      await user.type(linkInput, 'invalid-url')
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      fireEvent.change(linkInput, { target: { value: 'invalid-url' } })
+      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('Invalid link address')).toBeInTheDocument()
@@ -185,12 +170,11 @@ describe('AddWishlistItem Component', () => {
     })
 
     it('should validate notes length constraint', async () => {
-      const user = userEvent.setup()
       const notesInput = screen.getByLabelText(/notes/i)
       
       const longNotes = 'a'.repeat(251)
-      await user.type(notesInput, longNotes)
-      await user.click(screen.getByRole('button', { name: /add to wishlist/i }))
+      await fireEvent.change(notesInput, { target: { value: longNotes } })
+      await fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         expect(screen.getByText('Notes cannot be longer than 250 characters')).toBeInTheDocument()
