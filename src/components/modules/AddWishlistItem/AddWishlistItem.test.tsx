@@ -286,4 +286,208 @@ describe('AddWishlistItem Component', () => {
       expect(priceInput).toHaveValue(null)
     })
   })
+
+  // describe('Form Submission', () => {
+  //   const fillValidForm = async (user: UserEvent) => {
+  //     await user.type(screen.getByLabelText(/item name/i), 'Wireless Headphones')
+  //     await user.type(screen.getByLabelText(/price/i), '199.99')
+  //     await user.type(screen.getByLabelText(/category/i), 'Electronics')
+  //     await user.type(screen.getByLabelText(/link/i), 'https://example.com')
+  //     await user.type(screen.getByLabelText(/notes/i), 'Great for music')
+      
+  //     // Select currency
+  //     await user.click(screen.getByRole('combobox', { name: /currency/i }))
+  //     await user.click(screen.getByText('USD (US Dollar)'))
+      
+  //     // Priority should default to medium, but let's set it explicitly
+  //     await user.click(screen.getByRole('combobox', { name: /priority/i }))
+  //     await user.click(screen.getByText('High'))
+  //   }
+
+  //   beforeEach(async () => {
+  //     const user = userEvent.setup()
+  //     renderWithQueryClient()
+      
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+  //     })
+
+  //     const addButton = screen.getByRole('button', { name: /add item/i })
+  //     await user.click(addButton)
+  //   })
+
+  //   it('should successfully submit form with valid data', async () => {
+  //     const user = userEvent.setup()
+  //     vi.mocked(services.createWishlistItem).mockResolvedValue(null)
+      
+  //     await fillValidForm(user)
+      
+  //     const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
+  //     await user.click(submitButton)
+      
+  //     await waitFor(() => {
+  //       expect(services.createWishlistItem).toHaveBeenCalledWith({
+  //         name: 'Wireless Headphones',
+  //         price: 199.99,
+  //         currency: 1, // USD currency ID
+  //         priority: 'high',
+  //         category: 'Electronics',
+  //         link: 'https://example.com',
+  //         notes: 'Great for music',
+  //         wishlist_id: 123,
+  //       })
+  //     })
+      
+  //     expect(mockProps.onSuccess).toHaveBeenCalled()
+  //     expect(toast.success).toHaveBeenCalledWith('Wishlist item added successfully!')
+  //   })
+
+  //   it('should handle submission errors gracefully', async () => {
+  //     const user = userEvent.setup()
+  //     const errorMessage = 'Failed to create item'
+  //     vi.mocked(services.createWishlistItem).mockRejectedValue(new Error(errorMessage))
+      
+  //     await fillValidForm(user)
+      
+  //     const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
+  //     await user.click(submitButton)
+      
+  //     await waitFor(() => {
+  //       expect(toast.error).toHaveBeenCalledWith('Failed to add item to wishlist. Please try again.')
+  //     })
+      
+  //     expect(mockProps.onSuccess).not.toHaveBeenCalled()
+  //   })
+
+  //   it('should transform empty link to null before submission', async () => {
+  //     const user = userEvent.setup()
+  //     vi.mocked(services.createWishlistItem).mockResolvedValue(null)
+      
+  //     await user.type(screen.getByLabelText(/item name/i), 'Test Item')
+  //     await user.type(screen.getByLabelText(/price/i), '50')
+  //     await user.type(screen.getByLabelText(/category/i), 'Test Category')
+      
+  //     // Select currency
+  //     await user.click(screen.getByRole('combobox', { name: /currency/i }))
+  //     await user.click(screen.getByText('USD (US Dollar)'))
+      
+  //     // Leave link empty
+  //     const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
+  //     await user.click(submitButton)
+      
+  //     await waitFor(() => {
+  //       expect(services.createWishlistItem).toHaveBeenCalledWith(
+  //         expect.objectContaining({
+  //           link: null,
+  //         })
+  //       )
+  //     })
+  //   })
+
+  //   it('should transform empty notes to null before submission', async () => {
+  //     const user = userEvent.setup()
+  //     vi.mocked(services.createWishlistItem).mockResolvedValue(null)
+      
+  //     await user.type(screen.getByLabelText(/item name/i), 'Test Item')
+  //     await user.type(screen.getByLabelText(/price/i), '50')
+  //     await user.type(screen.getByLabelText(/category/i), 'Test Category')
+      
+  //     // Select currency
+  //     await user.click(screen.getByRole('combobox', { name: /currency/i }))
+  //     await user.click(screen.getByText('USD (US Dollar)'))
+      
+  //     // Leave notes empty
+  //     const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
+  //     await user.click(submitButton)
+      
+  //     await waitFor(() => {
+  //       expect(services.createWishlistItem).toHaveBeenCalledWith(
+  //         expect.objectContaining({
+  //           notes: null,
+  //         })
+  //       )
+  //     })
+  //   })
+  // })
+
+  // describe('Dialog Management', () => {
+  //   it('should close dialog when cancel button is clicked', async () => {
+  //     const user = userEvent.setup()
+  //     renderWithQueryClient()
+      
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+  //     })
+
+  //     // Open dialog
+  //     const addButton = screen.getByRole('button', { name: /add item/i })
+  //     await user.click(addButton)
+      
+  //     expect(screen.getByText('Add to Wishlist')).toBeInTheDocument()
+      
+  //     // Close dialog
+  //     const cancelButton = screen.getByRole('button', { name: /cancel/i })
+  //     await user.click(cancelButton)
+      
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Add to Wishlist')).not.toBeInTheDocument()
+  //     })
+  //   })
+
+  //   it('should reset form when dialog is closed', async () => {
+  //     const user = userEvent.setup()
+  //     renderWithQueryClient()
+      
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+  //     })
+
+  //     // Open dialog and fill form
+  //     const addButton = screen.getByRole('button', { name: /add item/i })
+  //     await user.click(addButton)
+      
+  //     await user.type(screen.getByLabelText(/item name/i), 'Test Item')
+      
+  //     // Close and reopen dialog
+  //     const cancelButton = screen.getByRole('button', { name: /cancel/i })
+  //     await user.click(cancelButton)
+  //     await user.click(addButton)
+      
+  //     // Form should be reset
+  //     expect(screen.getByLabelText(/item name/i)).toHaveValue('')
+  //   })
+
+  //   it('should close dialog and reset form after successful submission', async () => {
+  //     const user = userEvent.setup()
+  //     vi.mocked(services.createWishlistItem).mockResolvedValue(null)
+  //     renderWithQueryClient()
+      
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+  //     })
+
+  //     const addButton = screen.getByRole('button', { name: /add item/i })
+  //     await user.click(addButton)
+      
+  //     // Fill and submit form
+  //     await user.type(screen.getByLabelText(/item name/i), 'Test Item')
+  //     await user.type(screen.getByLabelText(/price/i), '50')
+  //     await user.type(screen.getByLabelText(/category/i), 'Test Category')
+      
+  //     await user.click(screen.getByRole('combobox', { name: /currency/i }))
+  //     await user.click(screen.getByText('USD (US Dollar)'))
+      
+  //     const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
+  //     await user.click(submitButton)
+      
+  //     // Dialog should close
+  //     await waitFor(() => {
+  //       expect(screen.queryByText('Add to Wishlist')).not.toBeInTheDocument()
+  //     })
+      
+  //     // Reopen dialog to check if form is reset
+  //     await user.click(addButton)
+  //     expect(screen.getByLabelText(/item name/i)).toHaveValue('')
+  //   })
+  // })
 })
