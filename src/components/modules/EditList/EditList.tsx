@@ -86,12 +86,12 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="name">List Name</Label>
               <Input id="name" placeholder="e.g., Birthday Wishlist" {...register('name')} />
-              {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="e.g., Items I'd love to receive for my birthday" {...register('description')} />
-              {errors.description && <p className="text-red-500">{errors.description.message}</p>}
+              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.description?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
