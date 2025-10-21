@@ -59,7 +59,6 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
     <motion.div
       variants={cardHover}
       whileHover="hover"
-      whileTap="rest"
     >
       <Link
         to="/wishlists/$id"

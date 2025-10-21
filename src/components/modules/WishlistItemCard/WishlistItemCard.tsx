@@ -2,6 +2,7 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import { ExternalLink, MoreHorizontal, TriangleAlert } from "lucide-react"
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -27,11 +28,14 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
 
   const deleteItem = () => {
     setIsDeleting(true);
     deleteWishlistItem(item.id).then(() => {
       refetchItems?.();
+      // Invalidate wishlists query to update item count on index page
+      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       toast.success("Wishlist item deleted successfully!");
     }).catch((error) => {
       console.error('Error deleting wishlist item', error);
@@ -45,7 +49,6 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
     >
       <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">

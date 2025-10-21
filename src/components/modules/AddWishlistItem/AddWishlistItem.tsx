@@ -3,7 +3,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -60,6 +60,7 @@ const listFormSchema = z.object({
 
 export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
   const [open, setOpen] = useState(isOpen);
+  const queryClient = useQueryClient();
 
   const { data: currency, isLoading } = useQuery({
     queryKey: ['currencies'],
@@ -99,6 +100,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
       }
       await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       onSuccess();
+      // Invalidate wishlists query to update item count on index page
+      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       closeDialog();
       toast.success("Wishlist item added successfully!");
     } catch (error) {
@@ -137,9 +140,9 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="name">Item Name</Label>
               <Input id="name" placeholder="e.g., Wireless charger" {...register('name')} />
-              {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="w-1/2">
                 <Controller
                   control={control}
@@ -148,7 +151,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                     <>
                       <Label className='font-semibold' htmlFor="price">Price</Label>
                       <Input id="price" type="number" placeholder="e.g., 100" onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
-                      {errors.price && <p className="text-red-500">{errors.price.message}</p>}
+                      <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.price?.message || '\u00A0'}</p>
                     </>
                   )}
                 />
@@ -175,14 +178,14 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                           ))}
                         </SelectContent>
                       </Select>
-                      {errors.currency && <p className="text-red-500">{errors.currency.message}</p>}
+                      <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.currency?.message || '\u00A0'}</p>
                     </>
                   )}
                 />
               </div>
             </div>
 
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className='w-1/2'>
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
                 <Controller
@@ -206,23 +209,23 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                     </Select>
                   )}
                 />
-                {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.priority?.message || '\u00A0'}</p>
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="category">Category</Label>
                 <Input id="category" placeholder="e.g., Electronics" {...register('category')} />
-                {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.category?.message || '\u00A0'}</p>
               </div>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="link">Link</Label>
               <Input id="link" placeholder="e.g., https://" {...register('link')} />
-              {errors.link && <p className="text-red-500">{errors.link.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.link?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="notes">Notes</Label>
               <Textarea id="notes" placeholder="e.g., I want this for my birthday" {...register('notes')} />
-              {errors.notes && <p className="text-red-500">{errors.notes.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.notes?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>

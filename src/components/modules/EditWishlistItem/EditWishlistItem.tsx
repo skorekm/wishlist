@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
@@ -56,6 +57,7 @@ interface EditWishlistItemProps {
 
 export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: EditWishlistItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
 
   const { 
     handleSubmit,
@@ -80,6 +82,8 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
     try {
       await updateWishlistItem(item.id, data);
       onSuccess();
+      // Invalidate wishlists query to keep index page in sync
+      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating wishlist item', error)
@@ -104,15 +108,16 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="name">Item Name</Label>
               <Input id="name" placeholder="e.g., wireless charger" {...register('name')} />
-              {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="price">Price</Label>
                 <Input id="price" type="number" placeholder="e.g., 100" {...register('price')} />
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.price?.message || '\u00A0'}</p>
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
@@ -137,24 +142,23 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
                     </Select>
                   )}
                 />
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.priority?.message || '\u00A0'}</p>
               </div>
             </div>
-              {errors.price && <p className="text-red-500">{errors.price.message}</p>}
-              {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="category">Category</Label>
               <Input id="category" placeholder="e.g., electronics" {...register('category')} />
-              {errors.category && <p className="text-red-500">{errors.category.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.category?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="link">Link</Label>
               <Input id="link" placeholder="e.g., https://" {...register('link')} />
-              {errors.link && <p className="text-red-500">{errors.link.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.link?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="notes">Notes</Label>
               <Textarea id="notes" placeholder="e.g., I want this for my birthday" {...register('notes')} />
-              {errors.notes && <p className="text-red-500">{errors.notes.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.notes?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
