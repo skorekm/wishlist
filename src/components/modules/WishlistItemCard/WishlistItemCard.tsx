@@ -45,7 +45,6 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
     >
       <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">
