@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@radix-ui/react-label'
@@ -56,6 +57,7 @@ interface EditWishlistItemProps {
 
 export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: EditWishlistItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
 
   const { 
     handleSubmit,
@@ -80,6 +82,8 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
     try {
       await updateWishlistItem(item.id, data);
       onSuccess();
+      // Invalidate wishlists query to keep index page in sync
+      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       onOpenChange(false);
     } catch (error) {
       console.error('Error updating wishlist item', error)

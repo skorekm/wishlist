@@ -3,7 +3,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -60,6 +60,7 @@ const listFormSchema = z.object({
 
 export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
   const [open, setOpen] = useState(isOpen);
+  const queryClient = useQueryClient();
 
   const { data: currency, isLoading } = useQuery({
     queryKey: ['currencies'],
@@ -99,6 +100,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
       }
       await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       onSuccess();
+      // Invalidate wishlists query to update item count on index page
+      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       closeDialog();
       toast.success("Wishlist item added successfully!");
     } catch (error) {
