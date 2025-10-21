@@ -94,7 +94,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
                 }`}
                 {...register('name')}
               />
-              <p className="text-sm text-red-500 min-h-[1.25rem]">{errors.name?.message || '\u00A0'}</p>
+              <p className="text-xs text-red-500 min-h-[1rem] mt-0.5">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="list-description" className="dark:text-gray-300">
@@ -108,7 +108,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
                 }`}
                 {...register('description')}
               />
-              <p className="text-sm text-red-500 min-h-[1.25rem]">{errors.description?.message || '\u00A0'}</p>
+              <p className="text-xs text-red-500 min-h-[1rem] mt-0.5">{errors.description?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>

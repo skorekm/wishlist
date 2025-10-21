@@ -83,15 +83,15 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="name">List Name</Label>
               <Input id="name" placeholder="e.g., Birthday Wishlist" {...register('name')} />
-              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.name?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="e.g., Items I'd love to receive for my birthday" {...register('description')} />
-              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.description?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.description?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>

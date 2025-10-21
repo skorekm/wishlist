@@ -140,9 +140,9 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
             <div className="mb-4">
               <Label className='font-semibold' htmlFor="name">Item Name</Label>
               <Input id="name" placeholder="e.g., Wireless charger" {...register('name')} />
-              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.name?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className="w-1/2">
                 <Controller
                   control={control}
@@ -151,7 +151,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                     <>
                       <Label className='font-semibold' htmlFor="price">Price</Label>
                       <Input id="price" type="number" placeholder="e.g., 100" onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
-                      <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.price?.message || '\u00A0'}</p>
+                      <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.price?.message || '\u00A0'}</p>
                     </>
                   )}
                 />
@@ -178,14 +178,14 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.currency?.message || '\u00A0'}</p>
+                      <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.currency?.message || '\u00A0'}</p>
                     </>
                   )}
                 />
               </div>
             </div>
 
-            <div className="mb-4 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <div className='w-1/2'>
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
                 <Controller
@@ -209,23 +209,23 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                     </Select>
                   )}
                 />
-                <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.priority?.message || '\u00A0'}</p>
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.priority?.message || '\u00A0'}</p>
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="category">Category</Label>
                 <Input id="category" placeholder="e.g., Electronics" {...register('category')} />
-                <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.category?.message || '\u00A0'}</p>
+                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.category?.message || '\u00A0'}</p>
               </div>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="link">Link</Label>
               <Input id="link" placeholder="e.g., https://" {...register('link')} />
-              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.link?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.link?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="notes">Notes</Label>
               <Textarea id="notes" placeholder="e.g., I want this for my birthday" {...register('notes')} />
-              <p className="text-red-500 text-sm mt-1 min-h-[1.25rem]">{errors.notes?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.notes?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
