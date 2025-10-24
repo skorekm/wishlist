@@ -4,6 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AddWishlistItem } from './AddWishlistItem'
 import * as services from '@/services'
 
+// Mock supabaseClient first to prevent environment variable errors
+mock.module('@/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: mock(() => Promise.resolve({ data: { user: { id: 'test-user-id' } } })),
+    },
+    from: mock(() => ({})),
+  },
+}))
+
 // Mock external dependencies
 mock.module('@/services', () => ({
   createWishlistItem: mock(() => {}),

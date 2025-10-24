@@ -2,6 +2,16 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test'
 import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import { AddList } from './AddList'
 
+// Mock supabaseClient first to prevent environment variable errors
+mock.module('@/supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: mock(() => Promise.resolve({ data: { user: { id: 'test-user-id' } } })),
+    },
+    from: mock(() => ({})),
+  },
+}))
+
 mock.module('@tanstack/react-router', () => ({
   useRouter: () => ({
     navigate: mock(() => {}),
