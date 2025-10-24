@@ -14,7 +14,7 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "vitest/globals", "@testing-library/react", "@testing-library/jest-dom", "@types/bun"],
+    "types": ["vite/client", "@testing-library/react", "@testing-library/jest-dom", "@types/bun"],
 
     /* Linting */
     "strict": true,
