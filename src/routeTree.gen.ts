@@ -8,90 +8,119 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWishlistsIndexRouteImport } from './routes/_authenticated/wishlists.index'
+import { Route as WishlistsSharedIdRouteImport } from './routes/wishlists.shared.$id'
+import { Route as AuthenticatedWishlistsIdRouteImport } from './routes/_authenticated/wishlists.$id'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AuthenticatedImport } from './routes/_authenticated'
-import { Route as IndexImport } from './routes/index'
-import { Route as AuthenticatedWishlistsIndexImport } from './routes/_authenticated/wishlists.index'
-import { Route as WishlistsSharedIdImport } from './routes/wishlists.shared.$id'
-import { Route as AuthenticatedWishlistsIdImport } from './routes/_authenticated/wishlists.$id'
-
-// Create/Update Routes
-
-const AuthenticatedRoute = AuthenticatedImport.update({
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
 const AuthenticatedWishlistsIndexRoute =
-  AuthenticatedWishlistsIndexImport.update({
+  AuthenticatedWishlistsIndexRouteImport.update({
     id: '/wishlists/',
     path: '/wishlists/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-
-const WishlistsSharedIdRoute = WishlistsSharedIdImport.update({
+const WishlistsSharedIdRoute = WishlistsSharedIdRouteImport.update({
   id: '/wishlists/shared/$id',
   path: '/wishlists/shared/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedWishlistsIdRoute =
+  AuthenticatedWishlistsIdRouteImport.update({
+    id: '/wishlists/$id',
+    path: '/wishlists/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
-const AuthenticatedWishlistsIdRoute = AuthenticatedWishlistsIdImport.update({
-  id: '/wishlists/$id',
-  path: '/wishlists/$id',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
+  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
+  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
+  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
+  '/_authenticated/wishlists/': typeof AuthenticatedWishlistsIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/wishlists/$id'
+    | '/wishlists/shared/$id'
+    | '/_authenticated/wishlists/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  WishlistsSharedIdRoute: typeof WishlistsSharedIdRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AuthenticatedImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/wishlists/$id': {
-      id: '/_authenticated/wishlists/$id'
-      path: '/wishlists/$id'
-      fullPath: '/wishlists/$id'
-      preLoaderRoute: typeof AuthenticatedWishlistsIdImport
-      parentRoute: typeof AuthenticatedImport
-    }
-    '/wishlists/shared/$id': {
-      id: '/wishlists/shared/$id'
-      path: '/wishlists/shared/$id'
-      fullPath: '/wishlists/shared/$id'
-      preLoaderRoute: typeof WishlistsSharedIdImport
-      parentRoute: typeof rootRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/wishlists/': {
       id: '/_authenticated/wishlists/'
       path: '/wishlists'
       fullPath: '/wishlists'
-      preLoaderRoute: typeof AuthenticatedWishlistsIndexImport
-      parentRoute: typeof AuthenticatedImport
+      preLoaderRoute: typeof AuthenticatedWishlistsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/wishlists/shared/$id': {
+      id: '/wishlists/shared/$id'
+      path: '/wishlists/shared/$id'
+      fullPath: '/wishlists/shared/$id'
+      preLoaderRoute: typeof WishlistsSharedIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/wishlists/$id': {
+      id: '/_authenticated/wishlists/$id'
+      path: '/wishlists/$id'
+      fullPath: '/wishlists/$id'
+      preLoaderRoute: typeof AuthenticatedWishlistsIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface AuthenticatedRouteChildren {
   AuthenticatedWishlistsIdRoute: typeof AuthenticatedWishlistsIdRoute
@@ -107,99 +136,11 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof AuthenticatedRouteWithChildren
-  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
-  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
-  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof AuthenticatedRouteWithChildren
-  '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
-  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
-  '/wishlists': typeof AuthenticatedWishlistsIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/_authenticated/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
-  '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
-  '/_authenticated/wishlists/': typeof AuthenticatedWishlistsIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | ''
-    | '/wishlists/$id'
-    | '/wishlists/shared/$id'
-    | '/wishlists'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
-  id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/_authenticated/wishlists/$id'
-    | '/wishlists/shared/$id'
-    | '/_authenticated/wishlists/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  WishlistsSharedIdRoute: typeof WishlistsSharedIdRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   WishlistsSharedIdRoute: WishlistsSharedIdRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/_authenticated",
-        "/wishlists/shared/$id"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/_authenticated": {
-      "filePath": "_authenticated.tsx",
-      "children": [
-        "/_authenticated/wishlists/$id",
-        "/_authenticated/wishlists/"
-      ]
-    },
-    "/_authenticated/wishlists/$id": {
-      "filePath": "_authenticated/wishlists.$id.tsx",
-      "parent": "/_authenticated"
-    },
-    "/wishlists/shared/$id": {
-      "filePath": "wishlists.shared.$id.tsx"
-    },
-    "/_authenticated/wishlists/": {
-      "filePath": "_authenticated/wishlists.index.tsx",
-      "parent": "/_authenticated"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
