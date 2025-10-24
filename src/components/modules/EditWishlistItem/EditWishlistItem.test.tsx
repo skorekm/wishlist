@@ -1,20 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { describe, it, expect, mock, beforeEach } from 'bun:test'
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { EditWishlistItem } from './EditWishlistItem'
 import * as services from '@/services'
-import userEvent from '@testing-library/user-event'
-import '@testing-library/jest-dom'
 
 // Mock external dependencies
-vi.mock('@/services', () => ({
-  updateWishlistItem: vi.fn(),
+mock.module('@/services', () => ({
+  updateWishlistItem: mock(() => {}),
 }))
 
-vi.mock('react-toastify', () => ({
+mock.module('react-toastify', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: mock(() => {}),
+    error: mock(() => {}),
   },
 }))
 
@@ -39,8 +37,8 @@ const mockItem = {
 const mockProps = {
   item: mockItem,
   isOpen: false,
-  onOpenChange: vi.fn(),
-  onSuccess: vi.fn(),
+  onOpenChange: mock(() => {}),
+  onSuccess: mock(() => {}),
 }
 
 // Helper to render component with QueryClient
@@ -62,21 +60,22 @@ const renderWithQueryClient = (props = mockProps) => {
 
 describe('EditWishlistItem Component', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
+    cleanup()
+    mock.clearAllMocks()
   })
 
   describe('Rendering and Initial State', () => {
     it('should not render dialog when isOpen is false', () => {
       renderWithQueryClient()
       
-      expect(screen.queryByRole('heading', { name: 'Edit Wishlist Item' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: 'Edit Wishlist Item' })).toBeNull()
     })
 
     it('should open dialog when isOpen prop is true', async () => {
       renderWithQueryClient({ ...mockProps, isOpen: true })
       
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'Edit Wishlist Item' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: 'Edit Wishlist Item' })).not.toBeNull()
       })
     })
 
@@ -84,7 +83,7 @@ describe('EditWishlistItem Component', () => {
       renderWithQueryClient({ ...mockProps, isOpen: true })
       
       await waitFor(() => {
-        expect(screen.getByText('Update the details of your wishlist item.')).toBeInTheDocument()
+        screen.getByText('Update the details of your wishlist item.')
       })
     })
   })
@@ -95,20 +94,20 @@ describe('EditWishlistItem Component', () => {
     })
 
     it('should render all form fields with pre-populated values', async () => {
-      const nameInput = screen.getByLabelText(/item name/i)
-      const priceInput = screen.getByLabelText(/price/i)
+      const nameInput = screen.getByLabelText(/item name/i) as HTMLInputElement
+      const priceInput = screen.getByLabelText(/price/i) as HTMLInputElement
       const prioritySelect = screen.getByDisplayValue('Medium')
-      const categoryInput = screen.getByLabelText(/category/i)
-      const linkInput = screen.getByLabelText(/link/i)
-      const notesInput = screen.getByLabelText(/notes/i)
+      const categoryInput = screen.getByLabelText(/category/i) as HTMLInputElement
+      const linkInput = screen.getByLabelText(/link/i) as HTMLInputElement
+      const notesInput = screen.getByLabelText(/notes/i) as HTMLTextAreaElement
 
       await waitFor(() => {
-        expect(nameInput).toHaveValue('Test Item')
-        expect(priceInput).toHaveValue(99.99)
-        expect(prioritySelect).toBeInTheDocument()
-        expect(categoryInput).toHaveValue('Electronics')
-        expect(linkInput).toHaveValue('https://example.com')
-        expect(notesInput).toHaveValue('Test notes')
+        expect(nameInput.value).toBe('Test Item')
+        expect(priceInput.valueAsNumber).toBe(99.99)
+        expect(prioritySelect).not.toBeNull()
+        expect(categoryInput.value).toBe('Electronics')
+        expect(linkInput.value).toBe('https://example.com')
+        expect(notesInput.value).toBe('Test notes')
       })
     })
   })
@@ -124,21 +123,21 @@ describe('EditWishlistItem Component', () => {
       
       renderWithQueryClient({ ...mockProps, item: itemWithNulls, isOpen: true })
       
-      const linkInput = screen.getByLabelText(/link/i)
-      const notesInput = screen.getByLabelText(/notes/i)
-      const categoryInput = screen.getByLabelText(/category/i)
+      const linkInput = screen.getByLabelText(/link/i) as HTMLInputElement
+      const notesInput = screen.getByLabelText(/notes/i) as HTMLTextAreaElement
+      const categoryInput = screen.getByLabelText(/category/i) as HTMLInputElement
       
       await waitFor(() => {
-        expect(linkInput).toHaveValue('')
-        expect(notesInput).toHaveValue('')
-        expect(categoryInput).toHaveValue('')
+        expect(linkInput.value).toBe('')
+        expect(notesInput.value).toBe('')
+        expect(categoryInput.value).toBe('')
       })
     })
   })
 
   describe('Form Validation', () => {
     beforeEach(async () => {
-      vi.clearAllMocks()
+      mock.clearAllMocks()
       // Start with empty values in mockItem
       const emptyMockItem = {
         ...mockItem,
@@ -165,8 +164,8 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(submitButton)
       
       await waitFor(() => {
-        expect(screen.getByText('Item name is required')).toBeInTheDocument()
-        expect(screen.getByText('Category is required')).toBeInTheDocument()
+        screen.getByText('Item name is required')
+        screen.getByText('Category is required')
       })
     })
 
@@ -180,7 +179,7 @@ describe('EditWishlistItem Component', () => {
       
       // Wait for validation and check form state
       await waitFor(() => {
-        expect(screen.getByText('Item name cannot be longer than 50 characters')).toBeInTheDocument()
+        screen.getByText('Item name cannot be longer than 50 characters')
       })
       
       // Check if the form submission was prevented
@@ -195,7 +194,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Price must be greater than 0')).toBeInTheDocument()
+        screen.getByText('Price must be greater than 0')
       })
       
       // Test price too high
@@ -203,7 +202,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Price cannot be greater than 10000')).toBeInTheDocument()
+        screen.getByText('Price cannot be greater than 10000')
       })
     })
 
@@ -216,7 +215,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Category cannot be longer than 50 characters')).toBeInTheDocument()
+        screen.getByText('Category cannot be longer than 50 characters')
       })
     })
 
@@ -227,7 +226,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Invalid URL')).toBeInTheDocument()
+        screen.getByText('Invalid URL')
       })
     })
 
@@ -239,7 +238,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Notes cannot be longer than 250 characters')).toBeInTheDocument()
+        screen.getByText('Notes cannot be longer than 250 characters')
       })
     })
 
@@ -250,7 +249,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.queryByText('Invalid URL')).not.toBeInTheDocument()
+        expect(screen.queryByText('Invalid URL')).toBeNull()
       })
     })
   })
@@ -264,56 +263,48 @@ describe('EditWishlistItem Component', () => {
       const prioritySelect = screen.getByRole('combobox')
       fireEvent.click(prioritySelect)
       
-      const lowOption = screen.getByRole('option', { name: 'Low' })
-      const mediumOption = screen.getByRole('option', { name: 'Medium' })
-      const highOption = screen.getByRole('option', { name: 'High' })
-      
-      expect(lowOption).toBeInTheDocument()
-      expect(mediumOption).toBeInTheDocument()
-      expect(highOption).toBeInTheDocument()
-      
-      // Select high priority
-      fireEvent.click(highOption)
+      await waitFor(() => {
+        const lowOption = screen.getByRole('option', { name: 'Low' })
+        const mediumOption = screen.getByRole('option', { name: 'Medium' })
+        const highOption = screen.getByRole('option', { name: 'High' })
+        
+        expect(lowOption).not.toBeNull()
+        expect(mediumOption).not.toBeNull()
+        expect(highOption).not.toBeNull()
+        
+        // Select high priority
+        fireEvent.click(highOption)
+      })
       
       await waitFor(() => {
-        expect(screen.getByDisplayValue('High')).toBeInTheDocument()
+        screen.getByDisplayValue('High')
       })
     })
 
     it('should handle price input correctly', async () => {
-      const user = userEvent.setup()
-      const priceInput = screen.getByLabelText(/price/i)
+      const priceInput = screen.getByLabelText(/price/i) as HTMLInputElement
       
-      // Clear existing value and type new one
-      await user.clear(priceInput)
-      await user.type(priceInput, '199.99')
+      // Set new value
+      fireEvent.change(priceInput, { target: { value: '199.99' } })
       
-      expect(priceInput).toHaveValue(199.99)
+      expect(priceInput.value).toBe('199.99')
     })
 
     it('should handle text field updates', async () => {
-      const user = userEvent.setup()
-      const nameInput = screen.getByLabelText(/item name/i)
-      const categoryInput = screen.getByLabelText(/category/i)
-      const linkInput = screen.getByLabelText(/link/i)
-      const notesInput = screen.getByLabelText(/notes/i)
+      const nameInput = screen.getByLabelText(/item name/i) as HTMLInputElement
+      const categoryInput = screen.getByLabelText(/category/i) as HTMLInputElement
+      const linkInput = screen.getByLabelText(/link/i) as HTMLInputElement
+      const notesInput = screen.getByLabelText(/notes/i) as HTMLTextAreaElement
       
-      await user.clear(nameInput)
-      await user.type(nameInput, 'Updated Item Name')
+      fireEvent.change(nameInput, { target: { value: 'Updated Item Name' } })
+      fireEvent.change(categoryInput, { target: { value: 'Updated Category' } })
+      fireEvent.change(linkInput, { target: { value: 'https://updated-link.com' } })
+      fireEvent.change(notesInput, { target: { value: 'Updated notes' } })
       
-      await user.clear(categoryInput)
-      await user.type(categoryInput, 'Updated Category')
-      
-      await user.clear(linkInput)
-      await user.type(linkInput, 'https://updated-link.com')
-      
-      await user.clear(notesInput)
-      await user.type(notesInput, 'Updated notes')
-      
-      expect(nameInput).toHaveValue('Updated Item Name')
-      expect(categoryInput).toHaveValue('Updated Category')
-      expect(linkInput).toHaveValue('https://updated-link.com')
-      expect(notesInput).toHaveValue('Updated notes')
+      expect(nameInput.value).toBe('Updated Item Name')
+      expect(categoryInput.value).toBe('Updated Category')
+      expect(linkInput.value).toBe('https://updated-link.com')
+      expect(notesInput.value).toBe('Updated notes')
     })
   })
 
@@ -323,7 +314,7 @@ describe('EditWishlistItem Component', () => {
     })
 
     it('should call updateWishlistItem with correct data on successful submission', async () => {
-      vi.mocked(services.updateWishlistItem).mockResolvedValue(null)
+      mock(services.updateWishlistItem).mockResolvedValue(null)
       
       // Update some fields
       const nameInput = screen.getByLabelText(/item name/i)

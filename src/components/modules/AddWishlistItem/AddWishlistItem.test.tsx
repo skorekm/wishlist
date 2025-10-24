@@ -1,21 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { expect, describe, it, beforeEach, mock } from 'bun:test'
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AddWishlistItem } from './AddWishlistItem'
 import * as services from '@/services'
-import userEvent from '@testing-library/user-event'
-import '@testing-library/jest-dom'
 
 // Mock external dependencies
-vi.mock('@/services', () => ({
-  createWishlistItem: vi.fn(),
-  getCurrencies: vi.fn(() => Promise.resolve(mockCurrencies)),
+mock.module('@/services', () => ({
+  createWishlistItem: mock(() => {}),
+  getCurrencies: mock(() => Promise.resolve(mockCurrencies)),
 }))
 
-vi.mock('react-toastify', () => ({
+mock.module('react-toastify', () => ({
   toast: {
-    success: vi.fn(),
-    error: vi.fn(),
+    success: mock(() => {}),
+    error: mock(() => {}),
   },
 }))
 
@@ -27,7 +25,7 @@ const mockCurrencies = [
 ]
 
 const mockProps = {
-  onSuccess: vi.fn(),
+  onSuccess: mock(() => {}),
   wishlistId: 123,
   isOpen: false,
 }
@@ -51,23 +49,25 @@ const renderWithQueryClient = (props = mockProps) => {
 
 describe('AddWishlistItem Component', () => {
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(services.getCurrencies).mockResolvedValue(mockCurrencies)
+    cleanup()
+    mock.clearAllMocks()
+    mock(services.getCurrencies).mockResolvedValue(mockCurrencies)
   })
 
   describe('Rendering and Initial State', () => {
     it('should show loading state when currencies are being fetched', () => {
-      vi.mocked(services.getCurrencies).mockReturnValue(new Promise(() => {})) // Never resolves
+      mock(services.getCurrencies).mockReturnValue(new Promise(() => {})) // Never resolves
       renderWithQueryClient()
       
-      expect(screen.getByText('Loading...')).toBeInTheDocument()
+      // getByText will throw if element is not found, so this is sufficient
+      expect(screen.getByText('Loading...')).not.toBeNull()
     })
 
     it('should open dialog automatically when isOpen prop is true', async () => {
       renderWithQueryClient({ ...mockProps, isOpen: true })
       
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: 'Add to Wishlist' })).toBeInTheDocument()
+        expect(screen.getByRole('heading', { name: 'Add to Wishlist' })).not.toBeNull()
       })
     })
   })
@@ -77,18 +77,19 @@ describe('AddWishlistItem Component', () => {
       renderWithQueryClient({ ...mockProps, isOpen: true })
       
       await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+        expect(screen.queryByText('Loading...')).toBeNull()
       })
     })
 
     it('should render all required form fields', () => {
-      expect(screen.getByLabelText(/item name/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/price/i)).toBeInTheDocument()
-      expect(screen.getByText('Select a currency')).toBeInTheDocument()
-      expect(screen.getByDisplayValue('Medium')).toBeInTheDocument()
-      expect(screen.getByLabelText(/category/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/link/i)).toBeInTheDocument()
-      expect(screen.getByLabelText(/notes/i)).toBeInTheDocument()
+      // getBy* queries throw if elements are not found, so just calling them is sufficient
+      screen.getByLabelText(/item name/i)
+      screen.getByLabelText(/price/i)
+      screen.getByText('Select a currency')
+      screen.getByDisplayValue('Medium')
+      screen.getByLabelText(/category/i)
+      screen.getByLabelText(/link/i)
+      screen.getByLabelText(/notes/i)
     })
 
     it('should show validation errors when submitting empty form', async () => {
@@ -96,10 +97,11 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(submitButton)
       
       await waitFor(() => {
-        expect(screen.getByText('List name is required')).toBeInTheDocument()
-        expect(screen.getByText('Price is required')).toBeInTheDocument()
-        expect(screen.getByText('Currency is required')).toBeInTheDocument()
-        expect(screen.getByText('Category is required')).toBeInTheDocument()
+        // getByText will throw if elements are not found
+        screen.getByText('List name is required')
+        screen.getByText('Price is required')
+        screen.getByText('Currency is required')
+        screen.getByText('Category is required')
       })
     })
 
@@ -111,7 +113,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('List name is required')).toBeInTheDocument()
+        screen.getByText('List name is required')
       })
       
       // Test maximum length (51 characters)
@@ -120,7 +122,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('List name cannot be longer than 50 characters')).toBeInTheDocument()
+        screen.getByText('List name cannot be longer than 50 characters')
       })
     })
 
@@ -132,7 +134,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Price must be greater than 0')).toBeInTheDocument()
+        screen.getByText('Price must be greater than 0')
       })
       
       // Test price too high
@@ -141,7 +143,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Price cannot be greater than 10000')).toBeInTheDocument()
+        screen.getByText('Price cannot be greater than 10000')
       })
     })
 
@@ -154,7 +156,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Category cannot be longer than 50 characters')).toBeInTheDocument()
+        screen.getByText('Category cannot be longer than 50 characters')
       })
     })
 
@@ -165,7 +167,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Invalid link address')).toBeInTheDocument()
+        screen.getByText('Invalid link address')
       })
     })
 
@@ -177,7 +179,7 @@ describe('AddWishlistItem Component', () => {
       await fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
-        expect(screen.getByText('Notes cannot be longer than 250 characters')).toBeInTheDocument()
+        screen.getByText('Notes cannot be longer than 250 characters')
       })
     })
 
@@ -190,14 +192,17 @@ describe('AddWishlistItem Component', () => {
       // Select currency
       const currencySelect = screen.getAllByRole('combobox')[0]
       fireEvent.click(currencySelect)
-      fireEvent.click(screen.getByRole('option', { name: /USD \(US Dollar\)/i }))
+      
+      await waitFor(() => {
+        fireEvent.click(screen.getByRole('option', { name: /USD \(US Dollar\)/i }))
+      })
       
       // Submit form
       fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       // Should not show link validation error
       await waitFor(() => {
-        expect(screen.queryByText('Invalid link address')).not.toBeInTheDocument()
+        expect(screen.queryByText('Invalid link address')).toBeNull()
       })
     })
   })
@@ -207,7 +212,7 @@ describe('AddWishlistItem Component', () => {
       renderWithQueryClient({ ...mockProps, isOpen: true })
       
       await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+        expect(screen.queryByText('Loading...')).toBeNull()
       })
     })
 
@@ -215,59 +220,63 @@ describe('AddWishlistItem Component', () => {
       // Get all comboboxes and select the first one (currency)
       const comboboxes = screen.getAllByRole('combobox')
       const currencyTrigger = comboboxes[0]
-      expect(currencyTrigger).toHaveTextContent('Select a currency')
+      expect(currencyTrigger.textContent).toContain('Select a currency')
       
       // Use fireEvent to click and open the dropdown
       fireEvent.click(currencyTrigger)
       
-      // The options should be immediately available since currencies are already loaded
-      const usdOptions = screen.getAllByText('USD (US Dollar)')
-      const eurOptions = screen.getAllByText('EUR (Euro)')
-      const plnOptions = screen.getAllByText('PLN (Polish Zloty)')
-      
-      expect(usdOptions.length).toBeGreaterThan(0)
-      expect(eurOptions.length).toBeGreaterThan(0)
-      expect(plnOptions.length).toBeGreaterThan(0)
+      // Wait for the dropdown options to appear (handles async state updates)
+      await waitFor(() => {
+        const usdOptions = screen.getAllByText('USD (US Dollar)')
+        const eurOptions = screen.getAllByText('EUR (Euro)')
+        const plnOptions = screen.getAllByText('PLN (Polish Zloty)')
+        
+        expect(usdOptions.length).toBeGreaterThan(0)
+        expect(eurOptions.length).toBeGreaterThan(0)
+        expect(plnOptions.length).toBeGreaterThan(0)
+      })
     })
 
     it('should populate priority dropdown with fetched data', async () => {
       const prioritySelect = screen.getAllByRole('combobox')[1]
       fireEvent.click(prioritySelect)
       
-      const lowOptions = screen.getAllByText('Low')
-      const mediumOptions = screen.getAllByText('Medium')
-      const highOptions = screen.getAllByText('High')
+      await waitFor(() => {
+        const lowOptions = screen.getAllByText('Low')
+        const mediumOptions = screen.getAllByText('Medium')
+        const highOptions = screen.getAllByText('High')
 
-      expect(lowOptions.length).toBeGreaterThan(0)
-      expect(mediumOptions.length).toBeGreaterThan(0)
-      expect(highOptions.length).toBeGreaterThan(0)
+        expect(lowOptions.length).toBeGreaterThan(0)
+        expect(mediumOptions.length).toBeGreaterThan(0)
+        expect(highOptions.length).toBeGreaterThan(0)
+      })
     })
 
     it('should set default priority to medium', async () => {
       const prioritySelect = screen.getAllByRole('combobox')[1]
       fireEvent.click(prioritySelect)
 
-      const mediumOptions = screen.getAllByText('Medium')
-      expect(mediumOptions.length).toBeGreaterThan(0)
+      await waitFor(() => {
+        const mediumOptions = screen.getAllByText('Medium')
+        expect(mediumOptions.length).toBeGreaterThan(0)
+      })
     })
 
     it('should handle price input correctly', async () => {
-      const user = userEvent.setup()
-      const priceInput = screen.getByLabelText(/price/i)
+      const priceInput = screen.getByLabelText(/price/i) as HTMLInputElement
       
-      await user.type(priceInput, '99.99')
+      fireEvent.change(priceInput, { target: { value: '99.99' } })
       
-      expect(priceInput).toHaveValue(99.99)
+      expect(priceInput.value).toBe('99.99')
     })
 
     it('should handle non-numeric price input gracefully', async () => {
-      const user = userEvent.setup()
-      const priceInput = screen.getByLabelText(/price/i)
+      const priceInput = screen.getByLabelText(/price/i) as HTMLInputElement
       
-      await user.type(priceInput, 'abc')
+      fireEvent.change(priceInput, { target: { value: 'abc' } })
       
       // Price input should remain empty or show 0
-      expect(priceInput).toHaveValue(null)
+      expect(priceInput.value).toBe('')
     })
   })
 })
