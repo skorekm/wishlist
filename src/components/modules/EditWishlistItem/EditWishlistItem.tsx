@@ -86,7 +86,7 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, wishlistUuid }: E
       // Close dialog first
       onOpenChange(false);
       
-      // Optimistically update the cache immediately with the updated item
+      // Update cache with server response after successful update
       queryClient.setQueryData<{ items: Array<{ id: number; currency: unknown; [key: string]: unknown }>; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
         if (!oldData) return oldData;
         

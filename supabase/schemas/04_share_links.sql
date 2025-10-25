@@ -13,11 +13,23 @@ create table if not exists "share_links" (
 alter table public.share_links enable row level security;
 
 -- Create policies
--- Anyone with a valid (non-revoked) share token can read the share link
-create policy "Anyone can view non-revoked share links by token"
+-- SECURITY NOTE: Only authenticated wishlist owners can read their share links.
+-- Public access to shared wishlists should be handled via a PostgreSQL SECURITY DEFINER 
+-- function or Supabase Edge Function that validates the share_token and returns wishlist 
+-- data, bypassing RLS. The previous policy allowed unauthenticated reads of ALL non-revoked 
+-- share_links, which could expose all active share tokens to malicious enumeration.
+-- TODO: Refactor getWishlistByShareToken() in services/shareLinks.ts to use a secure function.
+create policy "Wishlist owners can view their own share links"
   on public.share_links
   for select
-  using (revoked_at is null);
+  to authenticated
+  using (
+    exists (
+      select 1 from public.wishlists
+      where wishlists.id = share_links.wishlist_id
+      and wishlists.author_id = (select auth.uid())
+    )
+  );
 
 -- Only authenticated users can create share links for their own wishlists
 create policy "Users can create share links for their own wishlists"
@@ -43,6 +55,26 @@ create policy "Users can update their own share links"
       select 1 from public.wishlists
       where wishlists.id = share_links.wishlist_id
       and wishlists.author_id = (select auth.uid())
+    )
+  )
+  with check (
+    -- Ensure the wishlist is still owned by the current user
+    exists (
+      select 1 from public.wishlists
+      where wishlists.id = share_links.wishlist_id
+      and wishlists.author_id = (select auth.uid())
+    )
+    -- Ensure created_by hasn't been tampered with
+    and share_links.created_by = (select auth.uid())
+    -- Ensure immutable field share_token hasn't changed
+    and share_links.share_token = (
+      select share_token from public.share_links as old_sl
+      where old_sl.id = share_links.id
+    )
+    -- Ensure immutable field wishlist_id hasn't changed
+    and share_links.wishlist_id = (
+      select wishlist_id from public.share_links as old_sl
+      where old_sl.id = share_links.id
     )
   );
 

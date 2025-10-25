@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion } from "motion/react"
 import { MoreHorizontal, TriangleAlert, Copy, Check, RefreshCw, Calendar } from "lucide-react"
 import { Link } from "@tanstack/react-router"
@@ -31,6 +31,7 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [isLoadingShare, setIsLoadingShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const eventStatus = getEventStatus(list.event_date);
 
@@ -57,6 +58,26 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
     }
   }, [shareModal, loadShareLink]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Reset copied state and clear timeout when modal closes
+  useEffect(() => {
+    if (!shareModal) {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+      setCopied(false);
+    }
+  }, [shareModal]);
+
   const handleGenerateLink = async () => {
     setIsLoadingShare(true);
     try {
@@ -78,7 +99,17 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
         await navigator.clipboard.writeText(shareLink);
         setCopied(true);
         toast.success("Link copied to clipboard!");
-        setTimeout(() => setCopied(false), 2000);
+        
+        // Clear any existing timeout
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+        
+        // Store the new timeout ID
+        copyTimeoutRef.current = setTimeout(() => {
+          setCopied(false);
+          copyTimeoutRef.current = null;
+        }, 2000);
       } catch (error) {
         console.error('Error copying to clipboard', error);
         toast.error("Failed to copy link. Please try again.");

@@ -13,11 +13,20 @@ export const getPriorityLabel = (priority: Database["public"]["Enums"]["priority
 }
 
 function parseLocalDate(dateStr: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    throw new Error(`Invalid date format: expected yyyy-mm-dd, got "${dateStr}"`);
+  }
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, (m ?? 1) - 1, d ?? 1);
 }
 
-export function getEventStatus(eventDate: string | null) {
+export type EventStatus = {
+  status: 'past' | 'today' | 'soon' | 'upcoming' | 'future';
+  text: string;
+  color: string;
+};
+
+export function getEventStatus(eventDate: string | null): EventStatus | null {
   if (!eventDate) return null;
   
   const today = new Date();
@@ -26,8 +35,8 @@ export function getEventStatus(eventDate: string | null) {
   event.setHours(0, 0, 0, 0);
   
   const diffTime = event.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
   if (diffDays < 0) {
     return { status: 'past', text: 'Event passed', color: 'text-muted-foreground' };
   } else if (diffDays === 0) {

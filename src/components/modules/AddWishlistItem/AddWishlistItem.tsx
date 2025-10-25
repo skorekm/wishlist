@@ -101,9 +101,6 @@ export function AddWishlistItem({ wishlistId, wishlistUuid, isOpen = false }: { 
       }
       const newItem = await createWishlistItem({ ...payload, wishlist_id: wishlistId });
       
-      // Close dialog first
-      closeDialog();
-      
       // Optimistically update the cache immediately with the new item
       queryClient.setQueryData<{ items: unknown[]; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
         if (!oldData) return oldData;
@@ -125,6 +122,9 @@ export function AddWishlistItem({ wishlistId, wishlistUuid, isOpen = false }: { 
       await queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       
       toast.success("Wishlist item added successfully!");
+      
+      // Close dialog after successful completion
+      closeDialog();
     } catch (error) {
       // Handle error (show error message, etc.)
       console.error('Error creating wishlist item', error)

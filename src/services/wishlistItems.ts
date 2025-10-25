@@ -33,6 +33,7 @@ export async function updateWishlistItem(id: number, item: Database['public']['T
     .from('wishlist_items')
     .update(item)
     .eq('id', id)
+    .eq('author_id', user.id)
     .select()
     .single();
   if (error) {
@@ -47,7 +48,33 @@ export async function deleteWishlistItem(id: number) {
     throw new Error('Authentication required to delete a wishlist item');
   }
 
-  const { data, error } = await supabase.from('wishlist_items').delete().eq('id', id);
+  // First, fetch the wishlist item to verify ownership
+  const { data: wishlistItem, error: fetchError } = await supabase
+    .from('wishlist_items')
+    .select('author_id')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    // Handle "not found" case
+    if (fetchError.code === 'PGRST116') {
+      throw new Error('Wishlist item not found');
+    }
+    throw fetchError;
+  }
+
+  // Verify ownership
+  if (wishlistItem.author_id !== user.id) {
+    throw new Error('You are not authorized to delete this wishlist item');
+  }
+
+  // Perform the delete
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .delete()
+    .eq('id', id)
+    .eq('author_id', user.id);
+
   if (error) {
     throw error;
   }

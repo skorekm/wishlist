@@ -13,7 +13,7 @@ export async function getWishlists() {
   }
   const wishlists = data.map((wishlist) => ({
     ...wishlist,
-    items: wishlist.items[0].count,
+    items: wishlist.items?.[0]?.count ?? 0,
   }));
 
   return wishlists;
@@ -27,7 +27,7 @@ export async function getWishlist(id: string, skipAuth = false) {
     }
   }
 
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*, currency:currencies(code))').eq('uuid', id).single()
+  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(*, currency:currencies(code))').eq('uuid', id).single();
   if (error) {
     throw error;
   }
@@ -65,6 +65,7 @@ export async function updateWishlist(id: number, list: Database['public']['Table
     .from('wishlists')
     .update(list)
     .eq('id', id)
+    .eq('author_id', user.id)
     .select()
     .single();
 

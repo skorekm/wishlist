@@ -6,6 +6,18 @@ export async function generateShareLink(wishlistId: number) {
     throw new Error('Authentication required to generate a share link');
   }
 
+  // Verify the user owns the wishlist
+  const { data: wishlist, error: wishlistError } = await supabase
+    .from('wishlists')
+    .select('id')
+    .eq('id', wishlistId)
+    .eq('author_id', user.id)
+    .single();
+
+  if (wishlistError || !wishlist) {
+    throw new Error('Wishlist not found or access denied');
+  }
+
   // Check if there's already an active share link for this wishlist
   const { data: existingLink } = await supabase
     .from('share_links')
@@ -41,6 +53,22 @@ export async function getShareLink(wishlistId: number) {
     throw new Error('Authentication required to get share link');
   }
 
+  // First, verify the user owns the wishlist
+  const { data: wishlist, error: wishlistError } = await supabase
+    .from('wishlists')
+    .select('author_id')
+    .eq('id', wishlistId)
+    .single();
+
+  if (wishlistError || !wishlist) {
+    throw new Error('Wishlist not found');
+  }
+
+  if (wishlist.author_id !== user.id) {
+    throw new Error('You are not authorized to access this wishlist');
+  }
+
+  // Now query the share link
   const { data, error } = await supabase
     .from('share_links')
     .select('*')
@@ -61,18 +89,48 @@ export async function revokeShareLink(shareTokenOrId: string | number) {
     throw new Error('Authentication required to revoke a share link');
   }
 
+  // First, fetch the share link to get the wishlist_id
   const isToken = typeof shareTokenOrId === 'string';
-  const query = supabase
+  const shareLinkQuery = supabase
+    .from('share_links')
+    .select('wishlist_id');
+
+  if (isToken) {
+    shareLinkQuery.eq('share_token', shareTokenOrId);
+  } else {
+    shareLinkQuery.eq('id', shareTokenOrId);
+  }
+
+  const { data: shareLink, error: shareLinkError } = await shareLinkQuery.single();
+
+  if (shareLinkError || !shareLink) {
+    throw new Error('Share link not found');
+  }
+
+  // Verify the user owns the wishlist
+  const { data: wishlist, error: wishlistError } = await supabase
+    .from('wishlists')
+    .select('id')
+    .eq('id', shareLink.wishlist_id)
+    .eq('author_id', user.id)
+    .single();
+
+  if (wishlistError || !wishlist) {
+    throw new Error('Wishlist not found or access denied');
+  }
+
+  // Now revoke the share link
+  const revokeQuery = supabase
     .from('share_links')
     .update({ revoked_at: new Date().toISOString() });
 
   if (isToken) {
-    query.eq('share_token', shareTokenOrId);
+    revokeQuery.eq('share_token', shareTokenOrId);
   } else {
-    query.eq('id', shareTokenOrId);
+    revokeQuery.eq('id', shareTokenOrId);
   }
 
-  const { data, error } = await query.select().single();
+  const { data, error } = await revokeQuery.select().single();
 
   if (error) {
     throw error;
@@ -95,10 +153,14 @@ export async function getWishlistByShareToken(shareToken: string) {
   }
 
   // Update last_accessed_at
-  await supabase
+  const { error: updateError } = await supabase
     .from('share_links')
     .update({ last_accessed_at: new Date().toISOString() })
     .eq('share_token', shareToken);
+
+  if (updateError) {
+    console.error('Failed to update last_accessed_at:', updateError);
+  }
 
   // Get the wishlist with items
   const { data: wishlist, error: wishlistError } = await supabase
