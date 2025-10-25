@@ -64,6 +64,44 @@ export type Database = {
         }
         Relationships: []
       }
+      share_links: {
+        Row: {
+          id: number
+          wishlist_id: number
+          share_token: string
+          created_at: string
+          created_by: string
+          revoked_at: string | null
+          last_accessed_at: string | null
+        }
+        Insert: {
+          id?: number
+          wishlist_id: number
+          share_token?: string
+          created_at?: string
+          created_by: string
+          revoked_at?: string | null
+          last_accessed_at?: string | null
+        }
+        Update: {
+          id?: number
+          wishlist_id?: number
+          share_token?: string
+          created_at?: string
+          created_by?: string
+          revoked_at?: string | null
+          last_accessed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_links_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlist_items: {
         Row: {
           author_id: string
