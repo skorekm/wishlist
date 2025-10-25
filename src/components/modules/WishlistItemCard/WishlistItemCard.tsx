@@ -1,15 +1,12 @@
 import { useState } from "react"
 import { motion } from "motion/react"
-import { ExternalLink, MoreHorizontal, TriangleAlert } from "lucide-react"
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import { ExternalLink, MoreHorizontal } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
-import { deleteWishlistItem } from "@/services"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
+import { DeleteItemDialog } from "./DeleteItemDialog"
 import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
@@ -27,33 +24,6 @@ const priorityColors: Record<string, string> = {
 export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false);
-  const queryClient = useQueryClient();
-
-  const deleteItem = () => {
-    setIsDeleting(true);
-    deleteWishlistItem(item.id).then(() => {
-      // Optimistically update the cache immediately
-      queryClient.setQueryData<{ items: Array<{ id: number }>; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
-        if (!oldData) return oldData;
-        
-        return {
-          ...oldData,
-          items: oldData.items.filter((i) => i.id !== item.id)
-        };
-      });
-      
-      // Invalidate wishlists query to update item count on index page
-      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
-      toast.success("Wishlist item deleted successfully!");
-    }).catch((error) => {
-      console.error('Error deleting wishlist item', error);
-      toast.error("Failed to delete wishlist item. Please try again.");
-    }).finally(() => {
-      setIsDeleting(false);
-      setDeleteModal(false);
-    });
-  }
 
   return (
     <motion.div
@@ -88,22 +58,22 @@ export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) 
               </div>
             </div>
             <div className="flex items-start">
-              <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">Edit Item</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">Delete Item</DropdownMenuItem>
-                    </DialogTrigger>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </Dialog>
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">
+                    Edit Item
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">
+                    Delete Item
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <p className="text-sm text-muted-foreground line-clamp-3">{item.notes}</p>
@@ -121,23 +91,15 @@ export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) 
           )}
         </CardContent>
       </Card>
-      <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <TriangleAlert className="size-5 text-destructive mr-2" />
-              <span>Delete Item</span>
-            </DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Are you sure you want to delete <strong>"{item.name}"</strong> from your wishlist? This action cannot be undone.
-          </DialogDescription>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModal(false)}>Cancel</Button>
-            <Button disabled={isDeleting} onClick={deleteItem} variant="default">Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      
+      <DeleteItemDialog
+        itemId={item.id}
+        itemName={item.name}
+        wishlistUuid={wishlistUuid}
+        isOpen={deleteModal}
+        onOpenChange={setDeleteModal}
+      />
+      
       <EditWishlistItem
         item={item}
         isOpen={editModal}
