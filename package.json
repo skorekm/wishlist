@@ -7,6 +7,7 @@
     "dev": "bunx --bun vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "typecheck": "tsc -b",
     "preview": "bunx --bun vite preview",
     "test": "bunx --bun test",
     "generate:types": "bunx supabase gen types typescript --local > ./src/database.types.ts"

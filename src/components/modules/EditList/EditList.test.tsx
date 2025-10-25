@@ -23,6 +23,7 @@ describe('EditList Component', () => {
       id: 1,
       name: 'Test List',
       description: 'Test Description',
+      event_date: null,
       author_id: '1234-4321-1234-4321',
       created_at: '2021-01-01',
       updated_at: '2021-01-01',
