@@ -6,7 +6,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlistItem'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { useQuery } from '@tanstack/react-query'
-import { listItem, stagger } from '@/lib/motion'
+import { listItem } from '@/lib/motion'
 import { Badge } from '@/components/ui/badge'
 export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
@@ -50,7 +50,7 @@ function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 
 function WishlistDetailed() {
   const { id: wishlistId } = Route.useParams()
 
-  const { data: wishlist, isLoading, refetch } = useQuery({
+  const { data: wishlist, isLoading } = useQuery({
     queryKey: ['wishlist', wishlistId],
     queryFn: () => getWishlist(wishlistId),
     retry: 2,
