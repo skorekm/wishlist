@@ -16,7 +16,7 @@ mock.module('react-toastify', () => ({
   },
 }))
 
-// Mock item data
+// Mock item data for component props (with currency object)
 const mockItem = {
   id: 1,
   name: 'Test Item',
@@ -34,11 +34,17 @@ const mockItem = {
   author_id: 'user123'
 }
 
+// Mock item data for service return (with currency as number)
+const mockServiceItem = {
+  ...mockItem,
+  currency: 1,
+}
+
 const mockProps = {
   item: mockItem,
   isOpen: false,
   onOpenChange: mock(() => {}),
-  onSuccess: mock(() => {}),
+  wishlistUuid: 'test-uuid-123',
 }
 
 // Helper to render component with QueryClient
@@ -258,7 +264,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        screen.getByText('Invalid URL')
+        screen.getByText('Invalid link address')
       })
     })
 
@@ -285,7 +291,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.queryByText('Invalid URL')).toBeNull()
+        expect(screen.queryByText('Invalid link address')).toBeNull()
       })
     })
   })
@@ -371,7 +377,7 @@ describe('EditWishlistItem Component', () => {
     })
 
     it('should call updateWishlistItem with correct data on successful submission', async () => {
-      mock(services.updateWishlistItem).mockResolvedValue(null)
+      mock(services.updateWishlistItem).mockResolvedValue(mockServiceItem)
       
       await act(async () => {
         // Update some fields

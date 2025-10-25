@@ -1,12 +1,14 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { List } from 'lucide-react'
+import { List, Calendar } from 'lucide-react'
 import { Fragment } from 'react/jsx-runtime'
 import { getWishlist } from '@/services'
 import { createFileRoute } from '@tanstack/react-router'
 import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlistItem'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { useQuery } from '@tanstack/react-query'
-import { listItem, stagger } from '@/lib/motion'
+import { listItem } from '@/lib/motion'
+import { getEventStatus } from '@/lib/utils'
+
 export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
     parse: (params) => {
@@ -25,12 +27,12 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
 function WishlistDetailed() {
   const { id: wishlistId } = Route.useParams()
 
-  const { data: wishlist, isLoading, refetch } = useQuery({
+  const { data: wishlist, isLoading } = useQuery({
     queryKey: ['wishlist', wishlistId],
     queryFn: () => getWishlist(wishlistId),
     retry: 2,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   })
 
   if (isLoading) {
@@ -41,35 +43,40 @@ function WishlistDetailed() {
     return <div>Wishlist not found</div>
   }
 
+  const eventStatus = getEventStatus(wishlist.event_date);
+
   return (
     <Fragment>
       <div className='flex justify-between align-top mb-4'>
         <div>
-          <h1 className='text-4xl font-medium'>{wishlist.name}</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className='text-4xl font-medium'>{wishlist.name}</h1>
+            {eventStatus && (
+              <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{eventStatus.text}</span>
+              </div>
+            )}
+          </div>
           <p className='text-2xl text-muted-foreground mt-2'>{wishlist.description}</p>
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-          className="contents"
-        >
-          <AnimatePresence mode="popLayout">
-            {wishlist.items.length > 0 && wishlist.items.map((item) => (
-              <motion.div
-                key={item.id}
-                variants={listItem}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                layout
-              >
-                <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <AnimatePresence mode="popLayout">
+          {wishlist.items.map((item) => (
+            <motion.div
+              key={item.id}
+              variants={listItem}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              layout
+            >
+              <WishlistItemCard item={item} wishlistUuid={wishlistId} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
       {wishlist.items.length === 0 && (
         <motion.div
@@ -84,7 +91,7 @@ function WishlistDetailed() {
           <p className="text-muted-foreground max-w-md">Add items to your wishlist so friends and family know what you'd love to receive.</p>
         </motion.div>
       )}
-      <AddWishlistItem onSuccess={refetch} wishlistId={wishlist.id} />
+      <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistId} />
     </Fragment>
   )
 }

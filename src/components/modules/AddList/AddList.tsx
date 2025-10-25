@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { createWishlist } from '@/services'
 import { Database } from '@/database.types'
 
-type WishlistFormData = Pick<Database['public']['Tables']['wishlists']['Insert'], 'name' | 'description'>
+type WishlistFormData = Pick<Database['public']['Tables']['wishlists']['Insert'], 'name' | 'description' | 'event_date'>
 
 const listFormSchema = z.object({
   name: z.string()
@@ -22,6 +22,10 @@ const listFormSchema = z.object({
   description: z.string()
     .max(250, "Description cannot be longer than 250 characters")
     .trim()
+    .optional()
+    .transform(val => val === '' ? null : val)
+    .nullable(),
+  event_date: z.string()
     .optional()
     .transform(val => val === '' ? null : val)
     .nullable()
@@ -42,6 +46,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
     defaultValues: {
       name: '',
       description: '',
+      event_date: '',
     }
   })
 
@@ -112,6 +117,20 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
                 {...register('description')}
               />
               <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.description?.message || '\u00A0'}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-date" className="dark:text-gray-300">
+                Event Date (optional)
+              </Label>
+              <Input
+                id="event-date"
+                type="date"
+                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                  errors.event_date ? 'border-red-500' : ''
+                }`}
+                {...register('event_date')}
+              />
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.event_date?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>

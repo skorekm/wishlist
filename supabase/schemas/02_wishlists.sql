@@ -4,6 +4,7 @@ create table if not exists "wishlists" (
   uuid uuid not null default gen_random_uuid() unique,
   name varchar(100) not null,
   description varchar(250),
+  event_date date,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
   author_id uuid references auth.users(id) not null
