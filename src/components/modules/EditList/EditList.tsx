@@ -14,6 +14,7 @@ import { updateWishlist } from '@/services'
 type WishlistFormData = {
   name: string
   description?: string | null
+  event_date?: string | null
 }
 
 const listFormSchema = z.object({
@@ -24,6 +25,10 @@ const listFormSchema = z.object({
   description: z.string()
     .max(250, "Description cannot be longer than 250 characters")
     .trim()
+    .optional()
+    .nullable()
+    .transform(val => val === '' ? null : val),
+  event_date: z.string()
     .optional()
     .nullable()
     .transform(val => val === '' ? null : val),
@@ -50,6 +55,7 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
     defaultValues: {
       name: list.name,
       description: list.description,
+      event_date: list.event_date || '',
     }
   })
 
@@ -93,6 +99,11 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
               <Label className='font-semibold' htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="e.g., Items I'd love to receive for my birthday" {...register('description')} />
               <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.description?.message || '\u00A0'}</p>
+            </div>
+            <div>
+              <Label className='font-semibold' htmlFor="event-date">Event Date</Label>
+              <Input id="event-date" type="date" {...register('event_date')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.event_date?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>

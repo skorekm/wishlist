@@ -6,11 +6,36 @@ import { Button } from '@/components/ui/button'
 import { Link } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'motion/react'
 import { listItem, stagger } from '@/lib/motion'
-import { Gift } from 'lucide-react'
+import { Gift, Calendar } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export const Route = createFileRoute('/wishlists/shared/$id')({
   component: SharedWishlist,
 })
+
+function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 'secondary' | 'destructive' | 'outline', text: string } {
+  if (!eventDate) return { variant: 'secondary', text: '' };
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const event = new Date(eventDate);
+  event.setHours(0, 0, 0, 0);
+  
+  const diffTime = event.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return { variant: 'secondary', text: 'Event passed' };
+  } else if (diffDays === 0) {
+    return { variant: 'default', text: 'Today!' };
+  } else if (diffDays <= 7) {
+    return { variant: 'destructive', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left` };
+  } else if (diffDays <= 30) {
+    return { variant: 'default', text: `${diffDays} days left` };
+  } else {
+    return { variant: 'outline', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) };
+  }
+}
 
 function SharedWishlist() {
   const { id: shareToken } = Route.useParams()
@@ -49,11 +74,21 @@ function SharedWishlist() {
     )
   }
 
+  const eventBadge = getEventBadgeVariant(wishlist.event_date);
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-4xl font-medium">{wishlist.name}</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-medium">{wishlist.name}</h1>
+            {wishlist.event_date && eventBadge.text && (
+              <Badge variant={eventBadge.variant} className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                {eventBadge.text}
+              </Badge>
+            )}
+          </div>
           {wishlist.description && (
             <p className="text-2xl text-muted-foreground mt-2">{wishlist.description}</p>
           )}

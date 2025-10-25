@@ -167,6 +167,7 @@ export type Database = {
           author_id: string
           created_at: string
           description: string | null
+          event_date: string | null
           id: number
           name: string
           updated_at: string
@@ -176,6 +177,7 @@ export type Database = {
           author_id: string
           created_at?: string
           description?: string | null
+          event_date?: string | null
           id?: number
           name: string
           updated_at?: string
@@ -185,6 +187,7 @@ export type Database = {
           author_id?: string
           created_at?: string
           description?: string | null
+          event_date?: string | null
           id?: number
           name?: string
           updated_at?: string

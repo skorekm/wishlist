@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion } from "motion/react"
-import { MoreHorizontal, TriangleAlert, Copy, Check, RefreshCw } from "lucide-react"
+import { MoreHorizontal, TriangleAlert, Copy, Check, RefreshCw, Calendar } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { toast } from 'sonner';
 import { deleteWishlist, generateShareLink, getShareLink, revokeShareLink } from "@/services"
@@ -22,6 +22,30 @@ interface WishlistCardProps {
   refetchWishlists: () => void
 }
 
+function getEventStatus(eventDate: string | null) {
+  if (!eventDate) return null;
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const event = new Date(eventDate);
+  event.setHours(0, 0, 0, 0);
+  
+  const diffTime = event.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) {
+    return { status: 'past', text: 'Event passed', color: 'text-muted-foreground' };
+  } else if (diffDays === 0) {
+    return { status: 'today', text: 'Today!', color: 'text-accent font-semibold' };
+  } else if (diffDays <= 7) {
+    return { status: 'soon', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left`, color: 'text-orange-500 font-medium' };
+  } else if (diffDays <= 30) {
+    return { status: 'upcoming', text: `${diffDays} days left`, color: 'text-blue-500' };
+  } else {
+    return { status: 'future', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-muted-foreground' };
+  }
+}
+
 export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   const [actionModal, setActionModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
@@ -30,6 +54,8 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [isLoadingShare, setIsLoadingShare] = useState(false);
   const [copied, setCopied] = useState(false);
+  
+  const eventStatus = getEventStatus(list.event_date);
 
   const loadShareLink = useCallback(async () => {
     setIsLoadingShare(true);
@@ -176,16 +202,17 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
             </Dialog>
           </CardHeader>
           <CardContent>
-            {/* <div className="flex items-center gap-2 mb-3">
-              <Avatar className="h-5 w-5">
-                <AvatarImage src="/placeholder.svg?height=20&width=20" alt={list.ownerName} />
-                <AvatarFallback>{list.ownerName.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <span className="text-xs text-muted-foreground">Created by {list.ownerName}</span>
-            </div> */}
-            <div className="flex justify-between items-center mt-auto">
-              <div className="text-sm text-muted-foreground">
-                {list.items} {list.items === 1 ? "item" : "items"}
+            <div className="space-y-2">
+              {eventStatus && (
+                <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{eventStatus.text}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-muted-foreground">
+                  {list.items} {list.items === 1 ? "item" : "items"}
+                </div>
               </div>
             </div>
           </CardContent>
