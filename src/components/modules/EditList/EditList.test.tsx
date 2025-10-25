@@ -40,16 +40,23 @@ describe('EditList Component', () => {
     screen.getByText('Update the details of your wishlist.')
   })
 
-  it('should throw validation error when form is submitted with no name', async () => {
+  it('should disable submit when invalid and enable when valid', async () => {
     render(<EditList {...mockProps} />)
     const nameInput = screen.getByDisplayValue(mockProps.list.name)
+    const updateButton = screen.getByRole('button', { name: /update list/i }) as HTMLButtonElement
+
+    // Make invalid
     fireEvent.change(nameInput, { target: { value: '' } })
 
-    const updateButton = screen.getByText('Update List')
-    fireEvent.click(updateButton)
+    await waitFor(() => {
+      expect(updateButton.disabled).toBe(true)
+    })
+
+    // Make valid
+    fireEvent.change(nameInput, { target: { value: 'New Name' } })
 
     await waitFor(() => {
-      screen.getByText('List name is required')
+      expect(updateButton.disabled).toBe(false)
     })
   })
 
@@ -59,7 +66,12 @@ describe('EditList Component', () => {
     const nameInput = screen.getByDisplayValue(mockProps.list.name)
     fireEvent.change(nameInput, { target: { value: newName } })
 
-    const updateButton = screen.getByText('Update List')
+    const updateButton = screen.getByRole('button', { name: /update list/i }) as HTMLButtonElement
+
+    await waitFor(() => {
+      expect(updateButton.disabled).toBe(false)
+    })
+
     fireEvent.click(updateButton)
 
     await waitFor(() => {
