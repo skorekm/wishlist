@@ -123,7 +123,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.change(nameInput, { target: { value: '' } })
       
       await waitFor(() => {
-        screen.getByText('List name is required')
+        screen.getByText('Item name is required')
       })
       
       // Test maximum length (51 characters)
@@ -131,7 +131,7 @@ describe('AddWishlistItem Component', () => {
       fireEvent.change(nameInput, { target: { value: longName } })
       
       await waitFor(() => {
-        screen.getByText('List name cannot be longer than 50 characters')
+        screen.getByText('Item name cannot be longer than 50 characters')
       })
     })
 

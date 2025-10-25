@@ -264,7 +264,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        screen.getByText('Invalid URL')
+        screen.getByText('Invalid link address')
       })
     })
 
@@ -291,7 +291,7 @@ describe('EditWishlistItem Component', () => {
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
-        expect(screen.queryByText('Invalid URL')).toBeNull()
+        expect(screen.queryByText('Invalid link address')).toBeNull()
       })
     })
   })
