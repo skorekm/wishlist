@@ -201,19 +201,17 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
               </DropdownMenu>
             </Dialog>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+          <CardContent className="flex-1 flex flex-col justify-end">
+            <div className="flex justify-between items-end">
+              <div className="text-sm text-muted-foreground">
+                {list.items} {list.items === 1 ? "item" : "items"}
+              </div>
               {eventStatus && (
                 <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
                   <Calendar className="h-3.5 w-3.5" />
                   <span>{eventStatus.text}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-muted-foreground">
-                  {list.items} {list.items === 1 ? "item" : "items"}
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>

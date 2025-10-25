@@ -7,7 +7,6 @@ import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlis
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { useQuery } from '@tanstack/react-query'
 import { listItem } from '@/lib/motion'
-import { Badge } from '@/components/ui/badge'
 export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
     parse: (params) => {
@@ -23,8 +22,8 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   component: WishlistDetailed,
 })
 
-function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 'secondary' | 'destructive' | 'outline', text: string } {
-  if (!eventDate) return { variant: 'secondary', text: '' };
+function getEventStatus(eventDate: string | null) {
+  if (!eventDate) return null;
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -35,15 +34,15 @@ function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays < 0) {
-    return { variant: 'secondary', text: 'Event passed' };
+    return { status: 'past', text: 'Event passed', color: 'text-muted-foreground' };
   } else if (diffDays === 0) {
-    return { variant: 'default', text: 'Today!' };
+    return { status: 'today', text: 'Today!', color: 'text-accent font-semibold' };
   } else if (diffDays <= 7) {
-    return { variant: 'destructive', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left` };
+    return { status: 'soon', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left`, color: 'text-orange-500 font-medium' };
   } else if (diffDays <= 30) {
-    return { variant: 'default', text: `${diffDays} days left` };
+    return { status: 'upcoming', text: `${diffDays} days left`, color: 'text-blue-500' };
   } else {
-    return { variant: 'outline', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) };
+    return { status: 'future', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-muted-foreground' };
   }
 }
 
@@ -54,8 +53,8 @@ function WishlistDetailed() {
     queryKey: ['wishlist', wishlistId],
     queryFn: () => getWishlist(wishlistId),
     retry: 2,
-    refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   })
 
   if (isLoading) {
@@ -66,7 +65,7 @@ function WishlistDetailed() {
     return <div>Wishlist not found</div>
   }
 
-  const eventBadge = getEventBadgeVariant(wishlist.event_date);
+  const eventStatus = getEventStatus(wishlist.event_date);
 
   return (
     <Fragment>
@@ -74,11 +73,11 @@ function WishlistDetailed() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className='text-4xl font-medium'>{wishlist.name}</h1>
-            {wishlist.event_date && eventBadge.text && (
-              <Badge variant={eventBadge.variant} className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {eventBadge.text}
-              </Badge>
+            {eventStatus && (
+              <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{eventStatus.text}</span>
+              </div>
             )}
           </div>
           <p className='text-2xl text-muted-foreground mt-2'>{wishlist.description}</p>
