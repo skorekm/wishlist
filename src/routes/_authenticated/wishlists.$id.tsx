@@ -7,6 +7,8 @@ import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlis
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { useQuery } from '@tanstack/react-query'
 import { listItem } from '@/lib/motion'
+import { getEventStatus } from '@/lib/utils'
+
 export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   params: {
     parse: (params) => {
@@ -21,30 +23,6 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
   },
   component: WishlistDetailed,
 })
-
-function getEventStatus(eventDate: string | null) {
-  if (!eventDate) return null;
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const event = new Date(eventDate);
-  event.setHours(0, 0, 0, 0);
-  
-  const diffTime = event.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) {
-    return { status: 'past', text: 'Event passed', color: 'text-muted-foreground' };
-  } else if (diffDays === 0) {
-    return { status: 'today', text: 'Today!', color: 'text-accent font-semibold' };
-  } else if (diffDays <= 7) {
-    return { status: 'soon', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left`, color: 'text-orange-500 font-medium' };
-  } else if (diffDays <= 30) {
-    return { status: 'upcoming', text: `${diffDays} days left`, color: 'text-blue-500' };
-  } else {
-    return { status: 'future', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-muted-foreground' };
-  }
-}
 
 function WishlistDetailed() {
   const { id: wishlistId } = Route.useParams()

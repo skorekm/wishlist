@@ -30,6 +30,7 @@ create policy "Users can create share links for their own wishlists"
       where wishlists.id = share_links.wishlist_id
       and wishlists.author_id = (select auth.uid())
     )
+    and share_links.created_by = (select auth.uid())
   );
 
 -- Only the wishlist owner can update (revoke) their share links

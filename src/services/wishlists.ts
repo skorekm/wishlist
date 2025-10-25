@@ -64,7 +64,10 @@ export async function updateWishlist(id: number, list: Database['public']['Table
   const { data, error } = await supabase
     .from('wishlists')
     .update(list)
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
+
   if (error) {
     throw error;
   }
@@ -77,7 +80,7 @@ export async function deleteWishlist(id: number) {
     throw new Error('Authentication required to delete a wishlist');
   }
 
-  const { data, error } = await supabase.from('wishlists').delete().eq('id', id)// .eq('author_id', user.id);
+  const { data, error } = await supabase.from('wishlists').delete().eq('id', id).eq('author_id', user.id);
   if (error) {
     throw error;
   }

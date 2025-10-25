@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { deleteWishlist, generateShareLink, getShareLink, revokeShareLink } from "@/services"
 import { Database } from "@/database.types"
 import { cardHover } from "@/lib/motion"
+import { getEventStatus } from "@/lib/utils"
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -20,30 +21,6 @@ type WishlistCard = Database['public']['Tables']['wishlists']['Row'] & {
 interface WishlistCardProps {
   list: WishlistCard
   refetchWishlists: () => void
-}
-
-function getEventStatus(eventDate: string | null) {
-  if (!eventDate) return null;
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const event = new Date(eventDate);
-  event.setHours(0, 0, 0, 0);
-  
-  const diffTime = event.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) {
-    return { status: 'past', text: 'Event passed', color: 'text-muted-foreground' };
-  } else if (diffDays === 0) {
-    return { status: 'today', text: 'Today!', color: 'text-accent font-semibold' };
-  } else if (diffDays <= 7) {
-    return { status: 'soon', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left`, color: 'text-orange-500 font-medium' };
-  } else if (diffDays <= 30) {
-    return { status: 'upcoming', text: `${diffDays} days left`, color: 'text-blue-500' };
-  } else {
-    return { status: 'future', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), color: 'text-muted-foreground' };
-  }
 }
 
 export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {

@@ -15,14 +15,16 @@ export const Route = createFileRoute('/wishlists/shared/$id')({
 
 function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 'secondary' | 'destructive' | 'outline', text: string } {
   if (!eventDate) return { variant: 'secondary', text: '' };
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const event = new Date(eventDate);
-  event.setHours(0, 0, 0, 0);
-  
-  const diffTime = event.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  // Parse as local date and compare at midday to avoid TZ/DST off-by-one
+  const toLocalMidday = (d: Date) =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+  const todayMidday = toLocalMidday(new Date());
+  const eventDateObj = toLocalMidday(new Date(`${eventDate}T00:00:00`));
+  if (Number.isNaN(eventDateObj.getTime())) {
+    return { variant: 'secondary', text: '' };
+  }
+  const diffTime = eventDateObj.getTime() - todayMidday.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
   
   if (diffDays < 0) {
     return { variant: 'secondary', text: 'Event passed' };
@@ -33,7 +35,14 @@ function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 
   } else if (diffDays <= 30) {
     return { variant: 'default', text: `${diffDays} days left` };
   } else {
-    return { variant: 'outline', text: event.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) };
+    return {
+      variant: 'outline',
+      text: eventDateObj.toLocaleDateString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+    };
   }
 }
 
