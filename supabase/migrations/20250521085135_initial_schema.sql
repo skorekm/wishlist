@@ -40,6 +40,7 @@ create table "public"."wishlists" (
     "uuid" uuid not null default gen_random_uuid(),
     "name" character varying(100) not null,
     "description" character varying(250),
+    "event_date" date,
     "created_at" timestamp with time zone not null default now(),
     "updated_at" timestamp with time zone not null default now(),
     "author_id" uuid not null
@@ -48,11 +49,28 @@ create table "public"."wishlists" (
 
 alter table "public"."wishlists" enable row level security;
 
+create sequence "public"."share_links_id_seq";
+
+create table "public"."share_links" (
+    "id" integer not null default nextval('share_links_id_seq'::regclass),
+    "wishlist_id" integer not null,
+    "share_token" uuid not null default gen_random_uuid(),
+    "created_at" timestamp with time zone not null default now(),
+    "created_by" uuid not null,
+    "revoked_at" timestamp with time zone,
+    "last_accessed_at" timestamp with time zone
+);
+
+
+alter table "public"."share_links" enable row level security;
+
 alter sequence "public"."currencies_id_seq" owned by "public"."currencies"."id";
 
 alter sequence "public"."wishlist_items_id_seq" owned by "public"."wishlist_items"."id";
 
 alter sequence "public"."wishlists_id_seq" owned by "public"."wishlists"."id";
+
+alter sequence "public"."share_links_id_seq" owned by "public"."share_links"."id";
 
 CREATE INDEX currencies_code_idx ON public.currencies USING btree (code);
 
@@ -68,11 +86,23 @@ CREATE UNIQUE INDEX wishlists_pkey ON public.wishlists USING btree (id);
 
 CREATE UNIQUE INDEX wishlists_uuid_key ON public.wishlists USING btree (uuid);
 
+CREATE UNIQUE INDEX share_links_pkey ON public.share_links USING btree (id);
+
+CREATE UNIQUE INDEX share_links_share_token_key ON public.share_links USING btree (share_token);
+
+CREATE INDEX share_links_wishlist_id_idx ON public.share_links USING btree (wishlist_id);
+
+CREATE INDEX share_links_share_token_idx ON public.share_links USING btree (share_token);
+
+CREATE INDEX share_links_revoked_at_idx ON public.share_links USING btree (revoked_at) WHERE (revoked_at IS NULL);
+
 alter table "public"."currencies" add constraint "currencies_pkey" PRIMARY KEY using index "currencies_pkey";
 
 alter table "public"."wishlist_items" add constraint "wishlist_items_pkey" PRIMARY KEY using index "wishlist_items_pkey";
 
 alter table "public"."wishlists" add constraint "wishlists_pkey" PRIMARY KEY using index "wishlists_pkey";
+
+alter table "public"."share_links" add constraint "share_links_pkey" PRIMARY KEY using index "share_links_pkey";
 
 alter table "public"."wishlist_items" add constraint "wishlist_items_author_id_fkey" FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
 
@@ -91,6 +121,16 @@ alter table "public"."wishlists" add constraint "wishlists_author_id_fkey" FOREI
 alter table "public"."wishlists" validate constraint "wishlists_author_id_fkey";
 
 alter table "public"."wishlists" add constraint "wishlists_uuid_key" UNIQUE using index "wishlists_uuid_key";
+
+alter table "public"."share_links" add constraint "share_links_wishlist_id_fkey" FOREIGN KEY (wishlist_id) REFERENCES wishlists(id) ON DELETE CASCADE not valid;
+
+alter table "public"."share_links" validate constraint "share_links_wishlist_id_fkey";
+
+alter table "public"."share_links" add constraint "share_links_created_by_fkey" FOREIGN KEY (created_by) REFERENCES auth.users(id) not valid;
+
+alter table "public"."share_links" validate constraint "share_links_created_by_fkey";
+
+alter table "public"."share_links" add constraint "share_links_share_token_key" UNIQUE using index "share_links_share_token_key";
 
 grant delete on table "public"."currencies" to "anon";
 
@@ -218,6 +258,48 @@ grant truncate on table "public"."wishlists" to "service_role";
 
 grant update on table "public"."wishlists" to "service_role";
 
+grant delete on table "public"."share_links" to "anon";
+
+grant insert on table "public"."share_links" to "anon";
+
+grant references on table "public"."share_links" to "anon";
+
+grant select on table "public"."share_links" to "anon";
+
+grant trigger on table "public"."share_links" to "anon";
+
+grant truncate on table "public"."share_links" to "anon";
+
+grant update on table "public"."share_links" to "anon";
+
+grant delete on table "public"."share_links" to "authenticated";
+
+grant insert on table "public"."share_links" to "authenticated";
+
+grant references on table "public"."share_links" to "authenticated";
+
+grant select on table "public"."share_links" to "authenticated";
+
+grant trigger on table "public"."share_links" to "authenticated";
+
+grant truncate on table "public"."share_links" to "authenticated";
+
+grant update on table "public"."share_links" to "authenticated";
+
+grant delete on table "public"."share_links" to "service_role";
+
+grant insert on table "public"."share_links" to "service_role";
+
+grant references on table "public"."share_links" to "service_role";
+
+grant select on table "public"."share_links" to "service_role";
+
+grant trigger on table "public"."share_links" to "service_role";
+
+grant truncate on table "public"."share_links" to "service_role";
+
+grant update on table "public"."share_links" to "service_role";
+
 create policy "Users can only read the currencies"
 on "public"."currencies"
 as permissive
@@ -290,6 +372,44 @@ as permissive
 for select
 to public
 using (true);
+
+
+create policy "Anyone can view non-revoked share links by token"
+on "public"."share_links"
+as permissive
+for select
+to public
+using (revoked_at IS NULL);
+
+
+create policy "Users can create share links for their own wishlists"
+on "public"."share_links"
+as permissive
+for insert
+to authenticated
+with check ((EXISTS ( SELECT 1
+   FROM wishlists
+  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
+
+
+create policy "Users can update their own share links"
+on "public"."share_links"
+as permissive
+for update
+to authenticated
+using ((EXISTS ( SELECT 1
+   FROM wishlists
+  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
+
+
+create policy "Users can delete their own share links"
+on "public"."share_links"
+as permissive
+for delete
+to authenticated
+using ((EXISTS ( SELECT 1
+   FROM wishlists
+  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
 
 
 
