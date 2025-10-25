@@ -115,7 +115,7 @@ function SharedWishlist() {
                   transition={{ type: "spring", stiffness: 300, damping: 24 }}
                   layout
                 >
-                  <WishlistItemCard key={item.id} item={item} />
+                  <WishlistItemCard key={item.id} item={item} wishlistUuid={wishlist.uuid} />
                 </motion.div>
               ))}
             </AnimatePresence>

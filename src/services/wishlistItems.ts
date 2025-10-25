@@ -12,7 +12,11 @@ export async function createWishlistItem(item: Omit<Database['public']['Tables']
     author_id: user.id,
   }
 
-  const { data, error } = await supabase.from('wishlist_items').insert(wishlistItem);
+  const { data, error } = await supabase
+    .from('wishlist_items')
+    .insert(wishlistItem)
+    .select()
+    .single();
   if (error) {
     throw error;
   }
@@ -28,7 +32,9 @@ export async function updateWishlistItem(id: number, item: Database['public']['T
   const { data, error } = await supabase
     .from('wishlist_items')
     .update(item)
-    .eq('id', id);
+    .eq('id', id)
+    .select()
+    .single();
   if (error) {
     throw error;
   }

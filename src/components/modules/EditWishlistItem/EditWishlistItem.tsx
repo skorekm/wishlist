@@ -52,10 +52,10 @@ interface EditWishlistItemProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   isOpen: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  wishlistUuid: string
 }
 
-export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: EditWishlistItemProps) {
+export function EditWishlistItem({ item, isOpen, onOpenChange, wishlistUuid }: EditWishlistItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const queryClient = useQueryClient();
 
@@ -82,10 +82,24 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
     setIsUpdating(true);
     try {
       await updateWishlistItem(item.id, data);
-      onSuccess();
-      // Invalidate wishlists query to keep index page in sync
-      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
+      
+      // Close dialog first
       onOpenChange(false);
+      
+      // Optimistically update the cache immediately with the updated item
+      queryClient.setQueryData<{ items: Array<{ id: number; currency: unknown; [key: string]: unknown }>; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
+        if (!oldData) return oldData;
+        
+        return {
+          ...oldData,
+          items: oldData.items.map((i) => 
+            i.id === item.id ? { ...i, ...data, currency: i.currency } : i
+          )
+        };
+      });
+      
+      // Invalidate wishlists query to keep index page in sync
+      await queryClient.invalidateQueries({ queryKey: ['wishlists'] });
     } catch (error) {
       console.error('Error updating wishlist item', error)
     } finally {

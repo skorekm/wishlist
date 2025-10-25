@@ -15,7 +15,7 @@ import { getPriorityLabel } from "@/lib/utils"
 
 interface WishlistItemCardProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
-  refetchItems?: () => void
+  wishlistUuid: string
 }
 
 const priorityColors: Record<string, string> = {
@@ -24,7 +24,7 @@ const priorityColors: Record<string, string> = {
   high: "border-red-500 bg-red-500/20",
 };
 
-export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false);
@@ -33,7 +33,16 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
   const deleteItem = () => {
     setIsDeleting(true);
     deleteWishlistItem(item.id).then(() => {
-      refetchItems?.();
+      // Optimistically update the cache immediately
+      queryClient.setQueryData<{ items: Array<{ id: number }>; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
+        if (!oldData) return oldData;
+        
+        return {
+          ...oldData,
+          items: oldData.items.filter((i) => i.id !== item.id)
+        };
+      });
+      
       // Invalidate wishlists query to update item count on index page
       queryClient.invalidateQueries({ queryKey: ['wishlists'] });
       toast.success("Wishlist item deleted successfully!");
@@ -133,7 +142,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
         item={item}
         isOpen={editModal}
         onOpenChange={setEditModal}
-        onSuccess={() => refetchItems?.()}
+        wishlistUuid={wishlistUuid}
       />
     </motion.div>
   )

@@ -25,8 +25,8 @@ const mockCurrencies = [
 ]
 
 const mockProps = {
-  onSuccess: mock(() => {}),
   wishlistId: 123,
+  wishlistUuid: 'test-uuid-123',
   isOpen: false,
 }
 

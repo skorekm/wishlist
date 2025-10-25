@@ -58,7 +58,7 @@ const listFormSchema = z.object({
     .nullable(),
 });
 
-export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onSuccess: () => void, wishlistId: number, isOpen?: boolean }) {
+export function AddWishlistItem({ wishlistId, wishlistUuid, isOpen = false }: { wishlistId: number, wishlistUuid: string, isOpen?: boolean }) {
   const [open, setOpen] = useState(isOpen);
   const queryClient = useQueryClient();
 
@@ -99,11 +99,31 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
         ...data,
         currency: Number(data.currency),
       }
-      await createWishlistItem({ ...payload, wishlist_id: wishlistId });
-      onSuccess();
-      // Invalidate wishlists query to update item count on index page
-      queryClient.invalidateQueries({ queryKey: ['wishlists'] });
+      const newItem = await createWishlistItem({ ...payload, wishlist_id: wishlistId });
+      
+      // Close dialog first
       closeDialog();
+      
+      // Optimistically update the cache immediately with the new item
+      queryClient.setQueryData<{ items: unknown[]; [key: string]: unknown }>(['wishlist', wishlistUuid], (oldData) => {
+        if (!oldData) return oldData;
+        
+        // Get the currency data for display
+        const currencyData = currency?.find(c => c.value === data.currency.toString());
+        const newItemWithCurrency = {
+          ...newItem,
+          currency: { code: currencyData?.code || 'USD' }
+        };
+        
+        return {
+          ...oldData,
+          items: [...oldData.items, newItemWithCurrency]
+        };
+      });
+      
+      // Also invalidate wishlists query to update item count on index page
+      await queryClient.invalidateQueries({ queryKey: ['wishlists'] });
+      
       toast.success("Wishlist item added successfully!");
     } catch (error) {
       // Handle error (show error message, etc.)

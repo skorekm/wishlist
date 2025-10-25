@@ -85,26 +85,21 @@ function WishlistDetailed() {
         </div>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-          className="contents"
-        >
-          <AnimatePresence mode="popLayout">
-            {wishlist.items.length > 0 && wishlist.items.map((item) => (
-              <motion.div
-                key={item.id}
-                variants={listItem}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: "spring", stiffness: 300, damping: 24 }}
-                layout
-              >
-                <WishlistItemCard key={item.id} item={item} refetchItems={refetch} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        <AnimatePresence mode="popLayout">
+          {wishlist.items.map((item) => (
+            <motion.div
+              key={item.id}
+              variants={listItem}
+              initial="hidden"
+              animate="show"
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 300, damping: 24 }}
+              layout
+            >
+              <WishlistItemCard item={item} wishlistUuid={wishlistId} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
       {wishlist.items.length === 0 && (
         <motion.div
@@ -119,7 +114,7 @@ function WishlistDetailed() {
           <p className="text-muted-foreground max-w-md">Add items to your wishlist so friends and family know what you'd love to receive.</p>
         </motion.div>
       )}
-      <AddWishlistItem onSuccess={refetch} wishlistId={wishlist.id} />
+      <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistId} />
     </Fragment>
   )
 }
