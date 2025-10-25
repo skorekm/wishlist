@@ -92,25 +92,35 @@ describe('AddWishlistItem Component', () => {
       screen.getByLabelText(/notes/i)
     })
 
-    it('should show validation errors when submitting empty form', async () => {
-      const submitButton = screen.getByRole('button', { name: /add to wishlist/i })
-      fireEvent.click(submitButton)
-      
+    it('should keep submit disabled when form is empty and enable when valid', async () => {
+      const submitButton = screen.getByRole('button', { name: /add to wishlist/i }) as HTMLButtonElement
+      expect(submitButton.disabled).toBe(true)
+
+      // Fill required fields
+      fireEvent.change(screen.getByLabelText(/item name/i), { target: { value: 'Test Item' } })
+      fireEvent.change(screen.getByLabelText(/price/i), { target: { value: '100' } })
+      fireEvent.change(screen.getByLabelText(/category/i), { target: { value: 'Electronics' } })
+
+      // Select currency
+      const currencySelect = screen.getAllByRole('combobox')[0]
+      fireEvent.click(currencySelect)
+
       await waitFor(() => {
-        // getByText will throw if elements are not found
-        screen.getByText('List name is required')
-        screen.getByText('Price is required')
-        screen.getByText('Currency is required')
-        screen.getByText('Category is required')
+        fireEvent.click(screen.getByRole('option', { name: /USD \(US Dollar\)/i }))
+      })
+
+      await waitFor(() => {
+        expect(submitButton.disabled).toBe(false)
       })
     })
 
     it('should validate item name length constraints', async () => {
       const nameInput = screen.getByLabelText(/item name/i)
       
-      // Test minimum length (empty string)
+      // Ensure a real change happens before clearing
+      fireEvent.change(nameInput, { target: { value: 'x' } })
+      // Test minimum length (empty string) - error should show on change
       fireEvent.change(nameInput, { target: { value: '' } })
-      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         screen.getByText('List name is required')
@@ -119,7 +129,6 @@ describe('AddWishlistItem Component', () => {
       // Test maximum length (51 characters)
       const longName = 'a'.repeat(51)
       fireEvent.change(nameInput, { target: { value: longName } })
-      fireEvent.click(screen.getByRole('button', { name: /add to wishlist/i }))
       
       await waitFor(() => {
         screen.getByText('List name cannot be longer than 50 characters')

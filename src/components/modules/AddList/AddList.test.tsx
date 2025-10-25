@@ -34,7 +34,7 @@ describe('AddList Component', () => {
     })
   })
 
-  it('should throw validation error when form is submitted with no data', async () => {
+  it('should disable submit when form is invalid and enable when valid', async () => {
     render(<AddList {...mockProps} />)
     const newList = screen.getByText('New List')
     fireEvent.click(newList)
@@ -43,11 +43,20 @@ describe('AddList Component', () => {
       screen.getByText('Create New List')
     })
 
-    const createButton = screen.getByText('Create List')
-    fireEvent.click(createButton)
+    const createButton = screen.getByRole('button', { name: /create list/i }) as HTMLButtonElement
+    expect(createButton.disabled).toBe(true)
+
+    const nameInput = screen.getByPlaceholderText('e.g., Birthday Wishlist')
+    fireEvent.change(nameInput, { target: { value: 'Test List' } })
 
     await waitFor(() => {
-      screen.getByText('List name is required')
+      expect(createButton.disabled).toBe(false)
+    })
+
+    fireEvent.change(nameInput, { target: { value: '' } })
+
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(true)
     })
   })
 
@@ -67,7 +76,12 @@ describe('AddList Component', () => {
     const descriptionInput = screen.getByPlaceholderText('e.g., Things I\'d love to receive for my birthday')
     fireEvent.change(descriptionInput, { target: { value: 'Test Description' } })
 
-    const createButton = screen.getByText('Create List')
+    const createButton = screen.getByRole('button', { name: /create list/i }) as HTMLButtonElement
+
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(false)
+    })
+
     fireEvent.click(createButton)
 
     await waitFor(() => {

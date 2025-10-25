@@ -1,5 +1,5 @@
 import { describe, it, expect, mock, beforeEach } from 'bun:test'
-import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent, cleanup, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { EditWishlistItem } from './EditWishlistItem'
 import * as services from '@/services'
@@ -65,14 +65,18 @@ describe('EditWishlistItem Component', () => {
   })
 
   describe('Rendering and Initial State', () => {
-    it('should not render dialog when isOpen is false', () => {
-      renderWithQueryClient()
+    it('should not render dialog when isOpen is false', async () => {
+      await act(async () => {
+        renderWithQueryClient()
+      })
       
       expect(screen.queryByRole('heading', { name: 'Edit Wishlist Item' })).toBeNull()
     })
 
     it('should open dialog when isOpen prop is true', async () => {
-      renderWithQueryClient({ ...mockProps, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, isOpen: true })
+      })
       
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: 'Edit Wishlist Item' })).not.toBeNull()
@@ -80,7 +84,9 @@ describe('EditWishlistItem Component', () => {
     })
 
     it('should render dialog description', async () => {
-      renderWithQueryClient({ ...mockProps, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, isOpen: true })
+      })
       
       await waitFor(() => {
         screen.getByText('Update the details of your wishlist item.')
@@ -90,7 +96,9 @@ describe('EditWishlistItem Component', () => {
 
   describe('Form Fields and Pre-populated Values', () => {
     beforeEach(async () => {
-      renderWithQueryClient({ ...mockProps, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, isOpen: true })
+      })
     })
 
     it('should render all form fields with pre-populated values', async () => {
@@ -121,7 +129,9 @@ describe('EditWishlistItem Component', () => {
         category: ''
       }
       
-      renderWithQueryClient({ ...mockProps, item: itemWithNulls, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, item: itemWithNulls, isOpen: true })
+      })
       
       const linkInput = screen.getByLabelText(/link/i) as HTMLInputElement
       const notesInput = screen.getByLabelText(/notes/i) as HTMLTextAreaElement
@@ -147,25 +157,37 @@ describe('EditWishlistItem Component', () => {
         link: null,
         notes: null
       }
-      renderWithQueryClient({ ...mockProps, item: emptyMockItem, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, item: emptyMockItem, isOpen: true })
+      })
     })
 
-    it('should show validation errors when clearing required fields', async () => {
+    it('should disable submit when required fields are empty, enable when valid', async () => {
       // Clear required fields
       const nameInput = screen.getByLabelText(/item name/i)
       const priceInput = screen.getByLabelText(/price/i)
       const categoryInput = screen.getByLabelText(/category/i)
-      
-      fireEvent.change(nameInput, { target: { value: '' } })
-      fireEvent.change(priceInput, { target: { value: '' } })
-      fireEvent.change(categoryInput, { target: { value: '' } })
-      
-      const submitButton = screen.getByRole('button', { name: /update item/i })
-      fireEvent.click(submitButton)
-      
+      const submitButton = screen.getByRole('button', { name: /update item/i }) as HTMLButtonElement
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: '' } })
+        fireEvent.change(priceInput, { target: { value: '' } })
+        fireEvent.change(categoryInput, { target: { value: '' } })
+      })
+
       await waitFor(() => {
-        screen.getByText('Item name is required')
-        screen.getByText('Category is required')
+        expect(submitButton.disabled).toBe(true)
+      })
+
+      // Fix fields
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Valid Name' } })
+        fireEvent.change(priceInput, { target: { value: '123' } })
+        fireEvent.change(categoryInput, { target: { value: 'Valid Category' } })
+      })
+
+      await waitFor(() => {
+        expect(submitButton.disabled).toBe(false)
       })
     })
 
@@ -174,7 +196,9 @@ describe('EditWishlistItem Component', () => {
       const submitButton = screen.getByRole('button', { name: /update item/i })
       
       // Set the long value
-      fireEvent.change(nameInput, { target: { value: 'a'.repeat(51) } })
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'a'.repeat(51) } })
+      })
       fireEvent.click(submitButton)
       
       // Wait for validation and check form state
@@ -190,7 +214,9 @@ describe('EditWishlistItem Component', () => {
       const priceInput = screen.getByLabelText(/price/i)
       
       // Test negative price
-      fireEvent.change(priceInput, { target: { value: '-10' } })
+      await act(async () => {
+        fireEvent.change(priceInput, { target: { value: '-10' } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -198,7 +224,9 @@ describe('EditWishlistItem Component', () => {
       })
       
       // Test price too high
-      fireEvent.change(priceInput, { target: { value: '10001' } })
+      await act(async () => {
+        fireEvent.change(priceInput, { target: { value: '10001' } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -211,7 +239,9 @@ describe('EditWishlistItem Component', () => {
       
       // Test maximum length (51 characters)
       const longCategory = 'a'.repeat(51)
-      fireEvent.change(categoryInput, { target: { value: longCategory } })
+      await act(async () => {
+        fireEvent.change(categoryInput, { target: { value: longCategory } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -222,7 +252,9 @@ describe('EditWishlistItem Component', () => {
     it('should validate link format', async () => {
       const linkInput = screen.getByLabelText(/link/i)
       
-      fireEvent.change(linkInput, { target: { value: 'invalid-url' } })
+      await act(async () => {
+        fireEvent.change(linkInput, { target: { value: 'invalid-url' } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -234,7 +266,9 @@ describe('EditWishlistItem Component', () => {
       const notesInput = screen.getByLabelText(/notes/i)
       
       const longNotes = 'a'.repeat(251)
-      fireEvent.change(notesInput, { target: { value: longNotes } })
+      await act(async () => {
+        fireEvent.change(notesInput, { target: { value: longNotes } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -245,7 +279,9 @@ describe('EditWishlistItem Component', () => {
     it('should allow empty link field', async () => {
       const linkInput = screen.getByLabelText(/link/i)
       
-      fireEvent.change(linkInput, { target: { value: '' } })
+      await act(async () => {
+        fireEvent.change(linkInput, { target: { value: '' } })
+      })
       fireEvent.click(screen.getByRole('button', { name: /update item/i }))
       
       await waitFor(() => {
@@ -256,14 +292,24 @@ describe('EditWishlistItem Component', () => {
 
   describe('Form Interactions', () => {
     beforeEach(async () => {
-      renderWithQueryClient({ ...mockProps, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, isOpen: true })
+      })
+      
+      // Wait for form to be ready
+      await waitFor(() => {
+        screen.getByLabelText(/item name/i)
+      })
     })
 
     it('should handle priority selection', async () => {
       const prioritySelect = screen.getByRole('combobox')
-      fireEvent.click(prioritySelect)
       
-      await waitFor(() => {
+      await act(async () => {
+        fireEvent.click(prioritySelect)
+      })
+      
+      await waitFor(async () => {
         const lowOption = screen.getByRole('option', { name: 'Low' })
         const mediumOption = screen.getByRole('option', { name: 'Medium' })
         const highOption = screen.getByRole('option', { name: 'High' })
@@ -273,7 +319,9 @@ describe('EditWishlistItem Component', () => {
         expect(highOption).not.toBeNull()
         
         // Select high priority
-        fireEvent.click(highOption)
+        await act(async () => {
+          fireEvent.click(highOption)
+        })
       })
       
       await waitFor(() => {
@@ -283,11 +331,14 @@ describe('EditWishlistItem Component', () => {
 
     it('should handle price input correctly', async () => {
       const priceInput = screen.getByLabelText(/price/i) as HTMLInputElement
-      
-      // Set new value
-      fireEvent.change(priceInput, { target: { value: '199.99' } })
-      
-      expect(priceInput.value).toBe('199.99')
+
+      await act(async () => {
+        fireEvent.change(priceInput, { target: { value: '199.99' } })
+      })
+
+      await waitFor(() => {
+        expect(priceInput.value).toBe('199.99')
+      })
     })
 
     it('should handle text field updates', async () => {
@@ -295,35 +346,47 @@ describe('EditWishlistItem Component', () => {
       const categoryInput = screen.getByLabelText(/category/i) as HTMLInputElement
       const linkInput = screen.getByLabelText(/link/i) as HTMLInputElement
       const notesInput = screen.getByLabelText(/notes/i) as HTMLTextAreaElement
-      
-      fireEvent.change(nameInput, { target: { value: 'Updated Item Name' } })
-      fireEvent.change(categoryInput, { target: { value: 'Updated Category' } })
-      fireEvent.change(linkInput, { target: { value: 'https://updated-link.com' } })
-      fireEvent.change(notesInput, { target: { value: 'Updated notes' } })
-      
-      expect(nameInput.value).toBe('Updated Item Name')
-      expect(categoryInput.value).toBe('Updated Category')
-      expect(linkInput.value).toBe('https://updated-link.com')
-      expect(notesInput.value).toBe('Updated notes')
+
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: 'Updated Item Name' } })
+        fireEvent.change(categoryInput, { target: { value: 'Updated Category' } })
+        fireEvent.change(linkInput, { target: { value: 'https://updated-link.com' } })
+        fireEvent.change(notesInput, { target: { value: 'Updated notes' } })
+      })
+
+      await waitFor(() => {
+        expect(nameInput.value).toBe('Updated Item Name')
+        expect(categoryInput.value).toBe('Updated Category')
+        expect(linkInput.value).toBe('https://updated-link.com')
+        expect(notesInput.value).toBe('Updated notes')
+      })
     })
   })
 
   describe('Form Submission', () => {
     beforeEach(async () => {
-      renderWithQueryClient({ ...mockProps, isOpen: true })
+      await act(async () => {
+        renderWithQueryClient({ ...mockProps, isOpen: true })
+      })
     })
 
     it('should call updateWishlistItem with correct data on successful submission', async () => {
       mock(services.updateWishlistItem).mockResolvedValue(null)
       
-      // Update some fields
-      const nameInput = screen.getByLabelText(/item name/i)
-      fireEvent.change(nameInput, { target: { value: 'Updated Item' } })
-      
-      const priceInput = screen.getByLabelText(/price/i)
-      fireEvent.change(priceInput, { target: { value: '150' } })
-      
-      const submitButton = screen.getByRole('button', { name: /update item/i })
+      await act(async () => {
+        // Update some fields
+        const nameInput = screen.getByLabelText(/item name/i)
+        fireEvent.change(nameInput, { target: { value: 'Updated Item' } })
+        
+        const priceInput = screen.getByLabelText(/price/i)
+        fireEvent.change(priceInput, { target: { value: '150' } })
+      })
+
+      const submitButton = screen.getByRole('button', { name: /update item/i }) as HTMLButtonElement
+      await waitFor(() => {
+        expect(submitButton.disabled).toBe(false)
+      })
+
       fireEvent.click(submitButton)
       
       await waitFor(() => {
