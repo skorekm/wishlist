@@ -71,7 +71,7 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                   <Badge
                     key={item.priority}
                     variant="outline"
-                    className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 ${priorityColors[item.priority.toLowerCase()] || ""}`}
+                    className={`bg-secondary text-secondary-foreground ${priorityColors[item.priority.toLowerCase()] || ""}`}
                   >
                     {getPriorityLabel(item.priority)}
                   </Badge>

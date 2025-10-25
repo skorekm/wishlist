@@ -72,9 +72,10 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
     reset,
     register,
     control,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<WishlistItemFormData>({
     resolver: zodResolver(listFormSchema),
+    mode: 'onChange',
     defaultValues: {
       name: '',
       priority: PRIORITY_OPTIONS[1].value as Database["public"]["Enums"]["priority"],
@@ -138,8 +139,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="mb-4">
-              <Label className='font-semibold' htmlFor="name">Item Name</Label>
-              <Input id="name" placeholder="e.g., Wireless charger" {...register('name')} />
+              <Label className='font-semibold' htmlFor="name">Item Name <span className="text-red-500" aria-hidden>*</span></Label>
+              <Input id="name" placeholder="e.g., Wireless charger" required aria-invalid={!!errors.name} {...register('name')} />
               <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -149,8 +150,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                   name="price"
                   render={({ field }) => (
                     <>
-                      <Label className='font-semibold' htmlFor="price">Price</Label>
-                      <Input id="price" type="number" placeholder="e.g., 100" onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
+                      <Label className='font-semibold' htmlFor="price">Price <span className="text-red-500" aria-hidden>*</span></Label>
+                      <Input id="price" type="number" placeholder="e.g., 100" required aria-invalid={!!errors.price} onChange={e => handlePriceChange(e, field.onChange)} value={field.value ?? ''} />
                       <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.price?.message || '\u00A0'}</p>
                     </>
                   )}
@@ -162,12 +163,12 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                   name="currency"
                   render={({ field }) => (
                     <>
-                      <Label className='font-semibold' htmlFor="currency">Currency</Label>
+                      <Label className='font-semibold' htmlFor="currency">Currency <span className="text-red-500" aria-hidden>*</span></Label>
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger aria-required="true" aria-invalid={!!errors.currency}>
                           <SelectValue placeholder="Select a currency" />
                         </SelectTrigger>
                         <SelectContent>
@@ -212,8 +213,8 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
                 <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.priority?.message || '\u00A0'}</p>
               </div>
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="category">Category</Label>
-                <Input id="category" placeholder="e.g., Electronics" {...register('category')} />
+                <Label className='font-semibold' htmlFor="category">Category <span className="text-red-500" aria-hidden>*</span></Label>
+                <Input id="category" placeholder="e.g., Electronics" required aria-invalid={!!errors.category} {...register('category')} />
                 <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.category?.message || '\u00A0'}</p>
               </div>
             </div>
@@ -232,7 +233,7 @@ export function AddWishlistItem({ onSuccess, wishlistId, isOpen = false }: { onS
             <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90">Add to Wishlist</Button>
+            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={!isValid || isSubmitting}>Add to Wishlist</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -43,9 +43,10 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
     handleSubmit,
     reset,
     register,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<WishlistFormData>({
     resolver: zodResolver(listFormSchema),
+    mode: 'onChange',
     defaultValues: {
       name: list.name,
       description: list.description,
@@ -84,22 +85,22 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div>
-              <Label className='font-semibold' htmlFor="name">List Name</Label>
-              <Input id="name" placeholder="e.g., Birthday Wishlist" {...register('name')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
+              <Label className='font-semibold' htmlFor="name">List Name <span className="text-red-500" aria-hidden>*</span></Label>
+              <Input id="name" placeholder="e.g., Birthday Wishlist" required aria-invalid={!!errors.name} {...register('name')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div>
               <Label className='font-semibold' htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="e.g., Items I'd love to receive for my birthday" {...register('description')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.description?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.description?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update List'}
+            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={!isValid || isSubmitting || isUpdating}>
+              {isSubmitting || isUpdating ? 'Updating...' : 'Update List'}
             </Button>
           </DialogFooter>
         </form>

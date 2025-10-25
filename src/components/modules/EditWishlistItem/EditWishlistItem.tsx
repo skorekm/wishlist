@@ -64,9 +64,10 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
     reset,
     register,
     control,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<WishlistItemFormData>({
     resolver: zodResolver(listFormSchema),
+    mode: 'onChange',
     defaultValues: {
       name: item.name,
       price: item.price,
@@ -109,15 +110,15 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div>
-              <Label className='font-semibold' htmlFor="name">Item Name</Label>
-              <Input id="name" placeholder="e.g., wireless charger" {...register('name')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.name?.message || '\u00A0'}</p>
+              <Label className='font-semibold' htmlFor="name">Item Name <span className="text-red-500" aria-hidden>*</span></Label>
+              <Input id="name" placeholder="e.g., wireless charger" required aria-invalid={!!errors.name} {...register('name')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1/2">
-                <Label className='font-semibold' htmlFor="price">Price</Label>
-                <Input id="price" type="number" placeholder="e.g., 100" {...register('price')} />
-                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.price?.message || '\u00A0'}</p>
+                <Label className='font-semibold' htmlFor="price">Price <span className="text-red-500" aria-hidden>*</span></Label>
+                <Input id="price" type="number" placeholder="e.g., 100" required aria-invalid={!!errors.price} {...register('price')} />
+                <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.price?.message || '\u00A0'}</p>
               </div>
               <div className="w-1/2">
                 <Label className='font-semibold' htmlFor="priority">Priority</Label>
@@ -129,7 +130,7 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
                       value={field.value}
                       onValueChange={field.onChange}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger aria-required="true" aria-invalid={!!errors.priority}>
                         <SelectValue placeholder="Select a priority" />
                       </SelectTrigger>
                       <SelectContent>
@@ -142,31 +143,31 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, onSuccess }: Edit
                     </Select>
                   )}
                 />
-                <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.priority?.message || '\u00A0'}</p>
+                <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.priority?.message || '\u00A0'}</p>
               </div>
             </div>
             <div>
-              <Label className='font-semibold' htmlFor="category">Category</Label>
-              <Input id="category" placeholder="e.g., electronics" {...register('category')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.category?.message || '\u00A0'}</p>
+              <Label className='font-semibold' htmlFor="category">Category <span className="text-red-500" aria-hidden>*</span></Label>
+              <Input id="category" placeholder="e.g., electronics" required aria-invalid={!!errors.category} {...register('category')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.category?.message || '\u00A0'}</p>
             </div>
             <div>
               <Label className='font-semibold' htmlFor="link">Link</Label>
               <Input id="link" placeholder="e.g., https://" {...register('link')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.link?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.link?.message || '\u00A0'}</p>
             </div>
             <div>
               <Label className='font-semibold' htmlFor="notes">Notes</Label>
               <Textarea id="notes" placeholder="e.g., I want this for my birthday" {...register('notes')} />
-              <p className="text-red-500 text-xs mt-0.5 min-h-[1rem]">{errors.notes?.message || '\u00A0'}</p>
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.notes?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update Item'}
+            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={!isValid || isSubmitting || isUpdating}>
+              {isSubmitting || isUpdating ? 'Updating...' : 'Update Item'}
             </Button>
           </DialogFooter>
         </form>
