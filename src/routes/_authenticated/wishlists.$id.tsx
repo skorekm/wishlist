@@ -105,7 +105,6 @@ function WishlistDetailed() {
         </motion.div>
       )}
       <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistId} />
-      
       <ShareListDialog
         wishlistId={wishlist.id}
         isOpen={shareModal}

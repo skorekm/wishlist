@@ -346,7 +346,11 @@ using ((EXISTS ( SELECT 1
   WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))))
 with check (((EXISTS ( SELECT 1
    FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))) AND (created_by = ( SELECT auth.uid() AS uid))));
+  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))) AND (created_by = ( SELECT auth.uid() AS uid)) AND (share_token = ( SELECT old_sl.share_token
+   FROM public.share_links old_sl
+  WHERE (old_sl.id = share_links.id))) AND (wishlist_id = ( SELECT old_sl.wishlist_id
+   FROM public.share_links old_sl
+  WHERE (old_sl.id = share_links.id)))));
 
 
 
