@@ -66,16 +66,8 @@ create policy "Users can update their own share links"
     )
     -- Ensure created_by hasn't been tampered with
     and share_links.created_by = (select auth.uid())
-    -- Ensure immutable field share_token hasn't changed
-    and share_links.share_token = (
-      select share_token from public.share_links as old_sl
-      where old_sl.id = share_links.id
-    )
-    -- Ensure immutable field wishlist_id hasn't changed
-    and share_links.wishlist_id = (
-      select wishlist_id from public.share_links as old_sl
-      where old_sl.id = share_links.id
-    )
+    -- NOTE: Immutability of share_token and wishlist_id should be enforced via a database trigger
+    -- to avoid infinite recursion in RLS policies (cannot query the same table within its own policy)
   );
 
 -- Only the wishlist owner can delete their share links

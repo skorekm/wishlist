@@ -89,11 +89,11 @@ export async function revokeShareLink(shareTokenOrId: string | number) {
     throw new Error('Authentication required to revoke a share link');
   }
 
-  // First, fetch the share link to get the wishlist_id
+  // First, fetch the share link to get the wishlist_id and id
   const isToken = typeof shareTokenOrId === 'string';
   const shareLinkQuery = supabase
     .from('share_links')
-    .select('wishlist_id');
+    .select('id, wishlist_id');
 
   if (isToken) {
     shareLinkQuery.eq('share_token', shareTokenOrId);
@@ -119,18 +119,13 @@ export async function revokeShareLink(shareTokenOrId: string | number) {
     throw new Error('Wishlist not found or access denied');
   }
 
-  // Now revoke the share link
-  const revokeQuery = supabase
+  // Now revoke the share link using the id (not token) for proper RLS policy checks
+  const { data, error } = await supabase
     .from('share_links')
-    .update({ revoked_at: new Date().toISOString() });
-
-  if (isToken) {
-    revokeQuery.eq('share_token', shareTokenOrId);
-  } else {
-    revokeQuery.eq('id', shareTokenOrId);
-  }
-
-  const { data, error } = await revokeQuery.select().single();
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('id', shareLink.id)
+    .select()
+    .single();
 
   if (error) {
     throw error;
