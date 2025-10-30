@@ -61,13 +61,15 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
     }
   }, [isOpen])
 
-  const handleGenerateLink = async () => {
+  const handleGenerateLink = async (showToast: boolean = true) => {
     setIsLoadingShare(true)
     try {
       const link = await generateShareLink(wishlistId)
       const url = `${window.location.origin}/wishlists/shared/${link.share_token}`
       setShareLink(url)
-      toast.success("Share link generated!")
+      if (showToast) {
+        toast.success("Share link generated!")
+      }
     } catch (error) {
       console.error('Error generating share link', error)
       toast.error("Failed to generate share link. Please try again.")
@@ -110,7 +112,7 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
       if (token) {
         await revokeShareLink(token)
       }
-      await handleGenerateLink()
+      await handleGenerateLink(false)
       toast.success("Share link regenerated!")
     } catch (error) {
       console.error('Error regenerating share link', error)
@@ -173,7 +175,7 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
                 No share link exists for this wishlist yet. Generate one to share with others.
               </p>
               <Button 
-                onClick={handleGenerateLink}
+                onClick={() => handleGenerateLink()}
                 disabled={isLoadingShare}
                 className="w-full"
               >

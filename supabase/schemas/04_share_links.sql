@@ -12,13 +12,6 @@ create table if not exists "share_links" (
 -- Add row-level security policies
 alter table public.share_links enable row level security;
 
--- Create policies
--- SECURITY NOTE: Only authenticated wishlist owners can read their share links.
--- Public access to shared wishlists should be handled via a PostgreSQL SECURITY DEFINER 
--- function or Supabase Edge Function that validates the share_token and returns wishlist 
--- data, bypassing RLS. The previous policy allowed unauthenticated reads of ALL non-revoked 
--- share_links, which could expose all active share tokens to malicious enumeration.
--- TODO: Refactor getWishlistByShareToken() in services/shareLinks.ts to use a secure function.
 create policy "Wishlist owners can view their own share links"
   on public.share_links
   for select

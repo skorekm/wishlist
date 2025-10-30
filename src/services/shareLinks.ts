@@ -147,16 +147,6 @@ export async function getWishlistByShareToken(shareToken: string) {
     throw new Error('Invalid or revoked share link');
   }
 
-  // Update last_accessed_at
-  const { error: updateError } = await supabase
-    .from('share_links')
-    .update({ last_accessed_at: new Date().toISOString() })
-    .eq('share_token', shareToken);
-
-  if (updateError) {
-    console.error('Failed to update last_accessed_at:', updateError);
-  }
-
   // Get the wishlist with items
   const { data: wishlist, error: wishlistError } = await supabase
     .from('wishlists')
