@@ -29,6 +29,16 @@ create policy "Users can update their own wishlists"
   for update
   using ((select auth.uid()) = author_id);
 
+-- SELECT policy for wishlists - users can view their own wishlists
+-- Note: Additional SELECT policies are added in later schema files:
+--   - 04_share_links.sql: anonymous access via share links
+--   - 05_permissions.sql: access via granted permissions
+create policy "Users can view their own wishlists"
+  on public.wishlists
+  for select
+  to authenticated
+  using (author_id = (select auth.uid()));
+
 -- Add index on author_id
 create index wishlists_author_id_idx on public.wishlists (author_id);
 

@@ -64,6 +64,24 @@ export type Database = {
         }
         Relationships: []
       }
+      permissions: {
+        Row: {
+          description: string
+          id: number
+          name: string
+        }
+        Insert: {
+          description: string
+          id?: number
+          name: string
+        }
+        Update: {
+          description?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       share_links: {
         Row: {
           created_at: string
@@ -155,6 +173,48 @@ export type Database = {
           },
           {
             foreignKeyName: "wishlist_items_wishlist_id_fkey"
+            columns: ["wishlist_id"]
+            isOneToOne: false
+            referencedRelation: "wishlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wishlist_permissions: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: number
+          permission_id: number
+          user_id: string
+          wishlist_id: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: number
+          permission_id: number
+          user_id: string
+          wishlist_id: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: number
+          permission_id?: number
+          user_id?: string
+          wishlist_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wishlist_permissions_wishlist_id_fkey"
             columns: ["wishlist_id"]
             isOneToOne: false
             referencedRelation: "wishlists"

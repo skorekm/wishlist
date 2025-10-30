@@ -12,22 +12,19 @@ create table if not exists "share_links" (
 -- Add row-level security policies
 alter table public.share_links enable row level security;
 
-create policy "Wishlist owners can view their own share links"
+-- Authenticated users can view share links they created (no circular check)
+create policy "Authenticated users can view share links they created"
   on public.share_links
   for select
   to authenticated
-  using (
-    exists (
-      select 1 from public.wishlists
-      where wishlists.id = share_links.wishlist_id
-      and wishlists.author_id = (select auth.uid())
-    )
-  );
+  using (created_by = (select auth.uid()));
 
--- Add policy to wishlists table now that share_links exists
-create policy "Anyone can view wishlists via valid share token"
+-- Add anonymous access policy to wishlists table (now that share_links exists)
+-- This allows anyone with a valid share link to view the wishlist
+create policy "Public can view wishlists via active share links"
   on public.wishlists
   for select
+  to anon
   using (
     exists (
       select 1 from public.share_links
@@ -47,40 +44,25 @@ create policy "Anyone can verify share links by token"
   );
 
 -- Only authenticated users can create share links for their own wishlists
-create policy "Users can create share links for their own wishlists"
+create policy "Users can create share links for their wishlists"
   on public.share_links
   for insert
   to authenticated
   with check (
-    exists (
-      select 1 from public.wishlists
-      where wishlists.id = share_links.wishlist_id
-      and wishlists.author_id = (select auth.uid())
+    created_by = (select auth.uid())
+    and wishlist_id in (
+      select id from public.wishlists where author_id = (select auth.uid())
     )
-    and share_links.created_by = (select auth.uid())
   );
 
--- Only the wishlist owner can update (revoke) their share links
-create policy "Users can update their own share links"
+-- Only the share link creator can update their share links
+create policy "Users can update their share links"
   on public.share_links
   for update
   to authenticated
-  using (
-    exists (
-      select 1 from public.wishlists
-      where wishlists.id = share_links.wishlist_id
-      and wishlists.author_id = (select auth.uid())
-    )
-  )
+  using (created_by = (select auth.uid()))
   with check (
-    -- Ensure the wishlist is still owned by the current user
-    exists (
-      select 1 from public.wishlists
-      where wishlists.id = share_links.wishlist_id
-      and wishlists.author_id = (select auth.uid())
-    )
-    -- Ensure created_by hasn't been tampered with
-    and share_links.created_by = (select auth.uid())
+    created_by = (select auth.uid())
     -- Ensure immutable field share_token hasn't changed
     and share_links.share_token = (
       select share_token from public.share_links as old_sl
@@ -93,18 +75,12 @@ create policy "Users can update their own share links"
     )
   );
 
--- Only the wishlist owner can delete their share links
-create policy "Users can delete their own share links"
+-- Only the share link creator can delete their share links
+create policy "Users can delete their share links"
   on public.share_links
   for delete
   to authenticated
-  using (
-    exists (
-      select 1 from public.wishlists
-      where wishlists.id = share_links.wishlist_id
-      and wishlists.author_id = (select auth.uid())
-    )
-  );
+  using (created_by = (select auth.uid()));
 
 -- Add indexes for performance
 create index share_links_wishlist_id_idx on public.share_links (wishlist_id);

@@ -515,54 +515,46 @@ using ((revoked_at IS NULL));
 
 
 
-  create policy "Users can create share links for their own wishlists"
-  on "public"."share_links"
-  as permissive
-  for insert
-  to authenticated
-with check (((EXISTS ( SELECT 1
-   FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))) AND (created_by = ( SELECT auth.uid() AS uid))));
-
-
-
-  create policy "Users can delete their own share links"
-  on "public"."share_links"
-  as permissive
-  for delete
-  to authenticated
-using ((EXISTS ( SELECT 1
-   FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
-
-
-
-  create policy "Users can update their own share links"
-  on "public"."share_links"
-  as permissive
-  for update
-  to authenticated
-using ((EXISTS ( SELECT 1
-   FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))))
-with check (((EXISTS ( SELECT 1
-   FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))) AND (created_by = ( SELECT auth.uid() AS uid)) AND (share_token = ( SELECT old_sl.share_token
-   FROM public.share_links old_sl
-  WHERE (old_sl.id = share_links.id))) AND (wishlist_id = ( SELECT old_sl.wishlist_id
-   FROM public.share_links old_sl
-  WHERE (old_sl.id = share_links.id)))));
-
-
-
-  create policy "Wishlist owners can view their own share links"
+  create policy "Authenticated users can view share links they created"
   on "public"."share_links"
   as permissive
   for select
   to authenticated
-using ((EXISTS ( SELECT 1
+using ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Users can create share links for their wishlists"
+  on "public"."share_links"
+  as permissive
+  for insert
+  to authenticated
+with check (((created_by = ( SELECT auth.uid() AS uid)) AND (wishlist_id IN ( SELECT wishlists.id
    FROM public.wishlists
-  WHERE ((wishlists.id = share_links.wishlist_id) AND (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
+  WHERE (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
+
+
+
+  create policy "Users can delete their share links"
+  on "public"."share_links"
+  as permissive
+  for delete
+  to authenticated
+using ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Users can update their share links"
+  on "public"."share_links"
+  as permissive
+  for update
+  to authenticated
+using ((created_by = ( SELECT auth.uid() AS uid)))
+with check (((created_by = ( SELECT auth.uid() AS uid)) AND (share_token = ( SELECT old_sl.share_token
+   FROM public.share_links old_sl
+  WHERE (old_sl.id = share_links.id))) AND (wishlist_id = ( SELECT old_sl.wishlist_id
+   FROM public.share_links old_sl
+  WHERE (old_sl.id = share_links.id)))));
 
 
 
@@ -604,11 +596,57 @@ using ((EXISTS ( SELECT 1
 
 
 
-  create policy "Anyone can view wishlists via valid share token"
+  create policy "Permission creators can grant permissions"
+  on "public"."wishlist_permissions"
+  as permissive
+  for insert
+  to authenticated
+with check ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Permission creators can revoke permissions"
+  on "public"."wishlist_permissions"
+  as permissive
+  for delete
+  to authenticated
+using ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Permission creators can update permissions"
+  on "public"."wishlist_permissions"
+  as permissive
+  for update
+  to authenticated
+using ((created_by = ( SELECT auth.uid() AS uid)))
+with check ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Permission creators can view permissions they created"
+  on "public"."wishlist_permissions"
+  as permissive
+  for select
+  to authenticated
+using ((created_by = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Users can view their own permissions"
+  on "public"."wishlist_permissions"
+  as permissive
+  for select
+  to authenticated
+using ((user_id = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Public can view wishlists via active share links"
   on "public"."wishlists"
   as permissive
   for select
-  to public
+  to anon
 using ((EXISTS ( SELECT 1
    FROM public.share_links
   WHERE ((share_links.wishlist_id = wishlists.id) AND (share_links.revoked_at IS NULL)))));
@@ -639,6 +677,27 @@ using ((( SELECT auth.uid() AS uid) = author_id));
   for update
   to public
 using ((( SELECT auth.uid() AS uid) = author_id));
+
+
+
+  create policy "Users can view their own wishlists"
+  on "public"."wishlists"
+  as permissive
+  for select
+  to authenticated
+using ((author_id = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Users can view wishlists they have permission to access"
+  on "public"."wishlists"
+  as permissive
+  for select
+  to authenticated
+using ((EXISTS ( SELECT 1
+   FROM (public.wishlist_permissions wp
+     JOIN public.permissions p ON ((wp.permission_id = p.id)))
+  WHERE ((wp.wishlist_id = wishlists.id) AND (wp.user_id = ( SELECT auth.uid() AS uid)) AND ((p.name)::text = 'wishlist:view'::text)))));
 
 
 CREATE TRIGGER assign_author_permissions_trigger AFTER INSERT ON public.wishlists FOR EACH ROW EXECUTE FUNCTION public.assign_author_permissions();

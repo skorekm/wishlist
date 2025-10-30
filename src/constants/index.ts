@@ -3,3 +3,5 @@ export const PRIORITY_OPTIONS = [
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
 ]
+
+export * from './permissions';
