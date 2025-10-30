@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { List, Calendar } from 'lucide-react'
+import { List, Calendar, Share2 } from 'lucide-react'
 import { Fragment } from 'react/jsx-runtime'
+import { useState } from 'react'
 import { getWishlist } from '@/services'
 import { createFileRoute } from '@tanstack/react-router'
 import { AddWishlistItem } from '@/components/modules/AddWishlistItem/AddWishlistItem'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
+import { ShareListDialog } from '@/components/modules/WishlistCard/ShareListDialog'
+import { Button } from '@/components/ui/button'
 import { useQuery } from '@tanstack/react-query'
 import { listItem } from '@/lib/motion'
 import { getEventStatus } from '@/lib/utils'
@@ -26,6 +29,7 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
 
 function WishlistDetailed() {
   const { id: wishlistId } = Route.useParams()
+  const [shareModal, setShareModal] = useState(false)
 
   const { data: wishlist, isLoading } = useQuery({
     queryKey: ['wishlist', wishlistId],
@@ -60,6 +64,15 @@ function WishlistDetailed() {
           </div>
           <p className='text-2xl text-muted-foreground mt-2'>{wishlist.description}</p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShareModal(true)}
+          className="flex items-center gap-2"
+        >
+          <Share2 className="h-4 w-4" />
+          Share
+        </Button>
       </div>
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         <AnimatePresence mode="popLayout">
@@ -92,6 +105,11 @@ function WishlistDetailed() {
         </motion.div>
       )}
       <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistId} />
+      <ShareListDialog
+        wishlistId={wishlist.id}
+        isOpen={shareModal}
+        onOpenChange={setShareModal}
+      />
     </Fragment>
   )
 }

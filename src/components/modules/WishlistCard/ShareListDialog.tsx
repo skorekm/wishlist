@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Copy, Check, RefreshCw } from "lucide-react"
 import { toast } from 'sonner'
-import { generateShareLink, getShareLink, revokeShareLink } from "@/services"
+import { generateShareLink, getShareLink, regenerateShareLink } from "@/services"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,13 +61,15 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
     }
   }, [isOpen])
 
-  const handleGenerateLink = async () => {
+  const handleGenerateLink = async (showToast: boolean = true) => {
     setIsLoadingShare(true)
     try {
       const link = await generateShareLink(wishlistId)
       const url = `${window.location.origin}/wishlists/shared/${link.share_token}`
       setShareLink(url)
-      toast.success("Share link generated!")
+      if (showToast) {
+        toast.success("Share link generated!")
+      }
     } catch (error) {
       console.error('Error generating share link', error)
       toast.error("Failed to generate share link. Please try again.")
@@ -105,12 +107,9 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
     
     setIsLoadingShare(true)
     try {
-      // Extract token from URL
-      const token = shareLink.split('/').pop()
-      if (token) {
-        await revokeShareLink(token)
-      }
-      await handleGenerateLink()
+      const link = await regenerateShareLink(wishlistId)
+      const url = `${window.location.origin}/wishlists/shared/${link.share_token}`
+      setShareLink(url)
       toast.success("Share link regenerated!")
     } catch (error) {
       console.error('Error regenerating share link', error)
@@ -173,7 +172,7 @@ export function ShareListDialog({ wishlistId, isOpen, onOpenChange }: ShareListD
                 No share link exists for this wishlist yet. Generate one to share with others.
               </p>
               <Button 
-                onClick={handleGenerateLink}
+                onClick={() => handleGenerateLink()}
                 disabled={isLoadingShare}
                 className="w-full"
               >
