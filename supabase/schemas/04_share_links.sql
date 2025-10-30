@@ -24,6 +24,18 @@ create policy "Wishlist owners can view their own share links"
     )
   );
 
+-- Add policy to wishlists table now that share_links exists
+create policy "Anyone can view wishlists via valid share token"
+  on public.wishlists
+  for select
+  using (
+    exists (
+      select 1 from public.share_links
+      where share_links.wishlist_id = wishlists.id
+      and share_links.revoked_at is null
+    )
+  );
+
 -- Allow anonymous users to verify share links by token
 create policy "Anyone can verify share links by token"
   on public.share_links

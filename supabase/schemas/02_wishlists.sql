@@ -13,12 +13,6 @@ create table if not exists "wishlists" (
 -- Add row-level security policies
 alter table public.wishlists enable row level security;
 
--- Create policies
-create policy "Users who know the wishlist uuid can view the wishlist"
-  on public.wishlists
-  for select
-  using (true);
-
 create policy "Users can insert new wishlists when authenticated"
   on public.wishlists
   for insert
@@ -37,3 +31,33 @@ create policy "Users can update their own wishlists"
 
 -- Add index on author_id
 create index wishlists_author_id_idx on public.wishlists (author_id);
+
+-- Add permission assignment
+create or replace function assign_author_permissions()
+returns trigger as $$
+begin
+  -- Assign all author/owner permissions for the wishlist
+  insert into public.wishlist_permissions (wishlist_id, user_id, permission_id, created_by)
+  select 
+    new.id,
+    new.author_id,
+    p.id,
+    new.author_id
+  from public.permissions p
+  where p.name in (
+    'wishlist:view',
+    'wishlist:edit',
+    'wishlist:delete',
+    'wishlist:share',
+    'wishlist_item:create',
+    'wishlist_item:edit',
+    'wishlist_item:delete'
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger assign_author_permissions_trigger
+  after insert on public.wishlists
+  for each row
+  execute function assign_author_permissions();

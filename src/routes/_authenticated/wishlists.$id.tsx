@@ -28,12 +28,12 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
 })
 
 function WishlistDetailed() {
-  const { id: wishlistId } = Route.useParams()
   const [shareModal, setShareModal] = useState(false)
+  const { id: wishlistUuid } = Route.useParams()
 
   const { data: wishlist, isLoading } = useQuery({
-    queryKey: ['wishlist', wishlistId],
-    queryFn: () => getWishlist(wishlistId),
+    queryKey: ['wishlist', wishlistUuid],
+    queryFn: () => getWishlist(wishlistUuid),
     retry: 2,
     refetchOnWindowFocus: true,
     staleTime: 0,
@@ -86,7 +86,7 @@ function WishlistDetailed() {
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               layout
             >
-              <WishlistItemCard item={item} wishlistUuid={wishlistId} />
+              <WishlistItemCard item={item} wishlistUuid={wishlistUuid} />
             </motion.div>
           ))}
         </AnimatePresence>
@@ -104,7 +104,7 @@ function WishlistDetailed() {
           <p className="text-muted-foreground max-w-md">Add items to your wishlist so friends and family know what you'd love to receive.</p>
         </motion.div>
       )}
-      <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistId} />
+      <AddWishlistItem wishlistId={wishlist.id} wishlistUuid={wishlistUuid} />
       <ShareListDialog
         wishlistId={wishlist.id}
         isOpen={shareModal}

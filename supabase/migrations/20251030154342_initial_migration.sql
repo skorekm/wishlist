@@ -2,9 +2,13 @@ create type "public"."priority" as enum ('low', 'medium', 'high');
 
 create sequence "public"."currencies_id_seq";
 
+create sequence "public"."permissions_id_seq";
+
 create sequence "public"."share_links_id_seq";
 
 create sequence "public"."wishlist_items_id_seq";
+
+create sequence "public"."wishlist_permissions_id_seq";
 
 create sequence "public"."wishlists_id_seq";
 
@@ -19,6 +23,16 @@ create sequence "public"."wishlists_id_seq";
     "withdrawal_date" character varying(50)
       );
 
+
+
+  create table "public"."permissions" (
+    "id" integer not null default nextval('public.permissions_id_seq'::regclass),
+    "name" character varying(100) not null,
+    "description" character varying(100) not null
+      );
+
+
+alter table "public"."permissions" enable row level security;
 
 
   create table "public"."share_links" (
@@ -54,6 +68,19 @@ alter table "public"."share_links" enable row level security;
 alter table "public"."wishlist_items" enable row level security;
 
 
+  create table "public"."wishlist_permissions" (
+    "id" integer not null default nextval('public.wishlist_permissions_id_seq'::regclass),
+    "permission_id" integer not null,
+    "wishlist_id" integer not null,
+    "user_id" uuid not null,
+    "created_at" timestamp with time zone not null default now(),
+    "created_by" uuid not null
+      );
+
+
+alter table "public"."wishlist_permissions" enable row level security;
+
+
   create table "public"."wishlists" (
     "id" integer not null default nextval('public.wishlists_id_seq'::regclass),
     "uuid" uuid not null default gen_random_uuid(),
@@ -70,15 +97,25 @@ alter table "public"."wishlists" enable row level security;
 
 alter sequence "public"."currencies_id_seq" owned by "public"."currencies"."id";
 
+alter sequence "public"."permissions_id_seq" owned by "public"."permissions"."id";
+
 alter sequence "public"."share_links_id_seq" owned by "public"."share_links"."id";
 
 alter sequence "public"."wishlist_items_id_seq" owned by "public"."wishlist_items"."id";
+
+alter sequence "public"."wishlist_permissions_id_seq" owned by "public"."wishlist_permissions"."id";
 
 alter sequence "public"."wishlists_id_seq" owned by "public"."wishlists"."id";
 
 CREATE INDEX currencies_code_idx ON public.currencies USING btree (code);
 
 CREATE UNIQUE INDEX currencies_pkey ON public.currencies USING btree (id);
+
+CREATE INDEX permissions_description_idx ON public.permissions USING btree (description);
+
+CREATE INDEX permissions_name_idx ON public.permissions USING btree (name);
+
+CREATE UNIQUE INDEX permissions_pkey ON public.permissions USING btree (id);
 
 CREATE UNIQUE INDEX share_links_pkey ON public.share_links USING btree (id);
 
@@ -90,9 +127,19 @@ CREATE UNIQUE INDEX share_links_share_token_key ON public.share_links USING btre
 
 CREATE INDEX share_links_wishlist_id_idx ON public.share_links USING btree (wishlist_id);
 
+CREATE UNIQUE INDEX unique_wishlist_user_permission ON public.wishlist_permissions USING btree (wishlist_id, user_id, permission_id);
+
 CREATE UNIQUE INDEX wishlist_items_pkey ON public.wishlist_items USING btree (id);
 
 CREATE INDEX wishlist_items_wishlist_id_idx ON public.wishlist_items USING btree (wishlist_id);
+
+CREATE INDEX wishlist_permissions_permission_id_idx ON public.wishlist_permissions USING btree (permission_id);
+
+CREATE UNIQUE INDEX wishlist_permissions_pkey ON public.wishlist_permissions USING btree (id);
+
+CREATE INDEX wishlist_permissions_user_id_idx ON public.wishlist_permissions USING btree (user_id);
+
+CREATE INDEX wishlist_permissions_wishlist_id_idx ON public.wishlist_permissions USING btree (wishlist_id);
 
 CREATE INDEX wishlists_author_id_idx ON public.wishlists USING btree (author_id);
 
@@ -102,9 +149,13 @@ CREATE UNIQUE INDEX wishlists_uuid_key ON public.wishlists USING btree (uuid);
 
 alter table "public"."currencies" add constraint "currencies_pkey" PRIMARY KEY using index "currencies_pkey";
 
+alter table "public"."permissions" add constraint "permissions_pkey" PRIMARY KEY using index "permissions_pkey";
+
 alter table "public"."share_links" add constraint "share_links_pkey" PRIMARY KEY using index "share_links_pkey";
 
 alter table "public"."wishlist_items" add constraint "wishlist_items_pkey" PRIMARY KEY using index "wishlist_items_pkey";
+
+alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_pkey" PRIMARY KEY using index "wishlist_permissions_pkey";
 
 alter table "public"."wishlists" add constraint "wishlists_pkey" PRIMARY KEY using index "wishlists_pkey";
 
@@ -130,11 +181,59 @@ alter table "public"."wishlist_items" add constraint "wishlist_items_wishlist_id
 
 alter table "public"."wishlist_items" validate constraint "wishlist_items_wishlist_id_fkey";
 
+alter table "public"."wishlist_permissions" add constraint "unique_wishlist_user_permission" UNIQUE using index "unique_wishlist_user_permission";
+
+alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_created_by_fkey" FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
+
+alter table "public"."wishlist_permissions" validate constraint "wishlist_permissions_created_by_fkey";
+
+alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_permission_id_fkey" FOREIGN KEY (permission_id) REFERENCES public.permissions(id) ON DELETE CASCADE not valid;
+
+alter table "public"."wishlist_permissions" validate constraint "wishlist_permissions_permission_id_fkey";
+
+alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
+
+alter table "public"."wishlist_permissions" validate constraint "wishlist_permissions_user_id_fkey";
+
+alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_wishlist_id_fkey" FOREIGN KEY (wishlist_id) REFERENCES public.wishlists(id) ON DELETE CASCADE not valid;
+
+alter table "public"."wishlist_permissions" validate constraint "wishlist_permissions_wishlist_id_fkey";
+
 alter table "public"."wishlists" add constraint "wishlists_author_id_fkey" FOREIGN KEY (author_id) REFERENCES auth.users(id) not valid;
 
 alter table "public"."wishlists" validate constraint "wishlists_author_id_fkey";
 
 alter table "public"."wishlists" add constraint "wishlists_uuid_key" UNIQUE using index "wishlists_uuid_key";
+
+set check_function_bodies = off;
+
+CREATE OR REPLACE FUNCTION public.assign_author_permissions()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+begin
+  -- Assign all author/owner permissions for the wishlist
+  insert into public.wishlist_permissions (wishlist_id, user_id, permission_id, created_by)
+  select 
+    new.id,
+    new.author_id,
+    p.id,
+    new.author_id
+  from public.permissions p
+  where p.name in (
+    'wishlist:view',
+    'wishlist:edit',
+    'wishlist:delete',
+    'wishlist:share',
+    'wishlist_item:create',
+    'wishlist_item:edit',
+    'wishlist_item:delete'
+  );
+  return new;
+end;
+$function$
+;
 
 grant delete on table "public"."currencies" to "anon";
 
@@ -177,6 +276,48 @@ grant trigger on table "public"."currencies" to "service_role";
 grant truncate on table "public"."currencies" to "service_role";
 
 grant update on table "public"."currencies" to "service_role";
+
+grant delete on table "public"."permissions" to "anon";
+
+grant insert on table "public"."permissions" to "anon";
+
+grant references on table "public"."permissions" to "anon";
+
+grant select on table "public"."permissions" to "anon";
+
+grant trigger on table "public"."permissions" to "anon";
+
+grant truncate on table "public"."permissions" to "anon";
+
+grant update on table "public"."permissions" to "anon";
+
+grant delete on table "public"."permissions" to "authenticated";
+
+grant insert on table "public"."permissions" to "authenticated";
+
+grant references on table "public"."permissions" to "authenticated";
+
+grant select on table "public"."permissions" to "authenticated";
+
+grant trigger on table "public"."permissions" to "authenticated";
+
+grant truncate on table "public"."permissions" to "authenticated";
+
+grant update on table "public"."permissions" to "authenticated";
+
+grant delete on table "public"."permissions" to "service_role";
+
+grant insert on table "public"."permissions" to "service_role";
+
+grant references on table "public"."permissions" to "service_role";
+
+grant select on table "public"."permissions" to "service_role";
+
+grant trigger on table "public"."permissions" to "service_role";
+
+grant truncate on table "public"."permissions" to "service_role";
+
+grant update on table "public"."permissions" to "service_role";
 
 grant delete on table "public"."share_links" to "anon";
 
@@ -262,6 +403,48 @@ grant truncate on table "public"."wishlist_items" to "service_role";
 
 grant update on table "public"."wishlist_items" to "service_role";
 
+grant delete on table "public"."wishlist_permissions" to "anon";
+
+grant insert on table "public"."wishlist_permissions" to "anon";
+
+grant references on table "public"."wishlist_permissions" to "anon";
+
+grant select on table "public"."wishlist_permissions" to "anon";
+
+grant trigger on table "public"."wishlist_permissions" to "anon";
+
+grant truncate on table "public"."wishlist_permissions" to "anon";
+
+grant update on table "public"."wishlist_permissions" to "anon";
+
+grant delete on table "public"."wishlist_permissions" to "authenticated";
+
+grant insert on table "public"."wishlist_permissions" to "authenticated";
+
+grant references on table "public"."wishlist_permissions" to "authenticated";
+
+grant select on table "public"."wishlist_permissions" to "authenticated";
+
+grant trigger on table "public"."wishlist_permissions" to "authenticated";
+
+grant truncate on table "public"."wishlist_permissions" to "authenticated";
+
+grant update on table "public"."wishlist_permissions" to "authenticated";
+
+grant delete on table "public"."wishlist_permissions" to "service_role";
+
+grant insert on table "public"."wishlist_permissions" to "service_role";
+
+grant references on table "public"."wishlist_permissions" to "service_role";
+
+grant select on table "public"."wishlist_permissions" to "service_role";
+
+grant trigger on table "public"."wishlist_permissions" to "service_role";
+
+grant truncate on table "public"."wishlist_permissions" to "service_role";
+
+grant update on table "public"."wishlist_permissions" to "service_role";
+
 grant delete on table "public"."wishlists" to "anon";
 
 grant insert on table "public"."wishlists" to "anon";
@@ -310,6 +493,15 @@ grant update on table "public"."wishlists" to "service_role";
   as permissive
   for select
   to public
+using (true);
+
+
+
+  create policy "Authenticated users can view permissions"
+  on "public"."permissions"
+  as permissive
+  for select
+  to authenticated
 using (true);
 
 
@@ -412,6 +604,17 @@ using ((EXISTS ( SELECT 1
 
 
 
+  create policy "Anyone can view wishlists via valid share token"
+  on "public"."wishlists"
+  as permissive
+  for select
+  to public
+using ((EXISTS ( SELECT 1
+   FROM public.share_links
+  WHERE ((share_links.wishlist_id = wishlists.id) AND (share_links.revoked_at IS NULL)))));
+
+
+
   create policy "Users can insert new wishlists when authenticated"
   on "public"."wishlists"
   as permissive
@@ -438,13 +641,6 @@ using ((( SELECT auth.uid() AS uid) = author_id));
 using ((( SELECT auth.uid() AS uid) = author_id));
 
 
-
-  create policy "Users who know the wishlist uuid can view the wishlist"
-  on "public"."wishlists"
-  as permissive
-  for select
-  to public
-using (true);
-
+CREATE TRIGGER assign_author_permissions_trigger AFTER INSERT ON public.wishlists FOR EACH ROW EXECUTE FUNCTION public.assign_author_permissions();
 
 
