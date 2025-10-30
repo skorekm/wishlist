@@ -31,6 +31,16 @@ create policy "Wishlist owners can view their own share links"
     )
   );
 
+-- Allow anonymous users to verify share links by token
+create policy "Anyone can verify share links by token"
+  on public.share_links
+  as permissive
+  for select
+  to anon
+  using (
+    revoked_at IS NULL
+  );
+
 -- Only authenticated users can create share links for their own wishlists
 create policy "Users can create share links for their own wishlists"
   on public.share_links

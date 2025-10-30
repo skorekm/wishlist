@@ -314,6 +314,15 @@ using (true);
 
 
 
+  create policy "Anyone can verify share links by token"
+  on "public"."share_links"
+  as permissive
+  for select
+  to anon
+using ((revoked_at IS NULL));
+
+
+
   create policy "Users can create share links for their own wishlists"
   on "public"."share_links"
   as permissive
