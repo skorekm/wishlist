@@ -111,8 +111,7 @@ function WishlistDetailed() {
               <WishlistItemCard 
                 item={item} 
                 wishlistUuid={wishlistUuid}
-                canEdit={canEditItems}
-                canDelete={canDeleteItems}
+                permissions={{ canEdit: canEditItems, canDelete: canDeleteItems }}
               />
             </motion.div>
           ))}

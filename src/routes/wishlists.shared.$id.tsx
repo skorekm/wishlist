@@ -94,8 +94,6 @@ function SharedWishlist() {
                   <WishlistItemCard 
                     item={item} 
                     wishlistUuid={wishlist.uuid}
-                    canEdit={false}
-                    canDelete={false}
                   />
                 </motion.div>
               ))}

@@ -10,11 +10,15 @@ import { DeleteItemDialog } from "./DeleteItemDialog"
 import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
+export interface WishlistItemPermissions {
+  canEdit?: boolean
+  canDelete?: boolean
+}
+
 interface WishlistItemCardProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   wishlistUuid: string
-  canEdit: boolean
-  canDelete: boolean
+  permissions?: WishlistItemPermissions
 }
 
 const priorityColors: Record<string, string> = {
@@ -23,9 +27,12 @@ const priorityColors: Record<string, string> = {
   high: "border-red-500 bg-red-500/20",
 };
 
-export function WishlistItemCard({ item, wishlistUuid, canEdit, canDelete }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
+
+  // Secure by default: permissions default to false
+  const { canEdit = false, canDelete = false } = permissions
 
   // Show dropdown only if user has edit or delete permissions
   const showActions = canEdit || canDelete
