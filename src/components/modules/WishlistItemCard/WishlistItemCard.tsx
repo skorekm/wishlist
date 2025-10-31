@@ -6,13 +6,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
-import { DeleteItemDialog } from "./DeleteItemDialog"
-import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
+import { Badge } from "../../ui/badge"
+import { ReserveItem } from "../ReserveItem/ReserveItem"
+import { DeleteItemDialog } from "./DeleteItemDialog"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
   canDelete?: boolean
+  canGrab?: boolean
 }
 
 interface WishlistItemCardProps {
@@ -32,7 +34,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
   const [editModal, setEditModal] = useState(false)
 
   // Secure by default: permissions default to false
-  const { canEdit = false, canDelete = false } = permissions
+  const { canEdit = false, canDelete = false, canGrab = false } = permissions
 
   // Show dropdown only if user has edit or delete permissions
   const showActions = canEdit || canDelete
@@ -69,6 +71,9 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
                 )}
               </div>
             </div>
+            {canGrab && !showActions && (
+              <ReserveItem item={item} />
+            )}
             {showActions && (
               <div className="flex items-start">
                 <DropdownMenu modal={false}>

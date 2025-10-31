@@ -20,7 +20,7 @@ function SharedWishlist() {
     queryKey: ['shared-wishlist', shareToken],
     queryFn: () => getWishlistByShareToken(shareToken),
     retry: 1,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
@@ -95,6 +95,7 @@ function SharedWishlist() {
                   <WishlistItemCard 
                     item={item} 
                     wishlistUuid={wishlist.uuid}
+                    permissions={{ canGrab: true}}
                   />
                 </motion.div>
               ))}

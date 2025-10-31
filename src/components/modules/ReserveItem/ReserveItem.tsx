@@ -1,0 +1,83 @@
+import { useState } from "react";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Database } from "@/database.types";
+
+const reserveItemSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email").or(z.literal('')),
+});
+
+export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
+
+export function ReserveItem({ item }: { item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } } }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { register, handleSubmit, formState: { isValid, isSubmitting, errors }, reset } = useForm<ReserveItemFormData>({
+    resolver: zodResolver(reserveItemSchema),
+    mode: 'onChange',
+    defaultValues: {
+      name: '',
+      email: '',
+    },
+  });
+
+  const onSubmit = (data: ReserveItemFormData) => {
+    console.log(data);
+  }
+
+  const closeDialog = () => {
+    reset();
+    setIsOpen(false);
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button>Grab Item</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogHeader>
+            <DialogTitle>Reserve {item.name}</DialogTitle>
+            <DialogDescription>
+              Fill out your information to reserve <b>{item.name}</b>. Please provide your name and email (optional). The item will be reserved for you for the next 48 hours.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input 
+                id="name" 
+                placeholder="Enter your name" 
+                aria-invalid={!!errors.name}
+                required
+                {...register('name')} 
+              />
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.name?.message || '\u00A0'}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email (optional)</Label>
+              <Input
+                id="email"
+                placeholder="Enter your email"
+                aria-invalid={!!errors.email}
+                {...register('email')}
+              />
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.email?.message || '\u00A0'}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeDialog}>Cancel</Button>
+            <Button type="submit" disabled={!isValid || isSubmitting}>Reserve Item</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
