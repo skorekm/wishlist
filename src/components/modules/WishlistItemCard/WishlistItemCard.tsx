@@ -10,9 +10,15 @@ import { DeleteItemDialog } from "./DeleteItemDialog"
 import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
 
+export interface WishlistItemPermissions {
+  canEdit?: boolean
+  canDelete?: boolean
+}
+
 interface WishlistItemCardProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   wishlistUuid: string
+  permissions?: WishlistItemPermissions
 }
 
 const priorityColors: Record<string, string> = {
@@ -21,9 +27,15 @@ const priorityColors: Record<string, string> = {
   high: "border-red-500 bg-red-500/20",
 };
 
-export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
+
+  // Secure by default: permissions default to false
+  const { canEdit = false, canDelete = false } = permissions
+
+  // Show dropdown only if user has edit or delete permissions
+  const showActions = canEdit || canDelete
 
   return (
     <motion.div
@@ -57,24 +69,30 @@ export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) 
                 )}
               </div>
             </div>
-            <div className="flex items-start">
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">
-                    Edit Item
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">
-                    Delete Item
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {showActions && (
+              <div className="flex items-start">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canEdit && (
+                      <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">
+                        Edit Item
+                      </DropdownMenuItem>
+                    )}
+                    {canEdit && canDelete && <DropdownMenuSeparator />}
+                    {canDelete && (
+                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">
+                        Delete Item
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
           <p className="text-sm text-muted-foreground line-clamp-3">{item.notes}</p>
           {item.link && (
@@ -92,20 +110,24 @@ export function WishlistItemCard({ item, wishlistUuid }: WishlistItemCardProps) 
         </CardContent>
       </Card>
       
-      <DeleteItemDialog
-        itemId={item.id}
-        itemName={item.name}
-        wishlistUuid={wishlistUuid}
-        isOpen={deleteModal}
-        onOpenChange={setDeleteModal}
-      />
+      {canDelete && (
+        <DeleteItemDialog
+          itemId={item.id}
+          itemName={item.name}
+          wishlistUuid={wishlistUuid}
+          isOpen={deleteModal}
+          onOpenChange={setDeleteModal}
+        />
+      )}
       
-      <EditWishlistItem
-        item={item}
-        isOpen={editModal}
-        onOpenChange={setEditModal}
-        wishlistUuid={wishlistUuid}
-      />
+      {canEdit && (
+        <EditWishlistItem
+          item={item}
+          isOpen={editModal}
+          onOpenChange={setEditModal}
+          wishlistUuid={wishlistUuid}
+        />
+      )}
     </motion.div>
   )
 }

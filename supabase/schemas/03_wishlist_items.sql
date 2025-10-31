@@ -31,21 +31,44 @@ create policy "Users who know the wishlist uuid can view the wishlist items"
   );
   
 
-create policy "Users can insert new wishlist items when authenticated"
+-- Users can insert wishlist items if they own the wishlist
+create policy "Wishlist owners can insert items"
   on public.wishlist_items
   for insert
   to authenticated
-  with check ((select auth.uid()) = author_id);
+  with check (
+    exists (
+      select 1 from public.wishlists w
+      where w.id = wishlist_items.wishlist_id
+      and w.author_id = (select auth.uid())
+    )
+  );
 
-create policy "Users can only delete their own wishlist items"
+-- Users can delete wishlist items if they own the wishlist
+create policy "Wishlist owners can delete items"
   on public.wishlist_items
   for delete
-  using ((select auth.uid()) = author_id);
+  to authenticated
+  using (
+    exists (
+      select 1 from public.wishlists w
+      where w.id = wishlist_items.wishlist_id
+      and w.author_id = (select auth.uid())
+    )
+  );
 
-create policy "Users can update their own wishlist items"
+-- Users can update wishlist items if they own the wishlist
+create policy "Wishlist owners can update items"
   on public.wishlist_items
   for update
-  using ((select auth.uid()) = author_id);
+  to authenticated
+  using (
+    exists (
+      select 1 from public.wishlists w
+      where w.id = wishlist_items.wishlist_id
+      and w.author_id = (select auth.uid())
+    )
+  );
 
 -- Add index on wishlist_id
 create index wishlist_items_wishlist_id_idx on public.wishlist_items (wishlist_id);
