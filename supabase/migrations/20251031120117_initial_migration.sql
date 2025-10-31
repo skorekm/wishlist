@@ -558,33 +558,6 @@ with check (((created_by = ( SELECT auth.uid() AS uid)) AND (share_token = ( SEL
 
 
 
-  create policy "Users can insert new wishlist items when authenticated"
-  on "public"."wishlist_items"
-  as permissive
-  for insert
-  to authenticated
-with check ((( SELECT auth.uid() AS uid) = author_id));
-
-
-
-  create policy "Users can only delete their own wishlist items"
-  on "public"."wishlist_items"
-  as permissive
-  for delete
-  to public
-using ((( SELECT auth.uid() AS uid) = author_id));
-
-
-
-  create policy "Users can update their own wishlist items"
-  on "public"."wishlist_items"
-  as permissive
-  for update
-  to public
-using ((( SELECT auth.uid() AS uid) = author_id));
-
-
-
   create policy "Users who know the wishlist uuid can view the wishlist items"
   on "public"."wishlist_items"
   as permissive
@@ -593,6 +566,39 @@ using ((( SELECT auth.uid() AS uid) = author_id));
 using ((EXISTS ( SELECT 1
    FROM public.wishlists
   WHERE (wishlists.id = wishlist_items.wishlist_id))));
+
+
+
+  create policy "Wishlist owners can delete items"
+  on "public"."wishlist_items"
+  as permissive
+  for delete
+  to authenticated
+using ((EXISTS ( SELECT 1
+   FROM public.wishlists w
+  WHERE ((w.id = wishlist_items.wishlist_id) AND (w.author_id = ( SELECT auth.uid() AS uid))))));
+
+
+
+  create policy "Wishlist owners can insert items"
+  on "public"."wishlist_items"
+  as permissive
+  for insert
+  to authenticated
+with check ((EXISTS ( SELECT 1
+   FROM public.wishlists w
+  WHERE ((w.id = wishlist_items.wishlist_id) AND (w.author_id = ( SELECT auth.uid() AS uid))))));
+
+
+
+  create policy "Wishlist owners can update items"
+  on "public"."wishlist_items"
+  as permissive
+  for update
+  to authenticated
+using ((EXISTS ( SELECT 1
+   FROM public.wishlists w
+  WHERE ((w.id = wishlist_items.wishlist_id) AND (w.author_id = ( SELECT auth.uid() AS uid))))));
 
 
 

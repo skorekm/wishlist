@@ -7,44 +7,11 @@ import { Link } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'motion/react'
 import { listItem, stagger } from '@/lib/motion'
 import { Gift, Calendar } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { getEventStatus } from '@/lib/utils'
 
 export const Route = createFileRoute('/wishlists/shared/$id')({
   component: SharedWishlist,
 })
-
-function getEventBadgeVariant(eventDate: string | null): { variant: 'default' | 'secondary' | 'destructive' | 'outline', text: string } {
-  if (!eventDate) return { variant: 'secondary', text: '' };
-  // Parse as local date and compare at midday to avoid TZ/DST off-by-one
-  const toLocalMidday = (d: Date) =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
-  const todayMidday = toLocalMidday(new Date());
-  const eventDateObj = toLocalMidday(new Date(`${eventDate}T00:00:00`));
-  if (Number.isNaN(eventDateObj.getTime())) {
-    return { variant: 'secondary', text: '' };
-  }
-  const diffTime = eventDateObj.getTime() - todayMidday.getTime();
-  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-  
-  if (diffDays < 0) {
-    return { variant: 'secondary', text: 'Event passed' };
-  } else if (diffDays === 0) {
-    return { variant: 'default', text: 'Today!' };
-  } else if (diffDays <= 7) {
-    return { variant: 'destructive', text: `${diffDays} day${diffDays === 1 ? '' : 's'} left` };
-  } else if (diffDays <= 30) {
-    return { variant: 'default', text: `${diffDays} days left` };
-  } else {
-    return {
-      variant: 'outline',
-      text: eventDateObj.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      }),
-    };
-  }
-}
 
 function SharedWishlist() {
   const { id: shareToken } = Route.useParams()
@@ -83,7 +50,7 @@ function SharedWishlist() {
     )
   }
 
-  const eventBadge = getEventBadgeVariant(wishlist.event_date);
+  const eventStatus = getEventStatus(wishlist.event_date)
 
   return (
     <div className="container mx-auto py-8">
@@ -91,11 +58,11 @@ function SharedWishlist() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-medium">{wishlist.name}</h1>
-            {wishlist.event_date && eventBadge.text && (
-              <Badge variant={eventBadge.variant} className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {eventBadge.text}
-              </Badge>
+            {eventStatus && (
+              <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{eventStatus.text}</span>
+              </div>
             )}
           </div>
           {wishlist.description && (
@@ -124,7 +91,12 @@ function SharedWishlist() {
                   transition={{ type: "spring", stiffness: 300, damping: 24 }}
                   layout
                 >
-                  <WishlistItemCard item={item} wishlistUuid={wishlist.uuid} />
+                  <WishlistItemCard 
+                    item={item} 
+                    wishlistUuid={wishlist.uuid}
+                    canEdit={false}
+                    canDelete={false}
+                  />
                 </motion.div>
               ))}
             </AnimatePresence>

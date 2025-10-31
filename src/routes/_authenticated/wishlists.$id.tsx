@@ -61,6 +61,8 @@ function WishlistDetailed() {
   // Permission checks using constants
   const canShare = canPerformAction(PERMISSIONS.WISHLIST.SHARE)
   const canAddItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.CREATE)
+  const canEditItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.EDIT)
+  const canDeleteItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.DELETE)
 
   return (
     <Fragment>
@@ -106,7 +108,12 @@ function WishlistDetailed() {
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
               layout
             >
-              <WishlistItemCard item={item} wishlistUuid={wishlistUuid} />
+              <WishlistItemCard 
+                item={item} 
+                wishlistUuid={wishlistUuid}
+                canEdit={canEditItems}
+                canDelete={canDeleteItems}
+              />
             </motion.div>
           ))}
         </AnimatePresence>
