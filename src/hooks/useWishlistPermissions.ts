@@ -7,7 +7,6 @@ interface UseWishlistPermissionsOptions {
   wishlistId?: number;
   authorId?: string;
   enabled?: boolean;
-  realtimeSync?: boolean;
 }
 
 interface UseWishlistPermissionsReturn {
@@ -15,6 +14,7 @@ interface UseWishlistPermissionsReturn {
   canPerformAction: (action: PermissionName) => boolean;
   isOwner: boolean;
   isLoading: boolean;
+  error: Error | null;
 }
 
 export function useWishlistPermissions({
@@ -23,15 +23,15 @@ export function useWishlistPermissions({
   enabled = true,
 }: UseWishlistPermissionsOptions): UseWishlistPermissionsReturn {
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       return data.user;
     },
-    staleTime: Infinity,
+    queryKey: ['currentUser'],
+    staleTime: 5 * 60 * 1000,
   });
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['wishlistPermissions', wishlistId, user?.id],
     queryFn: () => getUserPermissionsForWishlist(wishlistId!, authorId!),
     enabled: enabled && !!wishlistId && !!authorId && !!user,
@@ -44,6 +44,7 @@ export function useWishlistPermissions({
     canPerformAction: data?.canPerformAction ?? (() => false),
     isOwner: data?.isOwner ?? false,
     isLoading,
+    error: error,
   };
 }
 

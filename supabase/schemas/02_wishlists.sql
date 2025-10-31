@@ -7,7 +7,7 @@ create table if not exists "wishlists" (
   event_date date,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null,
-  author_id uuid references auth.users(id) not null
+  author_id uuid references auth.users(id) on delete cascade not null
 );
 
 -- Add row-level security policies

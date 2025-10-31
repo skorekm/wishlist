@@ -49,6 +49,7 @@ export async function getUserPermissionsForWishlist(
     };
   }
 
+  // TODO: Handle permissions that are not in the permissions table
   const permissions = (data || [])
     .map((row) => row.permissions?.name)
     .filter(Boolean) as PermissionName[];

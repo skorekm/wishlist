@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { getWishlistByShareToken } from '@/services'
@@ -59,7 +60,7 @@ function SharedWishlist() {
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-4xl font-medium">{wishlist.name}</h1>
             {eventStatus && (
-              <div className={`flex items-center gap-1.5 text-sm ${eventStatus.color}`}>
+              <div className={clsx('flex items-center gap-1.5 text-sm', eventStatus.color)}>
                 <Calendar className="h-3.5 w-3.5" />
                 <span>{eventStatus.text}</span>
               </div>

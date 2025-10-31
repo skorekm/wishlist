@@ -199,7 +199,7 @@ alter table "public"."wishlist_permissions" add constraint "wishlist_permissions
 
 alter table "public"."wishlist_permissions" validate constraint "wishlist_permissions_wishlist_id_fkey";
 
-alter table "public"."wishlists" add constraint "wishlists_author_id_fkey" FOREIGN KEY (author_id) REFERENCES auth.users(id) not valid;
+alter table "public"."wishlists" add constraint "wishlists_author_id_fkey" FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
 
 alter table "public"."wishlists" validate constraint "wishlists_author_id_fkey";
 

@@ -33,7 +33,7 @@ function WishlistDetailed() {
   const [shareModal, setShareModal] = useState(false)
   const { id: wishlistUuid } = Route.useParams()
 
-  const { data: wishlist, isLoading: isLoadingWishlist } = useQuery({
+  const { data: wishlist, isLoading: isLoadingWishlist, error: wishlistError } = useQuery({
     queryKey: ['wishlist', wishlistUuid],
     queryFn: () => getWishlist(wishlistUuid),
     retry: 2,
@@ -41,7 +41,7 @@ function WishlistDetailed() {
     staleTime: 0,
   })
 
-  const { canPerformAction, isOwner, isLoading: isLoadingPermissions } = useWishlistPermissions({
+  const { canPerformAction, isOwner, isLoading: isLoadingPermissions, error: permissionsError } = useWishlistPermissions({
     wishlistId: wishlist?.id,
     authorId: wishlist?.author_id,
   })
@@ -54,6 +54,10 @@ function WishlistDetailed() {
 
   if (!wishlist) {
     return <div>Wishlist not found</div>
+  }
+
+  if (wishlistError || permissionsError) {
+    return <div>Error loading wishlist: {wishlistError?.message || permissionsError?.message || 'Unknown error'}</div>
   }
 
   const eventStatus = getEventStatus(wishlist.event_date)
