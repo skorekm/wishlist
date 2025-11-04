@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Database } from "@/database.types";
+import { supabase } from "@/supabaseClient";
 
 const reserveItemSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email").or(z.literal('')),
+  email: z.string().email("Invalid email"),
 });
 
 export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
@@ -27,8 +28,15 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
     },
   });
 
-  const onSubmit = (data: ReserveItemFormData) => {
-    console.log(data);
+  const onSubmit = async (data: ReserveItemFormData) => {
+    const { data: response, error } = await supabase.functions.invoke('reserve-item', {
+      body: { name: data.name, email: data.email, itemId: item.id },
+    })
+    if (error) {
+      console.error('Error reserving item', error);
+    } else {
+      console.log('Item reserved', response);
+    }
   }
 
   const closeDialog = () => {
@@ -46,7 +54,8 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
           <DialogHeader>
             <DialogTitle>Reserve {item.name}</DialogTitle>
             <DialogDescription>
-              Fill out your information to reserve <b>{item.name}</b>. Please provide your name and email (optional). The item will be reserved for you for the next 48 hours.
+              Fill out your information to reserve <b>{item.name}</b>. Please provide your name and email. The item will be reserved for you for the next <b>48 hours</b>. <br/> 
+              We need your email so that you can change the item status to purchased!
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -62,7 +71,7 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
               <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email (optional)</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 placeholder="Enter your email"

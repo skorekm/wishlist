@@ -1,8 +1,12 @@
 create type "public"."priority" as enum ('low', 'medium', 'high');
 
+create type "public"."reservation_status" as enum ('reserved', 'purchased', 'cancelled');
+
 create sequence "public"."currencies_id_seq";
 
 create sequence "public"."permissions_id_seq";
+
+create sequence "public"."reservations_id_seq";
 
 create sequence "public"."share_links_id_seq";
 
@@ -33,6 +37,22 @@ create sequence "public"."wishlists_id_seq";
 
 
 alter table "public"."permissions" enable row level security;
+
+
+  create table "public"."reservations" (
+    "id" integer not null default nextval('public.reservations_id_seq'::regclass),
+    "wishlist_item_id" integer not null,
+    "user_id" character varying(255),
+    "reserver_name" character varying(255),
+    "reserver_email" character varying(255),
+    "reservation_code" character varying(255) not null,
+    "created_at" timestamp with time zone not null default now(),
+    "expires_at" timestamp with time zone not null,
+    "status" public.reservation_status not null
+      );
+
+
+alter table "public"."reservations" enable row level security;
 
 
   create table "public"."share_links" (
@@ -99,6 +119,8 @@ alter sequence "public"."currencies_id_seq" owned by "public"."currencies"."id";
 
 alter sequence "public"."permissions_id_seq" owned by "public"."permissions"."id";
 
+alter sequence "public"."reservations_id_seq" owned by "public"."reservations"."id";
+
 alter sequence "public"."share_links_id_seq" owned by "public"."share_links"."id";
 
 alter sequence "public"."wishlist_items_id_seq" owned by "public"."wishlist_items"."id";
@@ -116,6 +138,8 @@ CREATE INDEX permissions_description_idx ON public.permissions USING btree (desc
 CREATE INDEX permissions_name_idx ON public.permissions USING btree (name);
 
 CREATE UNIQUE INDEX permissions_pkey ON public.permissions USING btree (id);
+
+CREATE UNIQUE INDEX reservations_pkey ON public.reservations USING btree (id);
 
 CREATE UNIQUE INDEX share_links_pkey ON public.share_links USING btree (id);
 
@@ -151,6 +175,8 @@ alter table "public"."currencies" add constraint "currencies_pkey" PRIMARY KEY u
 
 alter table "public"."permissions" add constraint "permissions_pkey" PRIMARY KEY using index "permissions_pkey";
 
+alter table "public"."reservations" add constraint "reservations_pkey" PRIMARY KEY using index "reservations_pkey";
+
 alter table "public"."share_links" add constraint "share_links_pkey" PRIMARY KEY using index "share_links_pkey";
 
 alter table "public"."wishlist_items" add constraint "wishlist_items_pkey" PRIMARY KEY using index "wishlist_items_pkey";
@@ -158,6 +184,10 @@ alter table "public"."wishlist_items" add constraint "wishlist_items_pkey" PRIMA
 alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_pkey" PRIMARY KEY using index "wishlist_permissions_pkey";
 
 alter table "public"."wishlists" add constraint "wishlists_pkey" PRIMARY KEY using index "wishlists_pkey";
+
+alter table "public"."reservations" add constraint "reservations_wishlist_item_id_fkey" FOREIGN KEY (wishlist_item_id) REFERENCES public.wishlist_items(id) ON DELETE CASCADE not valid;
+
+alter table "public"."reservations" validate constraint "reservations_wishlist_item_id_fkey";
 
 alter table "public"."share_links" add constraint "share_links_created_by_fkey" FOREIGN KEY (created_by) REFERENCES auth.users(id) not valid;
 
@@ -318,6 +348,48 @@ grant trigger on table "public"."permissions" to "service_role";
 grant truncate on table "public"."permissions" to "service_role";
 
 grant update on table "public"."permissions" to "service_role";
+
+grant delete on table "public"."reservations" to "anon";
+
+grant insert on table "public"."reservations" to "anon";
+
+grant references on table "public"."reservations" to "anon";
+
+grant select on table "public"."reservations" to "anon";
+
+grant trigger on table "public"."reservations" to "anon";
+
+grant truncate on table "public"."reservations" to "anon";
+
+grant update on table "public"."reservations" to "anon";
+
+grant delete on table "public"."reservations" to "authenticated";
+
+grant insert on table "public"."reservations" to "authenticated";
+
+grant references on table "public"."reservations" to "authenticated";
+
+grant select on table "public"."reservations" to "authenticated";
+
+grant trigger on table "public"."reservations" to "authenticated";
+
+grant truncate on table "public"."reservations" to "authenticated";
+
+grant update on table "public"."reservations" to "authenticated";
+
+grant delete on table "public"."reservations" to "service_role";
+
+grant insert on table "public"."reservations" to "service_role";
+
+grant references on table "public"."reservations" to "service_role";
+
+grant select on table "public"."reservations" to "service_role";
+
+grant trigger on table "public"."reservations" to "service_role";
+
+grant truncate on table "public"."reservations" to "service_role";
+
+grant update on table "public"."reservations" to "service_role";
 
 grant delete on table "public"."share_links" to "anon";
 
@@ -503,6 +575,36 @@ using (true);
   for select
   to authenticated
 using (true);
+
+
+
+  create policy "Anyone can create a reservation"
+  on "public"."reservations"
+  as permissive
+  for insert
+  to anon, authenticated
+with check (true);
+
+
+
+  create policy "Anyone can view a reservation"
+  on "public"."reservations"
+  as permissive
+  for select
+  to anon, authenticated
+using (true);
+
+
+
+  create policy "Wishlist owners can view the full reservation details"
+  on "public"."reservations"
+  as permissive
+  for select
+  to authenticated
+using ((EXISTS ( SELECT 1
+   FROM (public.wishlist_items wi
+     JOIN public.wishlists w ON ((w.id = wi.wishlist_id)))
+  WHERE ((wi.id = reservations.wishlist_item_id) AND (w.author_id = auth.uid())))));
 
 
 
