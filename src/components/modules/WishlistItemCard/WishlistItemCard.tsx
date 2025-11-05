@@ -10,6 +10,9 @@ import { getPriorityLabel } from "@/lib/utils"
 import { Badge } from "../../ui/badge"
 import { ReserveItem } from "../ReserveItem/ReserveItem"
 import { DeleteItemDialog } from "./DeleteItemDialog"
+import { markItemAsPurchased } from "@/services/reservations"
+import { useQueryClient, useMutation } from "@tanstack/react-query"
+import { toast } from "sonner"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
@@ -21,9 +24,12 @@ interface WishlistItemCardProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { 
     currency: { code: string }
     status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
+    userHasReserved?: boolean
+    userReservationCode?: string
   }
   wishlistUuid: string
   permissions?: WishlistItemPermissions
+  reservationCode?: string
 }
 
 const priorityColors: Record<string, string> = {
@@ -51,9 +57,10 @@ const statusConfig = {
   }
 };
 
-export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
+  const queryClient = useQueryClient()
 
   // Secure by default: permissions default to false
   const { canEdit = false, canDelete = false, canGrab = false } = permissions
@@ -65,6 +72,28 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
   const itemStatus = item.status || 'available'
   const statusInfo = statusConfig[itemStatus]
   const isAvailable = itemStatus === 'available'
+  
+  // Check if user can mark as purchased
+  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode
+
+  // Mutation for marking item as purchased
+  const markPurchasedMutation = useMutation({
+    mutationFn: async () => {
+      if (!item.userReservationCode) {
+        throw new Error('No reservation code found')
+      }
+      return markItemAsPurchased(item.userReservationCode)
+    },
+    onSuccess: () => {
+      toast.success('Item marked as purchased! 🎉')
+      // Invalidate the query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
+    },
+    onError: (error) => {
+      toast.error('Failed to mark item as purchased')
+      console.error('Error marking item as purchased:', error)
+    }
+  })
 
   return (
     <motion.div
@@ -106,7 +135,17 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
                 )}
               </div>
             </div>
-            {canGrab && !showActions && isAvailable && (
+            {canMarkPurchased && (
+              <Button 
+                size="sm"
+                onClick={() => markPurchasedMutation.mutate()}
+                disabled={markPurchasedMutation.isPending}
+                className="shrink-0"
+              >
+                {markPurchasedMutation.isPending ? 'Processing...' : 'Mark Purchased'}
+              </Button>
+            )}
+            {canGrab && !showActions && !canMarkPurchased && isAvailable && (
               <ReserveItem item={item} />
             )}
             {showActions && (

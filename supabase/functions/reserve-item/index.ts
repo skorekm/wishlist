@@ -15,7 +15,6 @@ const checkExistingReservation = async (supabase: SupabaseClient, itemId: string
     return { exists: false, error: error.message };
   }
 
-  console.log("data", data);
   return { exists: !!data };
 }
 

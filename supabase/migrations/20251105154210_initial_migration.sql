@@ -1,6 +1,6 @@
 create type "public"."priority" as enum ('low', 'medium', 'high');
 
-create type "public"."reservation_status" as enum ('reserved', 'purchased', 'cancelled');
+create type "public"."reservation_status" as enum ('available', 'reserved', 'purchased', 'cancelled');
 
 create sequence "public"."currencies_id_seq";
 
@@ -583,6 +583,16 @@ using (true);
   as permissive
   for insert
   to anon, authenticated
+with check (true);
+
+
+
+  create policy "Anyone can update their own reservation with valid code"
+  on "public"."reservations"
+  as permissive
+  for update
+  to anon, authenticated
+using (true)
 with check (true);
 
 

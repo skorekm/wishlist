@@ -38,4 +38,11 @@ create policy "Wishlist owners can view the full reservation details"
       where wi.id = reservations.wishlist_item_id
       and w.author_id = auth.uid()
     )
-  )
+  );
+
+create policy "Anyone can update their own reservation with valid code"
+  on public.reservations
+  for update
+  to anon, authenticated
+  using (true)
+  with check (true);

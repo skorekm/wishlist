@@ -308,7 +308,7 @@ export type Database = {
     }
     Enums: {
       priority: "low" | "medium" | "high"
-      reservation_status: "reserved" | "purchased" | "cancelled"
+      reservation_status: "available" | "reserved" | "purchased" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -440,7 +440,7 @@ export const Constants = {
   public: {
     Enums: {
       priority: ["low", "medium", "high"],
-      reservation_status: ["reserved", "purchased", "cancelled"],
+      reservation_status: ["available", "reserved", "purchased", "cancelled"],
     },
   },
 } as const

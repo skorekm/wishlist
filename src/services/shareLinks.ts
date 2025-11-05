@@ -128,7 +128,7 @@ export async function regenerateShareLink(wishlistId: number) {
   return data;
 }
 
-export async function getWishlistByShareToken(shareToken: string) {
+export async function getWishlistByShareToken(shareToken: string, reservationCode?: string) {
   // First, verify the share link exists and is not revoked
   const { data: shareLink, error: shareLinkError } = await supabase
     .from('share_links')
@@ -144,7 +144,7 @@ export async function getWishlistByShareToken(shareToken: string) {
   // Get the wishlist with items and reservation status
   const { data: wishlist, error: wishlistError } = await supabase
     .from('wishlists')
-    .select('*, items:wishlist_items(*, currency:currencies(code), reservations(status, created_at))')
+    .select('*, items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, reservation_code))')
     .eq('id', shareLink.wishlist_id)
     .single();
 
@@ -162,9 +162,16 @@ export async function getWishlistByShareToken(shareToken: string) {
     );
     const latestReservation = sortedReservations?.[0];
     
+    // Check if the user has reserved this item (matching reservation code)
+    const userReservation = reservationCode 
+      ? item.reservations?.find(r => r.reservation_code === reservationCode && r.status === 'reserved')
+      : null;
+    
     return {
       ...item,
       status: latestReservation?.status ?? 'available',
+      userHasReserved: !!userReservation,
+      userReservationCode: userReservation?.reservation_code,
       reservations: undefined, // Remove the reservations array from the final object
     };
   });
