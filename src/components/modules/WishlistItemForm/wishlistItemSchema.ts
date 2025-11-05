@@ -6,7 +6,7 @@ export type WishlistItemFormDataBase = {
   name: string
   price: number
   priority: Database["public"]["Enums"]["priority"]
-  category: string
+  category?: string | null
   link: string | null
   notes?: string | null
 }
@@ -36,9 +36,8 @@ export const addWishlistItemSchema = z.object({
   }),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string()
-    .min(1, "Category is required")
-    .max(50, "Category cannot be longer than 50 characters")
-    .trim(),
+    .optional()
+    .nullable(),
   link: z.string()
     .trim()
     .transform(val => val === '' ? null : val)
@@ -64,9 +63,8 @@ export const editWishlistItemSchema = z.object({
     .max(10000, "Price cannot be greater than 10000"),
   priority: z.enum(['low', 'medium', 'high']),
   category: z.string()
-    .min(1, "Category is required")
-    .max(50, "Category cannot be longer than 50 characters")
-    .trim(),
+    .optional()
+    .nullable(),
   link: z.string()
     .trim()
     .transform(val => val === '' ? null : val)
