@@ -18,7 +18,10 @@ export interface WishlistItemPermissions {
 }
 
 interface WishlistItemCardProps {
-  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { 
+    currency: { code: string }
+    status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
+  }
   wishlistUuid: string
   permissions?: WishlistItemPermissions
 }
@@ -27,6 +30,25 @@ const priorityColors: Record<string, string> = {
   low: "border-yellow-500 bg-yellow-500/20",
   medium: "border-orange-500 bg-orange-500/20",
   high: "border-red-500 bg-red-500/20",
+};
+
+const statusConfig = {
+  available: {
+    label: "Available",
+    badgeColor: "border-green-500 bg-green-500/20 text-green-700 dark:text-green-400",
+  },
+  reserved: {
+    label: "Reserved",
+    badgeColor: "border-blue-500 bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  },
+  purchased: {
+    label: "Purchased",
+    badgeColor: "border-purple-500 bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeColor: "border-gray-500 bg-gray-500/20 text-gray-700 dark:text-gray-400",
+  }
 };
 
 export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: WishlistItemCardProps) {
@@ -39,6 +61,11 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
   // Show dropdown only if user has edit or delete permissions
   const showActions = canEdit || canDelete
 
+  // Get status configuration
+  const itemStatus = item.status || 'available'
+  const statusInfo = statusConfig[itemStatus]
+  const isAvailable = itemStatus === 'available'
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -47,9 +74,17 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
       <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
-              <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
+                <Badge
+                  variant="outline"
+                  className={`${statusInfo.badgeColor} shrink-0`}
+                >
+                  {statusInfo.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1">
                 <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
                 {item.category && (
                   <Badge
@@ -71,7 +106,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
                 )}
               </div>
             </div>
-            {canGrab && !showActions && (
+            {canGrab && !showActions && isAvailable && (
               <ReserveItem item={item} />
             )}
             {showActions && (

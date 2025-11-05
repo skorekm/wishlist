@@ -141,10 +141,10 @@ export async function getWishlistByShareToken(shareToken: string) {
     throw new Error('Invalid or revoked share link');
   }
 
-  // Get the wishlist with items
+  // Get the wishlist with items and reservation status
   const { data: wishlist, error: wishlistError } = await supabase
     .from('wishlists')
-    .select('*, items:wishlist_items(*, currency:currencies(code))')
+    .select('*, items:wishlist_items(*, currency:currencies(code), reservations(status, created_at))')
     .eq('id', shareLink.wishlist_id)
     .single();
 
@@ -152,6 +152,33 @@ export async function getWishlistByShareToken(shareToken: string) {
     throw wishlistError;
   }
 
-  return wishlist;
+  // Transform to get the most recent reservation status for each item
+  const statusOrder = { available: 0, reserved: 1, purchased: 2, cancelled: 3 };
+  
+  const transformedItems = wishlist.items.map((item) => {
+    // Sort reservations by created_at descending and get the most recent one
+    const sortedReservations = item.reservations?.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    const latestReservation = sortedReservations?.[0];
+    
+    return {
+      ...item,
+      status: latestReservation?.status ?? 'available',
+      reservations: undefined, // Remove the reservations array from the final object
+    };
+  });
+
+  // Sort items by status: available first, reserved second, purchased last
+  const sortedItems = transformedItems.sort((a, b) => {
+    const statusA = a.status as keyof typeof statusOrder;
+    const statusB = b.status as keyof typeof statusOrder;
+    return statusOrder[statusA] - statusOrder[statusB];
+  });
+
+  return {
+    ...wishlist,
+    items: sortedItems,
+  };
 }
 

@@ -1,4 +1,4 @@
-create type reservation_status as enum ('reserved', 'purchased', 'cancelled');
+create type reservation_status as enum ('available', 'reserved', 'purchased', 'cancelled');
 
 create table if not exists "reservations" (
   id serial primary key,
