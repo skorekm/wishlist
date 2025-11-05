@@ -1,7 +1,152 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import * as crypto from "jsr:@std/crypto";
-import { createClient } from "jsr:@supabase/supabase-js";
+import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js";
 import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
+
+const checkExistingReservation = async (supabase: SupabaseClient, itemId: string) => {
+  const { data, error } = await supabase
+    .from("reservations")
+    .select("id")
+    .eq("wishlist_item_id", itemId)
+    .eq("status", "reserved")
+    .maybeSingle();
+
+  if (error) {
+    return { exists: false, error: error.message };
+  }
+
+  console.log("data", data);
+  return { exists: !!data };
+}
+
+const createReservation = async (
+  supabase: SupabaseClient,
+  email: string,
+  name: string,
+  itemId: string,
+) => {
+  const reservationCode = crypto.crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from("reservations")
+    .insert({
+      wishlist_item_id: itemId,
+      reserver_name: name,
+      reserver_email: email,
+      reservation_code: reservationCode,
+      expires_at: expiresAt,
+      status: "reserved",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    return { error: error.message };
+  }
+  return { data };
+}
+
+const getWishlistLink = async (supabase: SupabaseClient, itemId: string, reservationCode: string, origin: string) => {
+  // First, get the wishlist_id from the item
+  const { data: itemData, error: itemError } = await supabase
+    .from("wishlist_items")
+    .select("wishlist_id")
+    .eq("id", itemId)
+    .single();
+
+  if (itemError || !itemData) {
+    console.error("Error fetching wishlist item:", itemError);
+    return { error: 'Failed to find wishlist item' };
+  }
+
+  // Then get the share token for that wishlist
+  const { data: shareLinkData, error: shareLinkError } = await supabase
+    .from("share_links")
+    .select("share_token")
+    .eq("wishlist_id", itemData.wishlist_id)
+    .is("revoked_at", null)
+    .single();
+
+  if (shareLinkError || !shareLinkData) {
+    console.error("Error fetching share link:", shareLinkError);
+    return { error: 'Share link not found' };
+  }
+
+  return { wishlistLink: `${origin}/wishlists/shared/${shareLinkData.share_token}?code=${reservationCode}` };
+};
+
+function generateEmailTemplate(
+  name: string,
+  wishlistLink: string,
+): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .button { 
+            display: inline-block; 
+            padding: 12px 24px; 
+            background-color: #4F46E5; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 6px;
+            margin: 20px 0;
+          }
+          .footer { margin-top: 30px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h2>Hello ${name}! 👋</h2>
+          <p>Thank you for reserving an item from the wishlist.</p>
+          <p>Use the link below to mark the item as purchased once you've completed your purchase:</p>
+          <a href="${wishlistLink}" class="button">View Wishlist & Confirm Purchase</a>
+          <p>Or copy this link: <br/><code>${wishlistLink}</code></p>
+          <p><strong>Important:</strong> This reservation will expire in 48 hours.</p>
+          <div class="footer">
+            <p>If you have any questions, please contact us at:
+              <a href="mailto:support@wishlist.com">support@wishlist.com</a>
+            </p>
+            <p>Best regards,<br/>The Wishlist Team</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string) => {
+  const client = new SMTPClient({
+    connection: {
+      hostname: "host.docker.internal",
+      port: 54325,
+      tls: false,
+    },
+    debug: {
+      allowUnsecure: true,
+    }
+  });
+
+  try {
+    await client.send({
+      from: "admin@wishlist.com",
+      to: reserverEmail,
+      subject: "Your reservation details",
+      html: generateEmailTemplate(reserverName, wishlistLink),
+    });
+  } catch (error) {
+    console.error("Failed to send email", error);
+    return { error: "Failed to send email" };
+  } finally {
+    await client.close();
+  }
+  return { success: true };
+};
 
 Deno.serve(async (req) => {
   try {
@@ -11,119 +156,39 @@ Deno.serve(async (req) => {
     );
     const { email, name, itemId } = await req.json();
 
-    // Check if the item is already reserved by the user. If so, return an error.
-    const { data: reservation, error: reservationError } = await supabase
-      .from("reservations")
-      .select("*")
-      .eq("wishlist_item_id", itemId)
-      .eq("status", "reserved")
-
-    if (reservation && reservation.length > 0) {
-      return new Response(JSON.stringify({ error: "Item already reserved" }), {
-        status: 400,
-      });
-    }
+    const { exists, error: reservationError } = await checkExistingReservation(supabase, itemId);
 
     if (reservationError) {
-      console.error("Error checking reservation", reservationError);
-      return new Response(JSON.stringify({ error: reservationError.message }), {
+      console.error("Error checking existing reservation", reservationError);
+      return new Response(JSON.stringify({ error: reservationError }), {
         status: 500,
       });
     }
 
-    // Generate a unique reservation code
-    const reservationCode = crypto.crypto.randomUUID();
+    if (exists) {
+      return new Response(JSON.stringify({ error: "Item already reserved" }), {
+        status: 409,
+      });
+    }
 
-    // Reserve the item for the user for 48 hours. Take care of the timezone difference.
-    const { data: newReservation, error: newReservationError } = await supabase
-      .from("reservations")
-      .insert({
-        wishlist_item_id: itemId,
-        reserver_email: email,
-        reserver_name: name,
-        reservation_code: reservationCode,
-        // 48 hours from now
-        expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-        status: "reserved",
-      })
-      .select()
-      .single();
+    const { data: newReservation, error: createReservationError } = await createReservation(supabase, email, name, itemId);
 
-    if (newReservationError) {
-      console.error("Error reserving item", newReservationError);
+    if (createReservationError) {
+      console.error("Error creating reservation", createReservationError);
       return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
       });
     }
 
-    // Get the origin from the request headers
-    const origin = req.headers.get('origin') || new URL(req.url).origin;
-    const { reservation_code, wishlist_item_id } = newReservation;
-
-    // Get the wishlist_id from the wishlist_item
-    const { data: wishlistItem, error: wishlistItemError } = await supabase
-      .from("wishlist_items")
-      .select("wishlist_id")
-      .eq("id", wishlist_item_id)
-      .single();
-
-    if (wishlistItemError || !wishlistItem) {
-      console.error("Error fetching wishlist item", wishlistItemError);
-      return new Response(JSON.stringify({ error: "Item not found" }), {
-        status: 404,
+    const origin = req.headers.get("origin") || new URL(req.url).origin;
+    const { wishlistLink } = await getWishlistLink(supabase, itemId, newReservation.reservation_code, origin);
+    if (!wishlistLink) {
+      return new Response(JSON.stringify({ error: "Failed to generate wishlist link" }), {
+        status: 500,
       });
     }
 
-    // Get the share token for the wishlist
-    const { data: shareLink, error: shareLinkError } = await supabase
-      .from("share_links")
-      .select("share_token")
-      .eq("wishlist_id", wishlistItem.wishlist_id)
-      .single();
-
-    if (shareLinkError || !shareLink) {
-      console.error("Error fetching share token", shareLinkError);
-      return new Response(JSON.stringify({ error: "Share link not found" }), {
-        status: 404,
-      });
-    }
-
-    const wishlistLink = `${origin}/wishlists/shared/${shareLink.share_token}?code=${reservation_code}`;
-
-    // Send an email to the user with the reservation details
-    // Wrap in try-catch so email failures don't fail the reservation
-    try {
-      const client = new SMTPClient({
-        connection: {
-          hostname: "host.docker.internal",
-          port: 54325,
-          tls: false,
-        },
-        debug: {
-          allowUnsecure: true,
-        }
-      });
-
-      await client.send({
-        from: "admin@wishlist.com",
-        to: newReservation.reserver_email,
-        subject: "Your reservation details",
-        html: `
-        <p>Here's the link you can use to set item as purchased:</p>
-        <a href="${wishlistLink}">${wishlistLink}</a>
-        <p>This link will expire in 48 hours.</p>
-        <p>If you have any questions, please contact us at <a href="mailto:support@wishlist.com">support@wishlist.com</a>.</p>
-        <p>Thank you for your reservation!</p>
-        <p>Best regards,<br/>
-        Wishlist Team</p>
-      `,
-      });
-
-      await client.close();
-    } catch (emailError) {
-      // Log the error but don't fail the reservation
-      console.error("Failed to send email:", emailError);
-    }
+    await sendReservationEmail(wishlistLink, email, name);
 
     return new Response(
       JSON.stringify({ message: "Item reserved successfully" }),
