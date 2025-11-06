@@ -3,14 +3,16 @@ create type reservation_status as enum ('available', 'reserved', 'purchased', 'c
 create table if not exists "reservations" (
   id serial primary key,
   wishlist_item_id integer not null references public.wishlist_items(id) on delete cascade,
-  user_id varchar(255),
+  user_id uuid references auth.users(id) on delete set null,
   reserver_name varchar(255),
   reserver_email varchar(255),
-  reservation_code varchar(255) not null,
+  reservation_code varchar(255) not null unique,
   created_at timestamp with time zone default now() not null,
   expires_at timestamp with time zone not null,
   status reservation_status not null
 );
+
+create index reservations_reservation_code_idx on public.reservations (reservation_code);
 
 alter table public.reservations enable row level security;
 
@@ -18,20 +20,15 @@ create policy "Anyone can create a reservation"
   on public.reservations
   for insert
   to anon, authenticated
-  with check (true);
+  with check (expires_at > now());
 
-create policy "Anyone can view a reservation"
-  on public.reservations
-  for select
-  to anon, authenticated
-  using (true);
-
-create policy "Wishlist owners can view the full reservation details"
+create policy "Reservation owners and wishlist owners can view reservations"
   on public.reservations
   for select
   to authenticated
   using (
-    exists (
+    (select auth.uid()) = user_id
+    or exists (
       select 1
       from public.wishlist_items wi
       join public.wishlists w on w.id = wi.wishlist_id

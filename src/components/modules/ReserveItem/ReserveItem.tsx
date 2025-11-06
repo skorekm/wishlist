@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Database } from "@/database.types";
 import { supabase } from "@/supabaseClient";
+import { toast } from "sonner";
 
 const reserveItemSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,8 +35,10 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
     })
     if (error) {
       console.error('Error reserving item', error);
+      toast.error("Error while reserving an item")
     } else {
       console.log('Item reserved', response);
+      toast.success('Item reserved')
     }
   }
 
@@ -45,7 +48,7 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : closeDialog()}>
       <DialogTrigger asChild>
         <Button>Grab Item</Button>
       </DialogTrigger>
@@ -60,7 +63,7 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Name <span className="text-red-500" aria-hidden>*</span></Label>
               <Input 
                 id="name" 
                 placeholder="Enter your name" 
@@ -71,11 +74,13 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
               <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email <span className="text-red-500" aria-hidden>*</span></Label>
               <Input
                 id="email"
                 placeholder="Enter your email"
                 aria-invalid={!!errors.email}
+                type="email"
+                required
                 {...register('email')}
               />
               <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.email?.message || '\u00A0'}</p>

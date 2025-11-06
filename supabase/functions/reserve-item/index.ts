@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import * as crypto from "jsr:@std/crypto";
+import { crypto } from "jsr:@std/crypto";
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js";
 import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
 
@@ -24,7 +24,7 @@ const createReservation = async (
   name: string,
   itemId: string,
 ) => {
-  const reservationCode = crypto.crypto.randomUUID();
+  const reservationCode = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
   const { data, error } = await supabase
@@ -187,7 +187,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    await sendReservationEmail(wishlistLink, email, name);
+    const emailResult = await sendReservationEmail(wishlistLink, email, name);
+    if (emailResult.error) {
+      console.error('Failed to send reservation email', emailResult.error);
+    }
 
     return new Response(
       JSON.stringify({ message: "Item reserved successfully" }),

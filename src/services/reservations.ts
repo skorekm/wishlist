@@ -37,6 +37,9 @@ export async function markItemAsPurchased(reservationCode: string) {
     .single();
 
   if (error) {
+    if (error.code === 'PGRST116') {
+      throw new Error('Reservation not found or already processed');
+    }
     throw error;
   }
 

@@ -42,7 +42,7 @@ alter table "public"."permissions" enable row level security;
   create table "public"."reservations" (
     "id" integer not null default nextval('public.reservations_id_seq'::regclass),
     "wishlist_item_id" integer not null,
-    "user_id" character varying(255),
+    "user_id" uuid,
     "reserver_name" character varying(255),
     "reserver_email" character varying(255),
     "reservation_code" character varying(255) not null,
@@ -141,6 +141,10 @@ CREATE UNIQUE INDEX permissions_pkey ON public.permissions USING btree (id);
 
 CREATE UNIQUE INDEX reservations_pkey ON public.reservations USING btree (id);
 
+CREATE INDEX reservations_reservation_code_idx ON public.reservations USING btree (reservation_code);
+
+CREATE UNIQUE INDEX reservations_reservation_code_key ON public.reservations USING btree (reservation_code);
+
 CREATE UNIQUE INDEX share_links_pkey ON public.share_links USING btree (id);
 
 CREATE INDEX share_links_revoked_at_idx ON public.share_links USING btree (revoked_at) WHERE (revoked_at IS NULL);
@@ -184,6 +188,12 @@ alter table "public"."wishlist_items" add constraint "wishlist_items_pkey" PRIMA
 alter table "public"."wishlist_permissions" add constraint "wishlist_permissions_pkey" PRIMARY KEY using index "wishlist_permissions_pkey";
 
 alter table "public"."wishlists" add constraint "wishlists_pkey" PRIMARY KEY using index "wishlists_pkey";
+
+alter table "public"."reservations" add constraint "reservations_reservation_code_key" UNIQUE using index "reservations_reservation_code_key";
+
+alter table "public"."reservations" add constraint "reservations_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL not valid;
+
+alter table "public"."reservations" validate constraint "reservations_user_id_fkey";
 
 alter table "public"."reservations" add constraint "reservations_wishlist_item_id_fkey" FOREIGN KEY (wishlist_item_id) REFERENCES public.wishlist_items(id) ON DELETE CASCADE not valid;
 
@@ -583,7 +593,7 @@ using (true);
   as permissive
   for insert
   to anon, authenticated
-with check (true);
+with check ((expires_at > now()));
 
 
 
@@ -597,24 +607,15 @@ with check (true);
 
 
 
-  create policy "Anyone can view a reservation"
-  on "public"."reservations"
-  as permissive
-  for select
-  to anon, authenticated
-using (true);
-
-
-
-  create policy "Wishlist owners can view the full reservation details"
+  create policy "Reservation owners and wishlist owners can view reservations"
   on "public"."reservations"
   as permissive
   for select
   to authenticated
-using ((EXISTS ( SELECT 1
+using (((( SELECT auth.uid() AS uid) = user_id) OR (EXISTS ( SELECT 1
    FROM (public.wishlist_items wi
      JOIN public.wishlists w ON ((w.id = wi.wishlist_id)))
-  WHERE ((wi.id = reservations.wishlist_item_id) AND (w.author_id = auth.uid())))));
+  WHERE ((wi.id = reservations.wishlist_item_id) AND (w.author_id = auth.uid()))))));
 
 
 

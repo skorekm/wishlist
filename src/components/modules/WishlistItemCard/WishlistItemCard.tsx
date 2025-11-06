@@ -21,7 +21,7 @@ export interface WishlistItemPermissions {
 }
 
 interface WishlistItemCardProps {
-  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { 
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & {
     currency: { code: string }
     status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
     userHasReserved?: boolean
@@ -72,9 +72,9 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
   const itemStatus = item.status || 'available'
   const statusInfo = statusConfig[itemStatus]
   const isAvailable = itemStatus === 'available'
-  
+
   // Check if user can mark as purchased
-  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode
+  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
 
   // Mutation for marking item as purchased
   const markPurchasedMutation = useMutation({
@@ -136,7 +136,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
               </div>
             </div>
             {canMarkPurchased && (
-              <Button 
+              <Button
                 size="sm"
                 onClick={() => markPurchasedMutation.mutate()}
                 disabled={markPurchasedMutation.isPending}
@@ -188,7 +188,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           )}
         </CardContent>
       </Card>
-      
+
       {canDelete && (
         <DeleteItemDialog
           itemId={item.id}
@@ -198,7 +198,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           onOpenChange={setDeleteModal}
         />
       )}
-      
+
       {canEdit && (
         <EditWishlistItem
           item={item}
