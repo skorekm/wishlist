@@ -2,6 +2,7 @@ import { useState } from "react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
 
 export function ReserveItem({ item }: { item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } } }) {
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const { register, handleSubmit, formState: { isValid, isSubmitting, errors }, reset } = useForm<ReserveItemFormData>({
     resolver: zodResolver(reserveItemSchema),
@@ -39,7 +41,9 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
     } else {
       console.log('Item reserved', response);
       toast.success('Item reserved')
+      queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
     }
+    closeDialog();
   }
 
   const closeDialog = () => {
@@ -50,12 +54,12 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
   return (
     <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : closeDialog()}>
       <DialogTrigger asChild>
-        <Button>Grab Item</Button>
+        <Button>Grab</Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Reserve {item.name}</DialogTitle>
+            <DialogTitle>Reserve Item</DialogTitle>
             <DialogDescription>
               Fill out your information to reserve <b>{item.name}</b>. Please provide your name and email. The item will be reserved for you for the next <b>48 hours</b>. <br/> 
               We need your email so that you can change the item status to purchased!
