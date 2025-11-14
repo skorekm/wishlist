@@ -24,9 +24,24 @@ const createReservation = async (
   email: string,
   name: string,
   itemId: string,
+  wishlistEventDate: string | null,
 ) => {
   const reservationCode = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+  
+  // Calculate expiration: default is 48 hours from now
+  let expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  
+  // If wishlist has an event date, ensure reservation doesn't exceed it
+  if (wishlistEventDate) {
+    const eventDate = new Date(wishlistEventDate);
+    // Set to end of the event day (23:59:59)
+    eventDate.setHours(23, 59, 59, 999);
+    
+    // Use the earlier of the two dates
+    if (eventDate < expiresAt) {
+      expiresAt = eventDate;
+    }
+  }
 
   const { data, error } = await supabase
     .from("reservations")
@@ -35,7 +50,7 @@ const createReservation = async (
       reserver_name: name,
       reserver_email: email,
       reservation_code: reservationCode,
-      expires_at: expiresAt,
+      expires_at: expiresAt.toISOString(),
       status: "reserved",
     })
     .select()
@@ -79,7 +94,19 @@ const getWishlistLink = async (supabase: SupabaseClient, itemId: string, reserva
 function generateEmailTemplate(
   name: string,
   wishlistLink: string,
+  expiresAt: string,
 ): string {
+  const expirationDate = new Date(expiresAt);
+  const formattedDate = expirationDate.toLocaleString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short'
+  });
+
   return `
     <!DOCTYPE html>
     <html>
@@ -107,7 +134,7 @@ function generateEmailTemplate(
           <p>Use the link below to mark the item as purchased once you've completed your purchase:</p>
           <a href="${wishlistLink}" class="button">View Wishlist & Confirm Purchase</a>
           <p>Or copy this link: <br/><code>${wishlistLink}</code></p>
-          <p><strong>Important:</strong> This reservation will expire in 48 hours.</p>
+          <p><strong>Important:</strong> This reservation will expire on ${formattedDate}.</p>
           <div class="footer">
             <p>If you have any questions, please contact us at:
               <a href="mailto:support@wishlist.com">support@wishlist.com</a>
@@ -120,7 +147,7 @@ function generateEmailTemplate(
   `;
 }
 
-const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string) => {
+const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string, expiresAt: string) => {
   const client = new SMTPClient({
     connection: {
       hostname: "host.docker.internal",
@@ -137,7 +164,7 @@ const sendReservationEmail = async (wishlistLink: string, reserverEmail: string,
       from: "admin@wishlist.com",
       to: reserverEmail,
       subject: "Your reservation details",
-      html: generateEmailTemplate(reserverName, wishlistLink),
+      html: generateEmailTemplate(reserverName, wishlistLink, expiresAt),
     });
   } catch (error) {
     console.error("Failed to send email", error);
@@ -171,7 +198,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { data: newReservation, error: createReservationError } = await createReservation(supabase, email, name, itemId);
+    // Fetch the wishlist's event_date
+    const { data: itemData, error: itemError } = await supabase
+      .from("wishlist_items")
+      .select("wishlist_id")
+      .eq("id", itemId)
+      .single();
+
+    if (itemError || !itemData) {
+      console.error("Error fetching wishlist item:", itemError);
+      return new Response(JSON.stringify({ error: "Failed to find wishlist item" }), {
+        status: 500,
+      });
+    }
+
+    const { data: wishlistData, error: wishlistError } = await supabase
+      .from("wishlists")
+      .select("event_date")
+      .eq("id", itemData.wishlist_id)
+      .single();
+
+    if (wishlistError) {
+      console.error("Error fetching wishlist:", wishlistError);
+      return new Response(JSON.stringify({ error: "Failed to find wishlist" }), {
+        status: 500,
+      });
+    }
+
+    // Check if the event date has already passed
+    if (wishlistData?.event_date) {
+      const eventDate = new Date(wishlistData.event_date);
+      eventDate.setHours(23, 59, 59, 999); // End of the event day
+      
+      if (eventDate < new Date()) {
+        return new Response(JSON.stringify({ error: "Cannot reserve items for past events" }), {
+          status: 400,
+        });
+      }
+    }
+
+    const { data: newReservation, error: createReservationError } = await createReservation(
+      supabase, 
+      email, 
+      name, 
+      itemId, 
+      wishlistData?.event_date || null
+    );
 
     if (createReservationError) {
       console.error("Error creating reservation", createReservationError);
@@ -188,7 +260,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const emailResult = await sendReservationEmail(wishlistLink, email, name);
+    const emailResult = await sendReservationEmail(wishlistLink, email, name, newReservation.expires_at);
     if (emailResult.error) {
       console.error('Failed to send reservation email', emailResult.error);
     }
