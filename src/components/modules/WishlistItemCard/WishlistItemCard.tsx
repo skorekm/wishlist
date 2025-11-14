@@ -10,9 +10,7 @@ import { getPriorityLabel } from "@/lib/utils"
 import { Badge } from "../../ui/badge"
 import { ReserveItem } from "../ReserveItem/ReserveItem"
 import { DeleteItemDialog } from "./DeleteItemDialog"
-import { markItemAsPurchased } from "@/services/reservations"
-import { useQueryClient, useMutation } from "@tanstack/react-query"
-import { toast } from "sonner"
+import { MarkPurchasedDialog } from "./MarkPurchasedDialog"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
@@ -60,7 +58,7 @@ const statusConfig = {
 export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
-  const queryClient = useQueryClient()
+  const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
 
   // Secure by default: permissions default to false
   const { canEdit = false, canDelete = false, canGrab = false } = permissions
@@ -75,25 +73,6 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
   // Check if user can mark as purchased
   const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
-
-  // Mutation for marking item as purchased
-  const markPurchasedMutation = useMutation({
-    mutationFn: async () => {
-      if (!item.userReservationCode) {
-        throw new Error('No reservation code found')
-      }
-      return markItemAsPurchased(item.userReservationCode)
-    },
-    onSuccess: () => {
-      toast.success('Item marked as purchased! 🎉')
-      // Invalidate the query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
-    },
-    onError: (error) => {
-      toast.error('Failed to mark item as purchased')
-      console.error('Error marking item as purchased:', error)
-    }
-  })
 
   return (
     <motion.div
@@ -138,11 +117,10 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             {canMarkPurchased && (
               <Button
                 size="sm"
-                onClick={() => markPurchasedMutation.mutate()}
-                disabled={markPurchasedMutation.isPending}
+                onClick={() => setMarkPurchasedModal(true)}
                 className="shrink-0"
               >
-                {markPurchasedMutation.isPending ? 'Processing...' : 'Mark Purchased'}
+                Mark Purchased
               </Button>
             )}
             {canGrab && !showActions && !canMarkPurchased && isAvailable && (
@@ -205,6 +183,15 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           isOpen={editModal}
           onOpenChange={setEditModal}
           wishlistUuid={wishlistUuid}
+        />
+      )}
+
+      {canMarkPurchased && item.userReservationCode && (
+        <MarkPurchasedDialog
+          itemName={item.name}
+          reservationCode={item.userReservationCode}
+          isOpen={markPurchasedModal}
+          onOpenChange={setMarkPurchasedModal}
         />
       )}
     </motion.div>

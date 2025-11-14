@@ -629,6 +629,19 @@ with check (true);
 
 
 
+  create policy "Anyone can view reservations for items in shared wishlists"
+  on "public"."reservations"
+  as permissive
+  for select
+  to anon, authenticated
+using ((EXISTS ( SELECT 1
+   FROM ((public.wishlist_items wi
+     JOIN public.wishlists w ON ((w.id = wi.wishlist_id)))
+     JOIN public.share_links sl ON ((sl.wishlist_id = w.id)))
+  WHERE ((wi.id = reservations.wishlist_item_id) AND (sl.revoked_at IS NULL)))));
+
+
+
   create policy "Reservation owners and wishlist owners can view reservations"
   on "public"."reservations"
   as permissive

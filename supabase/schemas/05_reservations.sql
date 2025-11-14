@@ -37,6 +37,21 @@ create policy "Reservation owners and wishlist owners can view reservations"
     )
   );
 
+create policy "Anyone can view reservations for items in shared wishlists"
+  on public.reservations
+  for select
+  to anon, authenticated
+  using (
+    exists (
+      select 1
+      from public.wishlist_items wi
+      join public.wishlists w on w.id = wi.wishlist_id
+      join public.share_links sl on sl.wishlist_id = w.id
+      where wi.id = reservations.wishlist_item_id
+      and sl.revoked_at is null
+    )
+  );
+
 create policy "Anyone can update their own reservation with valid code"
   on public.reservations
   for update
