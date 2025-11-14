@@ -82,6 +82,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reservations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: number
+          reservation_code: string
+          reserver_email: string | null
+          reserver_name: string | null
+          status: Database["public"]["Enums"]["reservation_status"]
+          user_id: string | null
+          wishlist_item_id: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: number
+          reservation_code: string
+          reserver_email?: string | null
+          reserver_name?: string | null
+          status: Database["public"]["Enums"]["reservation_status"]
+          user_id?: string | null
+          wishlist_item_id: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: number
+          reservation_code?: string
+          reserver_email?: string | null
+          reserver_name?: string | null
+          status?: Database["public"]["Enums"]["reservation_status"]
+          user_id?: string | null
+          wishlist_item_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_wishlist_item_id_fkey"
+            columns: ["wishlist_item_id"]
+            isOneToOne: false
+            referencedRelation: "wishlist_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       share_links: {
         Row: {
           created_at: string
@@ -260,10 +304,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cancel_expired_reservations: {
+        Args: never
+        Returns: {
+          cancelled_count: number
+        }[]
+      }
     }
     Enums: {
       priority: "low" | "medium" | "high"
+      reservation_status: "available" | "reserved" | "purchased" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -395,6 +445,7 @@ export const Constants = {
   public: {
     Enums: {
       priority: ["low", "medium", "high"],
+      reservation_status: ["available", "reserved", "purchased", "cancelled"],
     },
   },
 } as const

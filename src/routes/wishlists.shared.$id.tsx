@@ -12,15 +12,22 @@ import { getEventStatus } from '@/lib/utils'
 
 export const Route = createFileRoute('/wishlists/shared/$id')({
   component: SharedWishlist,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      code: search?.code as string | undefined,
+    }
+  },
 })
 
 function SharedWishlist() {
   const { id: shareToken } = Route.useParams()
+  const { code: reservationCode } = Route.useSearch()
+  
   const { data: wishlist, isLoading, error } = useQuery({
-    queryKey: ['shared-wishlist', shareToken],
-    queryFn: () => getWishlistByShareToken(shareToken),
+    queryKey: ['shared-wishlist', shareToken, reservationCode],
+    queryFn: () => getWishlistByShareToken(shareToken, reservationCode),
     retry: 1,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
@@ -95,6 +102,8 @@ function SharedWishlist() {
                   <WishlistItemCard 
                     item={item} 
                     wishlistUuid={wishlist.uuid}
+                    permissions={{ canGrab: true}}
+                    reservationCode={reservationCode}
                   />
                 </motion.div>
               ))}

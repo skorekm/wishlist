@@ -6,19 +6,28 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
-import { DeleteItemDialog } from "./DeleteItemDialog"
-import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
+import { Badge } from "../../ui/badge"
+import { ReserveItem } from "../ReserveItem/ReserveItem"
+import { DeleteItemDialog } from "./DeleteItemDialog"
+import { MarkPurchasedDialog } from "./MarkPurchasedDialog"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
   canDelete?: boolean
+  canGrab?: boolean
 }
 
 interface WishlistItemCardProps {
-  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & {
+    currency: { code: string }
+    status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
+    userHasReserved?: boolean
+    userReservationCode?: string
+  }
   wishlistUuid: string
   permissions?: WishlistItemPermissions
+  reservationCode?: string
 }
 
 const priorityColors: Record<string, string> = {
@@ -27,15 +36,43 @@ const priorityColors: Record<string, string> = {
   high: "border-red-500 bg-red-500/20",
 };
 
-export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: WishlistItemCardProps) {
+const statusConfig = {
+  available: {
+    label: "Available",
+    badgeColor: "border-green-500 bg-green-500/20 text-green-700 dark:text-green-400",
+  },
+  reserved: {
+    label: "Reserved",
+    badgeColor: "border-blue-500 bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  },
+  purchased: {
+    label: "Purchased",
+    badgeColor: "border-purple-500 bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeColor: "border-gray-500 bg-gray-500/20 text-gray-700 dark:text-gray-400",
+  }
+};
+
+export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
+  const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
 
   // Secure by default: permissions default to false
-  const { canEdit = false, canDelete = false } = permissions
+  const { canEdit = false, canDelete = false, canGrab = false } = permissions
 
   // Show dropdown only if user has edit or delete permissions
   const showActions = canEdit || canDelete
+
+  // Get status configuration
+  const itemStatus = item.status || 'available'
+  const statusInfo = statusConfig[itemStatus]
+  const isAvailable = itemStatus === 'available'
+
+  // Check if user can mark as purchased
+  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
 
   return (
     <motion.div
@@ -45,9 +82,17 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
       <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
-              <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
+                <Badge
+                  variant="outline"
+                  className={`${statusInfo.badgeColor} shrink-0`}
+                >
+                  {statusInfo.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1">
                 <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
                 {item.category && (
                   <Badge
@@ -69,6 +114,18 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
                 )}
               </div>
             </div>
+            {canMarkPurchased && (
+              <Button
+                size="sm"
+                onClick={() => setMarkPurchasedModal(true)}
+                className="shrink-0"
+              >
+                Mark Purchased
+              </Button>
+            )}
+            {canGrab && !showActions && !canMarkPurchased && isAvailable && (
+              <ReserveItem item={item} />
+            )}
             {showActions && (
               <div className="flex items-start">
                 <DropdownMenu modal={false}>
@@ -109,7 +166,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
           )}
         </CardContent>
       </Card>
-      
+
       {canDelete && (
         <DeleteItemDialog
           itemId={item.id}
@@ -119,13 +176,22 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {} }: Wishl
           onOpenChange={setDeleteModal}
         />
       )}
-      
+
       {canEdit && (
         <EditWishlistItem
           item={item}
           isOpen={editModal}
           onOpenChange={setEditModal}
           wishlistUuid={wishlistUuid}
+        />
+      )}
+
+      {canMarkPurchased && item.userReservationCode && (
+        <MarkPurchasedDialog
+          itemName={item.name}
+          reservationCode={item.userReservationCode}
+          isOpen={markPurchasedModal}
+          onOpenChange={setMarkPurchasedModal}
         />
       )}
     </motion.div>

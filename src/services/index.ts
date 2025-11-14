@@ -4,3 +4,4 @@ export * from './wishlistItems';
 export * from './currencies';
 export * from './shareLinks';
 export * from './permissions';
+export * from './reservations';

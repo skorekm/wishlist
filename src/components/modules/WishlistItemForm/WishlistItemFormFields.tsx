@@ -143,12 +143,11 @@ export function WishlistItemFormFields<T extends WishlistItemFormDataBase = Wish
 
         <div className="w-1/2">
           <Label className='font-semibold' htmlFor="category">
-            Category <span className="text-red-500" aria-hidden>*</span>
+            Category
           </Label>
           <Input 
             id="category" 
             placeholder="e.g., Electronics" 
-            required 
             aria-invalid={!!errors.category} 
             {...register('category' as Path<T>)} 
           />
