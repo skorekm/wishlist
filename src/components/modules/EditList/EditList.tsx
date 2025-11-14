@@ -14,6 +14,7 @@ import { updateWishlist } from '@/services'
 type WishlistFormData = {
   name: string
   description?: string | null
+  event_date?: string | null
 }
 
 const listFormSchema = z.object({
@@ -24,6 +25,10 @@ const listFormSchema = z.object({
   description: z.string()
     .max(250, "Description cannot be longer than 250 characters")
     .trim()
+    .optional()
+    .nullable()
+    .transform(val => val === '' ? null : val),
+  event_date: z.string()
     .optional()
     .nullable()
     .transform(val => val === '' ? null : val),
@@ -43,12 +48,14 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
     handleSubmit,
     reset,
     register,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<WishlistFormData>({
     resolver: zodResolver(listFormSchema),
+    mode: 'onChange',
     defaultValues: {
       name: list.name,
       description: list.description,
+      event_date: list.event_date || '',
     }
   })
 
@@ -83,23 +90,28 @@ export function EditList({ list, isOpen, onOpenChange, onSuccess }: EditListProp
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
-            <div className="mb-4">
-              <Label className='font-semibold' htmlFor="name">List Name</Label>
-              <Input id="name" placeholder="e.g., Birthday Wishlist" {...register('name')} />
-              {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+            <div>
+              <Label className='font-semibold' htmlFor="name">List Name <span className="text-red-500" aria-hidden>*</span></Label>
+              <Input id="name" placeholder="e.g., Birthday Wishlist" required aria-invalid={!!errors.name} {...register('name')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.name?.message || '\u00A0'}</p>
             </div>
-            <div className="mb-4">
+            <div>
               <Label className='font-semibold' htmlFor="description">Description</Label>
               <Textarea id="description" placeholder="e.g., Items I'd love to receive for my birthday" {...register('description')} />
-              {errors.description && <p className="text-red-500">{errors.description.message}</p>}
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.description?.message || '\u00A0'}</p>
+            </div>
+            <div>
+              <Label className='font-semibold' htmlFor="event-date">Event Date</Label>
+              <Input id="event-date" type="date" {...register('event_date')} />
+              <p className="text-red-500 text-xs mt-0.5 min-h-4">{errors.event_date?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={isUpdating}>
-              {isUpdating ? 'Updating...' : 'Update List'}
+            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={!isValid || isSubmitting || isUpdating}>
+              {isSubmitting || isUpdating ? 'Updating...' : 'Update List'}
             </Button>
           </DialogFooter>
         </form>

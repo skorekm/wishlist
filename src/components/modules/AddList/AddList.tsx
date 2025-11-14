@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { createWishlist } from '@/services'
 import { Database } from '@/database.types'
 
-type WishlistFormData = Pick<Database['public']['Tables']['wishlists']['Insert'], 'name' | 'description'>
+type WishlistFormData = Pick<Database['public']['Tables']['wishlists']['Insert'], 'name' | 'description' | 'event_date'>
 
 const listFormSchema = z.object({
   name: z.string()
@@ -22,6 +22,10 @@ const listFormSchema = z.object({
   description: z.string()
     .max(250, "Description cannot be longer than 250 characters")
     .trim()
+    .optional()
+    .transform(val => val === '' ? null : val)
+    .nullable(),
+  event_date: z.string()
     .optional()
     .transform(val => val === '' ? null : val)
     .nullable()
@@ -34,13 +38,15 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
   const { 
     register, 
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid, isSubmitting },
     reset,
   } = useForm<WishlistFormData>({
     resolver: zodResolver(listFormSchema),
+    mode: 'onChange',
     defaultValues: {
       name: '',
       description: '',
+      event_date: '',
     }
   })
 
@@ -84,7 +90,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
           <div className="py-4 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="list-name" className="dark:text-gray-300">
-                List Name
+                List Name <span className="text-red-500" aria-hidden>*</span>
               </Label>
               <Input
                 id="list-name"
@@ -92,11 +98,11 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
                 className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
                   errors.name ? 'border-red-500' : ''
                 }`}
+                required
+                aria-invalid={!!errors.name}
                 {...register('name')}
               />
-              {errors.name && (
-                <p className="text-sm text-red-500">{errors.name.message}</p>
-              )}
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.name?.message || '\u00A0'}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="list-description" className="dark:text-gray-300">
@@ -110,16 +116,28 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
                 }`}
                 {...register('description')}
               />
-              {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
-              )}
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.description?.message || '\u00A0'}</p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-date" className="dark:text-gray-300">
+                Event Date (optional)
+              </Label>
+              <Input
+                id="event-date"
+                type="date"
+                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                  errors.event_date ? 'border-red-500' : ''
+                }`}
+                {...register('event_date')}
+              />
+              <p className="text-xs text-red-500 min-h-4 mt-0.5">{errors.event_date?.message || '\u00A0'}</p>
             </div>
           </div>
           <DialogFooter>
             <Button onClick={closeDialog} type="reset" variant="outline" className="dark:border-gray-700 dark:text-gray-300">
               Cancel
             </Button>
-            <Button type="submit" className="bg-accent hover:bg-accent/90">Create List</Button>
+            <Button type="submit" className="bg-accent hover:bg-accent/90" disabled={!isValid || isSubmitting}>Create List</Button>
           </DialogFooter>
         </form>
       </DialogContent>

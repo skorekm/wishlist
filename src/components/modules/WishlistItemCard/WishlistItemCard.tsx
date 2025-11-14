@@ -1,20 +1,33 @@
 import { useState } from "react"
 import { motion } from "motion/react"
-import { ExternalLink, MoreHorizontal, TriangleAlert } from "lucide-react"
-import { toast } from 'sonner';
+import { ExternalLink, MoreHorizontal } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
-import { deleteWishlistItem } from "@/services"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
-import { Badge } from "../../ui/badge"
 import { getPriorityLabel } from "@/lib/utils"
+import { Badge } from "../../ui/badge"
+import { ReserveItem } from "../ReserveItem/ReserveItem"
+import { DeleteItemDialog } from "./DeleteItemDialog"
+import { MarkPurchasedDialog } from "./MarkPurchasedDialog"
+
+export interface WishlistItemPermissions {
+  canEdit?: boolean
+  canDelete?: boolean
+  canGrab?: boolean
+}
 
 interface WishlistItemCardProps {
-  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
-  refetchItems?: () => void
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & {
+    currency: { code: string }
+    status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
+    userHasReserved?: boolean
+    userReservationCode?: string
+  }
+  wishlistUuid: string
+  permissions?: WishlistItemPermissions
+  reservationCode?: string
 }
 
 const priorityColors: Record<string, string> = {
@@ -23,37 +36,63 @@ const priorityColors: Record<string, string> = {
   high: "border-red-500 bg-red-500/20",
 };
 
-export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) {
+const statusConfig = {
+  available: {
+    label: "Available",
+    badgeColor: "border-green-500 bg-green-500/20 text-green-700 dark:text-green-400",
+  },
+  reserved: {
+    label: "Reserved",
+    badgeColor: "border-blue-500 bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  },
+  purchased: {
+    label: "Purchased",
+    badgeColor: "border-purple-500 bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeColor: "border-gray-500 bg-gray-500/20 text-gray-700 dark:text-gray-400",
+  }
+};
+
+export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
 
-  const deleteItem = () => {
-    setIsDeleting(true);
-    deleteWishlistItem(item.id).then(() => {
-      refetchItems?.();
-      toast.success("Wishlist item deleted successfully!");
-    }).catch((error) => {
-      console.error('Error deleting wishlist item', error);
-      toast.error("Failed to delete wishlist item. Please try again.");
-    }).finally(() => {
-      setIsDeleting(false);
-      setDeleteModal(false);
-    });
-  }
+  // Secure by default: permissions default to false
+  const { canEdit = false, canDelete = false, canGrab = false } = permissions
+
+  // Show dropdown only if user has edit or delete permissions
+  const showActions = canEdit || canDelete
+
+  // Get status configuration
+  const itemStatus = item.status || 'available'
+  const statusInfo = statusConfig[itemStatus]
+  const isAvailable = itemStatus === 'available'
+
+  // Check if user can mark as purchased
+  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
 
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
     >
       <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">
         <CardContent className="p-4">
           <div className="flex justify-between items-start mb-2">
-            <div>
-              <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
-              <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
+                <Badge
+                  variant="outline"
+                  className={`${statusInfo.badgeColor} shrink-0`}
+                >
+                  {statusInfo.label}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1">
                 <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
                 {item.category && (
                   <Badge
@@ -68,15 +107,27 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                   <Badge
                     key={item.priority}
                     variant="outline"
-                    className={`bg-secondary text-secondary-foreground hover:bg-secondary/80 ${priorityColors[item.priority.toLowerCase()] || ""}`}
+                    className={`bg-secondary text-secondary-foreground ${priorityColors[item.priority.toLowerCase()] || ""}`}
                   >
                     {getPriorityLabel(item.priority)}
                   </Badge>
                 )}
               </div>
             </div>
-            <div className="flex items-start">
-              <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
+            {canMarkPurchased && (
+              <Button
+                size="sm"
+                onClick={() => setMarkPurchasedModal(true)}
+                className="shrink-0"
+              >
+                Mark Purchased
+              </Button>
+            )}
+            {canGrab && !showActions && !canMarkPurchased && isAvailable && (
+              <ReserveItem item={item} />
+            )}
+            {showActions && (
+              <div className="flex items-start">
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
@@ -84,15 +135,21 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">Edit Item</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">Delete Item</DropdownMenuItem>
-                    </DialogTrigger>
+                    {canEdit && (
+                      <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">
+                        Edit Item
+                      </DropdownMenuItem>
+                    )}
+                    {canEdit && canDelete && <DropdownMenuSeparator />}
+                    {canDelete && (
+                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">
+                        Delete Item
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </Dialog>
-            </div>
+              </div>
+            )}
           </div>
           <p className="text-sm text-muted-foreground line-clamp-3">{item.notes}</p>
           {item.link && (
@@ -109,29 +166,34 @@ export function WishlistItemCard({ item, refetchItems }: WishlistItemCardProps) 
           )}
         </CardContent>
       </Card>
-      <Dialog open={deleteModal} onOpenChange={setDeleteModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <TriangleAlert className="size-5 text-destructive mr-2" />
-              <span>Delete Item</span>
-            </DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Are you sure you want to delete <strong>"{item.name}"</strong> from your wishlist? This action cannot be undone.
-          </DialogDescription>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModal(false)}>Cancel</Button>
-            <Button disabled={isDeleting} onClick={deleteItem} variant="default">Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <EditWishlistItem
-        item={item}
-        isOpen={editModal}
-        onOpenChange={setEditModal}
-        onSuccess={() => refetchItems?.()}
-      />
+
+      {canDelete && (
+        <DeleteItemDialog
+          itemId={item.id}
+          itemName={item.name}
+          wishlistUuid={wishlistUuid}
+          isOpen={deleteModal}
+          onOpenChange={setDeleteModal}
+        />
+      )}
+
+      {canEdit && (
+        <EditWishlistItem
+          item={item}
+          isOpen={editModal}
+          onOpenChange={setEditModal}
+          wishlistUuid={wishlistUuid}
+        />
+      )}
+
+      {canMarkPurchased && item.userReservationCode && (
+        <MarkPurchasedDialog
+          itemName={item.name}
+          reservationCode={item.userReservationCode}
+          isOpen={markPurchasedModal}
+          onOpenChange={setMarkPurchasedModal}
+        />
+      )}
     </motion.div>
   )
 }

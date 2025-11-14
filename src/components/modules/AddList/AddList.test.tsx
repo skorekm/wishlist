@@ -1,65 +1,88 @@
-import { describe, it, expect } from 'vitest'
-import userEvent from '@testing-library/user-event'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, mock, beforeEach } from 'bun:test'
+import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import { AddList } from './AddList'
 
-vi.mock('@tanstack/react-router', () => ({
+mock.module('@tanstack/react-router', () => ({
   useRouter: () => ({
-    navigate: vi.fn(),
+    navigate: mock(() => {}),
   })
 }))
 
-vi.mock('@/services', () => ({
-  createWishlist: vi.fn().mockResolvedValue({
+mock.module('@/services', () => ({
+  createWishlist: mock(() => Promise.resolve({
     uuid: '1234-4321-1234-4321',
-  }),
+  })),
 }))
 
-const mockProps = {
-  onSuccess: vi.fn(),
-}
-
 describe('AddList Component', () => {
+  const mockProps = {
+    onSuccess: mock(() => {}),
+  }
+
   beforeEach(() => {
-    vi.clearAllMocks()
+    cleanup()
+    mock.clearAllMocks()
   })
 
   it('should open the AddList modal', async () => {
     render(<AddList {...mockProps} />)
     const newList = screen.getByText('New List')
-    await userEvent.click(newList)
-    expect(screen.getByText('Create New List')).not.toBeNull()
+    fireEvent.click(newList)
+    
+    await waitFor(() => {
+      screen.getByText('Create New List')
+    })
   })
 
-  it('should throw validation error when form is submitted with no data', async () => {
+  it('should disable submit when form is invalid and enable when valid', async () => {
     render(<AddList {...mockProps} />)
     const newList = screen.getByText('New List')
-    await userEvent.click(newList)
-
-    const createButton = screen.getByText('Create List')
-    await userEvent.click(createButton)
+    fireEvent.click(newList)
 
     await waitFor(() => {
-      expect(screen.getByText('List name is required')).not.toBeNull()
+      screen.getByText('Create New List')
+    })
+
+    const createButton = screen.getByRole('button', { name: /create list/i }) as HTMLButtonElement
+    expect(createButton.disabled).toBe(true)
+
+    const nameInput = screen.getByPlaceholderText('e.g., Birthday Wishlist')
+    fireEvent.change(nameInput, { target: { value: 'Test List' } })
+
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(false)
+    })
+
+    fireEvent.change(nameInput, { target: { value: '' } })
+
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(true)
     })
   })
 
   it('should create a new list when form is submitted with valid data', async () => {
     render(<AddList {...mockProps} />)
     const newList = screen.getByText('New List')
-    act(() => {
-      newList.click();
-    });
+    fireEvent.click(newList)
+
+    await waitFor(() => {
+      screen.getByText('Create New List')
+    })
 
     // fill in the form
     const nameInput = screen.getByPlaceholderText('e.g., Birthday Wishlist')
-    await userEvent.type(nameInput, 'Test List')
+    fireEvent.change(nameInput, { target: { value: 'Test List' } })
 
     const descriptionInput = screen.getByPlaceholderText('e.g., Things I\'d love to receive for my birthday')
-    await userEvent.type(descriptionInput, 'Test Description')
+    fireEvent.change(descriptionInput, { target: { value: 'Test Description' } })
 
-    const createButton = screen.getByText('Create List')
-    await userEvent.click(createButton)
+    const createButton = screen.getByRole('button', { name: /create list/i }) as HTMLButtonElement
+
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(false)
+    })
+
+    fireEvent.click(createButton)
 
     await waitFor(() => {
       expect(mockProps.onSuccess).toHaveBeenCalled()
