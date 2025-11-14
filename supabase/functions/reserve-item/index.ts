@@ -6,9 +6,10 @@ import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
 const checkExistingReservation = async (supabase: SupabaseClient, itemId: string) => {
   const { data, error } = await supabase
     .from("reservations")
-    .select("id")
+    .select("id, expires_at")
     .eq("wishlist_item_id", itemId)
     .eq("status", "reserved")
+    .gt("expires_at", new Date().toISOString()) // Only count non-expired reservations
     .maybeSingle();
 
   if (error) {

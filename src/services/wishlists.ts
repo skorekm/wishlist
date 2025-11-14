@@ -27,11 +27,14 @@ export async function getWishlist(id: string, skipAuth = false) {
     }
   }
 
+  // Clean up expired reservations before fetching
+  await supabase.rpc('cancel_expired_reservations');
+
   const { data, error } = await supabase
     .from('wishlists')
     .select(`
       *,
-      items:wishlist_items(*, currency:currencies(code), reservations(status, created_at))
+      items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, expires_at))
     `)
     .eq('uuid', id)
     .single();
@@ -48,7 +51,13 @@ export async function getWishlist(id: string, skipAuth = false) {
     const sortedReservations = item.reservations?.slice().sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-    const latestReservation = sortedReservations?.[0];
+    
+    // Filter out expired reservations (belt and suspenders approach)
+    const activeReservations = sortedReservations?.filter(r => 
+      r.status !== 'reserved' || new Date(r.expires_at) >= new Date()
+    );
+    
+    const latestReservation = activeReservations?.[0];
     
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { reservations, ...itemWithoutReservations } = item;

@@ -43,3 +43,29 @@ create policy "Anyone can update their own reservation with valid code"
   to anon, authenticated
   using (true)
   with check (true);
+
+-- Function to automatically cancel expired reservations
+-- This marks reservations as 'cancelled' when they pass expires_at
+CREATE OR REPLACE FUNCTION cancel_expired_reservations()
+RETURNS TABLE (cancelled_count integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  affected_rows integer;
+BEGIN
+  UPDATE public.reservations
+  SET status = 'cancelled'
+  WHERE status = 'reserved'
+    AND expires_at < now();
+  
+  GET DIAGNOSTICS affected_rows = ROW_COUNT;
+  
+  RETURN QUERY SELECT affected_rows;
+END;
+$$;
+
+-- Grant execute permission to authenticated and anon users
+GRANT EXECUTE ON FUNCTION cancel_expired_reservations() TO authenticated, anon;
+
+COMMENT ON FUNCTION cancel_expired_reservations() IS 'Cancels all reservations that have passed their expiration time. Returns the count of cancelled reservations.';

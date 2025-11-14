@@ -1,3 +1,5 @@
+create extension if not exists "pg_cron" with schema "pg_catalog";
+
 create type "public"."priority" as enum ('low', 'medium', 'high');
 
 create type "public"."reservation_status" as enum ('available', 'reserved', 'purchased', 'cancelled');
@@ -272,6 +274,26 @@ begin
   );
   return new;
 end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.cancel_expired_reservations()
+ RETURNS TABLE(cancelled_count integer)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  affected_rows integer;
+BEGIN
+  UPDATE public.reservations
+  SET status = 'cancelled'
+  WHERE status = 'reserved'
+    AND expires_at < now();
+  
+  GET DIAGNOSTICS affected_rows = ROW_COUNT;
+  
+  RETURN QUERY SELECT affected_rows;
+END;
 $function$
 ;
 

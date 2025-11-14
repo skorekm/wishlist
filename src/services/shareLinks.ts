@@ -129,6 +129,9 @@ export async function regenerateShareLink(wishlistId: number) {
 }
 
 export async function getWishlistByShareToken(shareToken: string, reservationCode?: string) {
+  // Clean up expired reservations before fetching
+  await supabase.rpc('cancel_expired_reservations');
+
   // First, verify the share link exists and is not revoked
   const { data: shareLink, error: shareLinkError } = await supabase
     .from('share_links')
@@ -144,7 +147,7 @@ export async function getWishlistByShareToken(shareToken: string, reservationCod
   // Get the wishlist with items and reservation status
   const { data: wishlist, error: wishlistError } = await supabase
     .from('wishlists')
-    .select('*, items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, reservation_code))')
+    .select('*, items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, reservation_code, expires_at))')
     .eq('id', shareLink.wishlist_id)
     .single();
 
@@ -156,15 +159,21 @@ export async function getWishlistByShareToken(shareToken: string, reservationCod
   const statusOrder = { available: 0, reserved: 1, purchased: 2, cancelled: 3 };
   
   const transformedItems = wishlist.items.map((item) => {
-    // Sort reservations by created_at descending and get the most recent one
+    // Sort reservations by created_at descending
     const sortedReservations = item.reservations?.sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-    const latestReservation = sortedReservations?.[0];
+    
+    // Filter out expired reservations (belt and suspenders approach)
+    const activeReservations = sortedReservations?.filter(r => 
+      r.status !== 'reserved' || new Date(r.expires_at) >= new Date()
+    );
+    
+    const latestReservation = activeReservations?.[0];
     
     // Check if the user has reserved this item (matching reservation code)
     const userReservation = reservationCode 
-      ? item.reservations?.find(r => r.reservation_code === reservationCode && r.status === 'reserved')
+      ? activeReservations?.find(r => r.reservation_code === reservationCode && r.status === 'reserved')
       : null;
     
     return {
