@@ -132,7 +132,17 @@ Deno.serve(async () => {
       `)
       .eq("status", "reserved")
       .gte("expires_at", reminderWindowStart.toISOString())
-      .lte("expires_at", reminderWindowEnd.toISOString());
+      .lte("expires_at", reminderWindowEnd.toISOString()) as { 
+        data: Array<{
+          id: number;
+          reserver_name: string;
+          reserver_email: string;
+          reservation_code: string;
+          expires_at: string;
+          wishlist_item: { wishlist_id: number };
+        }> | null;
+        error: { message: string } | null;
+      };
 
     if (error) {
       console.error("Error fetching reservations", error);
@@ -142,7 +152,14 @@ Deno.serve(async () => {
       });
     }
 
-    console.log(`Found ${reservations?.length || 0} reservations to remind`);
+    if (!reservations) {
+      return new Response(
+        JSON.stringify({ message: "No reservations found" }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Found ${reservations.length} reservations to remind`);
     
     const results = [];
     const origin = Deno.env.get("PUBLIC_SITE_URL") || "http://localhost:5173";
@@ -150,7 +167,7 @@ Deno.serve(async () => {
     for (const reservation of reservations) {
       const { wishlistLink, error: linkError } = await getWishlistLink(
         supabase,
-        reservation.wishlist_item[0].wishlist_id,
+        reservation.wishlist_item.wishlist_id,
         reservation.reservation_code,
         origin
       );

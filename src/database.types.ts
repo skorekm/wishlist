@@ -304,7 +304,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cancel_expired_reservations: {
+        Args: never
+        Returns: {
+          cancelled_count: number
+        }[]
+      }
     }
     Enums: {
       priority: "low" | "medium" | "high"
