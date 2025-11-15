@@ -1,4 +1,5 @@
 import { supabase } from '@/supabaseClient'
+import type { Tables } from '@/database.types'
 
 export interface UserProfile {
   id: string
@@ -82,23 +83,42 @@ export async function getAccountStats() {
   }
 }
 
+export interface UserDataExport {
+  user: {
+    id: string
+    email: string | undefined
+    created_at: string
+  }
+  wishlists: Tables<'wishlists'>[]
+  wishlist_items: Tables<'wishlist_items'>[]
+  reservations: Tables<'reservations'>[]
+  share_links: Tables<'share_links'>[]
+  permissions: Tables<'wishlist_permissions'>[]
+  exported_at: string
+}
+
 /**
- * Export user data for GDPR compliance
+ * Prepare user data export for GDPR compliance
+ * This function is DOM-free and can be tested in non-browser environments
  */
-export async function exportUserData() {
-  const { data: { user } } = await supabase.auth.getUser()
+export async function prepareUserDataExport(): Promise<UserDataExport> {
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError) {
+    throw new Error(`Authentication error: ${authError.message}`)
+  }
   
   if (!user) {
     throw new Error('User not authenticated')
   }
 
-  // Fetch all user data
+  // Fetch all user data with proper error handling
   const [
-    { data: wishlists },
-    { data: items },
-    { data: reservations },
-    { data: shareLinks },
-    { data: permissions },
+    wishlistsResponse,
+    itemsResponse,
+    reservationsResponse,
+    shareLinksResponse,
+    permissionsResponse,
   ] = await Promise.all([
     supabase.from('wishlists').select('*').eq('author_id', user.id),
     supabase.from('wishlist_items').select('*').eq('author_id', user.id),
@@ -107,21 +127,52 @@ export async function exportUserData() {
     supabase.from('wishlist_permissions').select('*').eq('user_id', user.id),
   ])
 
-  const exportData = {
+  // Aggregate errors from all queries
+  const errors: string[] = []
+  
+  if (wishlistsResponse.error) {
+    errors.push(`Wishlists: ${wishlistsResponse.error.message}`)
+  }
+  if (itemsResponse.error) {
+    errors.push(`Wishlist items: ${itemsResponse.error.message}`)
+  }
+  if (reservationsResponse.error) {
+    errors.push(`Reservations: ${reservationsResponse.error.message}`)
+  }
+  if (shareLinksResponse.error) {
+    errors.push(`Share links: ${shareLinksResponse.error.message}`)
+  }
+  if (permissionsResponse.error) {
+    errors.push(`Permissions: ${permissionsResponse.error.message}`)
+  }
+
+  // If any errors occurred, throw them
+  if (errors.length > 0) {
+    throw new Error(`Failed to fetch user data: ${errors.join('; ')}`)
+  }
+
+  const exportData: UserDataExport = {
     user: {
       id: user.id,
       email: user.email,
       created_at: user.created_at,
     },
-    wishlists: wishlists || [],
-    wishlist_items: items || [],
-    reservations: reservations || [],
-    share_links: shareLinks || [],
-    permissions: permissions || [],
+    wishlists: wishlistsResponse.data || [],
+    wishlist_items: itemsResponse.data || [],
+    reservations: reservationsResponse.data || [],
+    share_links: shareLinksResponse.data || [],
+    permissions: permissionsResponse.data || [],
     exported_at: new Date().toISOString(),
   }
 
-  // Create a downloadable JSON file
+  return exportData
+}
+
+/**
+ * Download user data export as a JSON file
+ * Handles all DOM interactions for the download process
+ */
+export function downloadDataExport(exportData: UserDataExport): void {
   const dataStr = JSON.stringify(exportData, null, 2)
   const dataBlob = new Blob([dataStr], { type: 'application/json' })
   const url = URL.createObjectURL(dataBlob)
@@ -132,7 +183,15 @@ export async function exportUserData() {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
 
+/**
+ * Export user data for GDPR compliance
+ * Combines data preparation and download functionality
+ */
+export async function exportUserData(): Promise<UserDataExport> {
+  const exportData = await prepareUserDataExport()
+  downloadDataExport(exportData)
   return exportData
 }
 
@@ -140,8 +199,8 @@ export async function exportUserData() {
  * Delete user account and all associated data
  * This performs a complete cascade deletion as per GDPR requirements
  * 
- * The delete_user() database function deletes the user from auth.users,
- * which triggers CASCADE deletion of:
+  * The delete_user() database function deletes the user from auth.users,
+  * which triggers CASCADE deletion of:
  * - wishlists (ON DELETE CASCADE)
  * - wishlist_items (via wishlist_id FK with CASCADE)
  * - share_links (via wishlist_id and created_by FK with CASCADE)
@@ -172,7 +231,7 @@ export async function deleteUserAccount() {
 
   // Step 2: Delete the user account from Supabase Auth
   // This will CASCADE delete all other data via database constraints
-  const { error: deleteUserError } = await supabase.rpc('delete_user')
+  const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user.id)
 
   if (deleteUserError) {
     console.error('Error deleting user account:', deleteUserError)

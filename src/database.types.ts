@@ -310,6 +310,7 @@ export type Database = {
           cancelled_count: number
         }[]
       }
+      delete_user: { Args: never; Returns: undefined }
     }
     Enums: {
       priority: "low" | "medium" | "high"

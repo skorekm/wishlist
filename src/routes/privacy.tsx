@@ -9,6 +9,8 @@ export const Route = createFileRoute('/privacy')({
 })
 
 function PrivacyPolicy() {
+  const PRIVACY_POLICY_LAST_UPDATED = new Date('2025-11-15');
+  const PRIVACY_POLICY_LAST_UPDATED_STRING = PRIVACY_POLICY_LAST_UPDATED.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   return (
     <main className="min-h-screen bg-background">
       <div className="absolute top-4 right-4">
@@ -32,7 +34,7 @@ function PrivacyPolicy() {
               <CardTitle className="text-3xl font-medium">Privacy Policy</CardTitle>
             </div>
             <p className="text-sm text-muted-foreground">
-              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              Last updated: {PRIVACY_POLICY_LAST_UPDATED_STRING}
             </p>
           </CardHeader>
           

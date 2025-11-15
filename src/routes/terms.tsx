@@ -9,6 +9,8 @@ export const Route = createFileRoute('/terms')({
 })
 
 function TermsOfService() {
+  const TERMS_LAST_UPDATED = new Date('2025-11-15');
+  const TERMS_LAST_UPDATED_STRING = TERMS_LAST_UPDATED.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   return (
     <main className="min-h-screen bg-background">
       <div className="absolute top-4 right-4">
@@ -32,7 +34,7 @@ function TermsOfService() {
               <CardTitle className="text-3xl font-medium">Terms of Service</CardTitle>
             </div>
             <p className="text-sm text-muted-foreground">
-              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              Last updated: {TERMS_LAST_UPDATED_STRING}
             </p>
           </CardHeader>
           

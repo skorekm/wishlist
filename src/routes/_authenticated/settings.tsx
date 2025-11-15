@@ -255,7 +255,7 @@ function SettingsPage() {
                   id="deleteConfirmation"
                   type="text"
                   value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value)}
+                  onChange={(e) => setDeleteConfirmation(e.target.value.trim())}
                   placeholder="DELETE"
                   className="w-full px-3 py-2 border rounded-md bg-background"
                   disabled={isDeleting}

@@ -15,10 +15,6 @@ export function Navbar() {
     navigate({ to: '/' })
   }
 
-  const handleBack = () => {
-    navigate({ to: '/wishlists' })
-  }
-
   const isDetailedPage = pathname.match(/\/[^/]+\/[^/]+$/)
 
   return (
@@ -32,7 +28,7 @@ export function Navbar() {
             animate="show"
           >
             {isDetailedPage && (
-              <Button onClick={handleBack} variant="ghost">
+              <Button variant="ghost" aria-label="Back to wishlists">
                 <ArrowLeft className="size-5" />
               </Button>
             )}
