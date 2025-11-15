@@ -5,3 +5,4 @@ export * from './currencies';
 export * from './shareLinks';
 export * from './permissions';
 export * from './reservations';
+export * from './account';

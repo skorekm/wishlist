@@ -69,7 +69,7 @@ export function DeleteItemDialog({
         </DialogDescription>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={isDeleting} onClick={handleDelete} variant="default">Delete</Button>
+          <Button disabled={isDeleting} onClick={handleDelete} variant="destructive">Delete</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

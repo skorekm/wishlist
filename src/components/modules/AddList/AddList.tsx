@@ -79,7 +79,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContent className="dark:bg-gray-900 dark:border-gray-800">
+      <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle className="dark:text-gray-100">Create New List</DialogTitle>
@@ -95,7 +95,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
               <Input
                 id="list-name"
                 placeholder="e.g., Birthday Wishlist"
-                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                className={`dark:text-gray-300 ${
                   errors.name ? 'border-red-500' : ''
                 }`}
                 required
@@ -111,7 +111,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
               <Input
                 id="list-description"
                 placeholder="e.g., Things I'd love to receive for my birthday"
-                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                className={`dark:text-gray-300 ${
                   errors.description ? 'border-red-500' : ''
                 }`}
                 {...register('description')}
@@ -125,7 +125,7 @@ export function AddList({ onSuccess }: { onSuccess: () => void }) {
               <Input
                 id="event-date"
                 type="date"
-                className={`dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 ${
+                className={`dark:text-gray-300 ${
                   errors.event_date ? 'border-red-500' : ''
                 }`}
                 {...register('event_date')}

@@ -75,7 +75,7 @@ export function EditWishlistItem({ item, isOpen, onOpenChange, wishlistUuid }: E
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="dark:bg-gray-900 dark:border-gray-800">
+      <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle className="dark:text-gray-100">Edit Wishlist Item</DialogTitle>

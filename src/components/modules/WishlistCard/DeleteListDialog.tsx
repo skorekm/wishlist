@@ -53,7 +53,7 @@ export function DeleteListDialog({
         </DialogDescription>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={isDeleting} variant="default" onClick={handleDelete}>Delete</Button>
+          <Button disabled={isDeleting} variant="destructive" onClick={handleDelete}>Delete</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

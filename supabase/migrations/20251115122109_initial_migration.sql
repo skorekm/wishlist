@@ -297,6 +297,31 @@ END;
 $function$
 ;
 
+CREATE OR REPLACE FUNCTION public.delete_user()
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  current_user_id uuid;
+BEGIN
+  -- Get the current user's ID
+  current_user_id := auth.uid();
+  
+  -- Check if user is authenticated
+  IF current_user_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+  
+  -- Delete the user from auth.users
+  -- This will cascade delete due to foreign key constraints
+  DELETE FROM auth.users WHERE id = current_user_id;
+  
+END;
+$function$
+;
+
 grant delete on table "public"."currencies" to "anon";
 
 grant insert on table "public"."currencies" to "anon";

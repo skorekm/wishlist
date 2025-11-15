@@ -38,7 +38,7 @@ function AuthenticatedLayout() {
 
   return (
     <motion.div
-      className="min-h-screen transition-colors duration-300"
+      className="bg-background min-h-screen transition-colors duration-300"
       initial="hidden"
       animate="show"
       variants={fadeIn()}
