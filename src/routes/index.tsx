@@ -98,11 +98,11 @@ function LoginPage() {
           <CardFooter className="flex flex-col space-y-2 border-t border-muted-foreground/20 pt-6">
             <p className="text-xs text-center text-muted-foreground">
               By continuing, you agree to our{' '}
-              <a href="/terms" className="text-primary hover:underline">
+              <a href="/terms" className="text-accent hover:underline">
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="/privacy" className="text-primary hover:underline">
+              <a href="/privacy" className="text-accent hover:underline">
                 Privacy Policy
               </a>
               .
