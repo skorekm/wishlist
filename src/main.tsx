@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from 'next-themes'
+import { hasConsent } from '@/hooks/useCookieConsent'
 import './index.css'
 
 // Import the generated route tree
@@ -21,13 +22,21 @@ declare module '@tanstack/react-router' {
 
 const queryClient = new QueryClient()
 
+// Check if user has consented to functional cookies for theme persistence
+const canUseThemePreference = hasConsent('functional')
+
 // Render the app
 const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <ThemeProvider attribute="class" defaultTheme="system" storageKey="wishlist-theme" enableSystem>
+      <ThemeProvider
+        attribute="class" 
+        defaultTheme={canUseThemePreference ? "system" : "light"}
+        storageKey={canUseThemePreference ? "wishlist-theme" : undefined}
+        enableSystem={canUseThemePreference}
+      >
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
           <Toaster />

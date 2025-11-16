@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Shield } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { CookieSettingsDialog } from '@/components/modules/CookieConsent/CookieSettingsDialog'
+import { useCookieConsent } from '@/hooks/useCookieConsent'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/privacy')({
   component: PrivacyPolicy,
@@ -11,6 +14,9 @@ export const Route = createFileRoute('/privacy')({
 function PrivacyPolicy() {
   const PRIVACY_POLICY_LAST_UPDATED = new Date('2025-11-15');
   const PRIVACY_POLICY_LAST_UPDATED_STRING = PRIVACY_POLICY_LAST_UPDATED.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const [showCookieSettings, setShowCookieSettings] = useState(false)
+  const { saveConsent } = useCookieConsent()
+  
   return (
     <main className="min-h-screen bg-background">
       <div className="absolute top-4 right-4">
@@ -144,11 +150,26 @@ function PrivacyPolicy() {
 
             <section>
               <h2 className="text-xl font-semibold mb-3">8. Cookies and Tracking Technologies</h2>
-              <p className="text-muted-foreground">
-                We use cookies and similar tracking technologies to track activity on our application and store 
-                certain information. We use cookies for authentication, theme preferences, and to improve user 
-                experience. You can control cookies through your browser settings.
-              </p>
+              <div className="space-y-3 text-muted-foreground">
+                <p>
+                  We use cookies and similar tracking technologies to track activity on our application and store 
+                  certain information. We use cookies for authentication, theme preferences, and to improve user 
+                  experience.
+                </p>
+                <p>
+                  You can manage your cookie preferences at any time through our cookie settings. 
+                  Click the button below to customize which cookies you allow:
+                </p>
+                <div className="pt-2">
+                  <Button 
+                    variant="link" 
+                    className="h-auto p-0 text-primary hover:underline"
+                    onClick={() => setShowCookieSettings(true)}
+                  >
+                    Manage Cookie Preferences
+                  </Button>
+                </div>
+              </div>
             </section>
 
             <section>
@@ -208,6 +229,12 @@ function PrivacyPolicy() {
           </CardContent>
         </Card>
       </div>
+
+      <CookieSettingsDialog
+        open={showCookieSettings}
+        onOpenChange={setShowCookieSettings}
+        onSave={saveConsent}
+      />
     </main>
   )
 }
