@@ -95,6 +95,7 @@ function generateEmailTemplate(
   name: string,
   wishlistLink: string,
   expiresAt: string,
+  origin: string,
 ): string {
   const expirationDate = new Date(expiresAt);
   const formattedDate = expirationDate.toLocaleString('en-US', {
@@ -158,7 +159,7 @@ function generateEmailTemplate(
   `;
 }
 
-const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string, expiresAt: string) => {
+const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string, expiresAt: string, origin: string) => {
   const client = new SMTPClient({
     connection: {
       hostname: "host.docker.internal",
@@ -175,7 +176,7 @@ const sendReservationEmail = async (wishlistLink: string, reserverEmail: string,
       from: "admin@wishlist.com",
       to: reserverEmail,
       subject: "Your reservation details",
-      html: generateEmailTemplate(reserverName, wishlistLink, expiresAt),
+      html: generateEmailTemplate(reserverName, wishlistLink, expiresAt, origin),
     });
   } catch (error) {
     console.error("Failed to send email", error);
@@ -271,7 +272,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const emailResult = await sendReservationEmail(wishlistLink, email, name, newReservation.expires_at);
+    const emailResult = await sendReservationEmail(wishlistLink, email, name, newReservation.expires_at, origin);
     if (emailResult.error) {
       console.error('Failed to send reservation email', emailResult.error);
     }
