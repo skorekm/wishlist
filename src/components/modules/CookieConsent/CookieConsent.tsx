@@ -49,7 +49,7 @@ export function CookieConsent() {
           >
             <Card className="mx-auto max-w-5xl shadow-2xl border-2">
               <CardContent className="p-4 md:p-6">
-                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <div className="flex flex-col md:flex-row gap-4 items-start">
                   <div className="shrink-0">
                     <div className="p-3 rounded-full bg-primary/10">
                       <Cookie className="h-6 w-6 text-primary" />
@@ -68,24 +68,7 @@ export function CookieConsent() {
                     </p>
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={openSettings}
-                      className="w-full sm:w-auto"
-                    >
-                      <Settings className="h-4 w-4 mr-2" />
-                      Customize
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={acceptNecessary}
-                      className="w-full sm:w-auto"
-                    >
-                      Necessary Only
-                    </Button>
+                  <div className="flex flex-col gap-3 w-full md:w-auto md:self-center">
                     <Button
                       size="sm"
                       onClick={acceptAll}
@@ -93,6 +76,25 @@ export function CookieConsent() {
                     >
                       Accept All
                     </Button>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={acceptNecessary}
+                        className="w-full sm:w-auto"
+                      >
+                        Necessary Only
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={openSettings}
+                        className="w-full sm:w-auto"
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Customize
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
