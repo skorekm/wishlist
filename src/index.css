@@ -230,21 +230,31 @@ html {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(249, 113, 113, 0.1) 50%,
+    rgba(249, 113, 113, 0.15) 50%,
     transparent 100%
   );
   background-size: 1000px 100%;
   animation: shimmer 8s infinite;
 }
 
+.dark .animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(249, 113, 113, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+}
+
 /* Pulse glow */
 @keyframes pulse-glow {
   0%, 100% {
-    opacity: 0.3;
+    opacity: 0.5;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.8;
     transform: scale(1.05);
   }
 }
