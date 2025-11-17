@@ -103,7 +103,7 @@ export function AddWishlistItem({ wishlistId, wishlistUuid, isOpen = false }: { 
           <span className="sr-only">Add Item</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="dark:bg-gray-900 dark:border-gray-800">
+      <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle className="dark:text-gray-100">Add to Wishlist</DialogTitle>

@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_authenticated')({
     const { data } = await supabase.auth.getSession()
     if (!data.session) {
       throw redirect({
-        to: '/',
+        to: '/login',
         search: {
           redirect: location.href,
         },
@@ -29,7 +29,7 @@ function AuthenticatedLayout() {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        navigate({ to: '/' })
+        navigate({ to: '/login' })
       }
     }
     checkAuth()
@@ -38,7 +38,7 @@ function AuthenticatedLayout() {
 
   return (
     <motion.div
-      className="min-h-screen transition-colors duration-300"
+      className="bg-background min-h-screen transition-colors duration-300"
       initial="hidden"
       animate="show"
       variants={fadeIn()}

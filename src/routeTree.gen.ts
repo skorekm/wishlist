@@ -9,12 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedWishlistsIndexRouteImport } from './routes/_authenticated/wishlists.index'
 import { Route as WishlistsSharedIdRouteImport } from './routes/wishlists.shared.$id'
 import { Route as AuthenticatedWishlistsIdRouteImport } from './routes/_authenticated/wishlists.$id'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -23,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedWishlistsIndexRoute =
   AuthenticatedWishlistsIndexRouteImport.update({
@@ -44,12 +68,20 @@ const AuthenticatedWishlistsIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
   '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/wishlists': typeof AuthenticatedWishlistsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
   '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/wishlists': typeof AuthenticatedWishlistsIndexRoute
@@ -58,19 +90,43 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/wishlists/$id': typeof AuthenticatedWishlistsIdRoute
   '/wishlists/shared/$id': typeof WishlistsSharedIdRoute
   '/_authenticated/wishlists/': typeof AuthenticatedWishlistsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/privacy'
+    | '/terms'
+    | '/settings'
+    | '/wishlists/$id'
+    | '/wishlists/shared/$id'
+    | '/wishlists'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/wishlists/$id' | '/wishlists/shared/$id' | '/wishlists'
+  to:
+    | '/'
+    | '/login'
+    | '/privacy'
+    | '/terms'
+    | '/settings'
+    | '/wishlists/$id'
+    | '/wishlists/shared/$id'
+    | '/wishlists'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/login'
+    | '/privacy'
+    | '/terms'
+    | '/_authenticated/settings'
     | '/_authenticated/wishlists/$id'
     | '/wishlists/shared/$id'
     | '/_authenticated/wishlists/'
@@ -79,11 +135,35 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   WishlistsSharedIdRoute: typeof WishlistsSharedIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -97,6 +177,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/wishlists/': {
       id: '/_authenticated/wishlists/'
@@ -123,11 +210,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedWishlistsIdRoute: typeof AuthenticatedWishlistsIdRoute
   AuthenticatedWishlistsIndexRoute: typeof AuthenticatedWishlistsIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedWishlistsIdRoute: AuthenticatedWishlistsIdRoute,
   AuthenticatedWishlistsIndexRoute: AuthenticatedWishlistsIndexRoute,
 }
@@ -139,6 +228,9 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   WishlistsSharedIdRoute: WishlistsSharedIdRoute,
 }
 export const routeTree = rootRouteImport
