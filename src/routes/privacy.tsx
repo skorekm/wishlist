@@ -214,8 +214,10 @@ function PrivacyPolicy() {
               <div className="text-muted-foreground space-y-2">
                 <p>If you have questions or concerns about this Privacy Policy, please contact us:</p>
                 <ul className="list-none space-y-1">
-                  <li>Email: <a href="mailto:privacy@wishlist.com" className="text-primary hover:underline">privacy@wishlist.com</a></li>
-                  <li>Support: <a href="mailto:support@wishlist.com" className="text-primary hover:underline">support@wishlist.com</a></li>
+                  <li><strong>Data Controller:</strong> Marcin Skorek</li>
+                  <li><strong>Email:</strong> <a href="mailto:privacy@wishlist.com" className="text-primary hover:underline">privacy@wishlist.com</a></li>
+                  <li><strong>Support:</strong> <a href="mailto:support@wishlist.com" className="text-primary hover:underline">support@wishlist.com</a></li>
+                  <li><strong>Address:</strong> Available upon request via support@wishlist.com</li>
                 </ul>
               </div>
             </section>
