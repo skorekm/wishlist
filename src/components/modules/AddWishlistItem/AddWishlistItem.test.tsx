@@ -1,28 +1,34 @@
-import { expect, describe, it, beforeEach, mock } from 'bun:test'
+import { expect, describe, it, beforeEach, afterEach, mock, spyOn } from 'bun:test'
 import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AddWishlistItem } from './AddWishlistItem'
-import * as services from '@/services'
 
-// Mock external dependencies
-mock.module('@/services', () => ({
-  createWishlistItem: mock(() => {}),
-  getCurrencies: mock(() => Promise.resolve(mockCurrencies)),
-}))
-
-mock.module('react-toastify', () => ({
-  toast: {
-    success: mock(() => {}),
-    error: mock(() => {}),
-  },
-}))
-
-// Mock currency data
+// Mock currency data (must be defined before module mocks)
 const mockCurrencies = [
   { value: '1', label: 'USD (US Dollar)', code: 'USD', isPopular: true },
   { value: '2', label: 'EUR (Euro)', code: 'EUR', isPopular: true },
   { value: '3', label: 'PLN (Polish Zloty)', code: 'PLN', isPopular: true },
 ]
+
+// Mock external dependencies
+const mockCreateWishlistItem = mock(() => Promise.resolve())
+const mockGetCurrencies = mock(() => Promise.resolve(mockCurrencies))
+
+mock.module('@/services', () => ({
+  createWishlistItem: mockCreateWishlistItem,
+  getCurrencies: mockGetCurrencies,
+}))
+
+// Mock sonner toasts
+const mockToastSuccess = mock(() => {})
+const mockToastError = mock(() => {})
+
+mock.module('sonner', () => ({
+  toast: {
+    success: mockToastSuccess,
+    error: mockToastError,
+  },
+}))
 
 const mockProps = {
   wishlistId: 123,
@@ -48,15 +54,23 @@ const renderWithQueryClient = (props = mockProps) => {
 }
 
 describe('AddWishlistItem Component', () => {
+  let consoleErrorSpy: ReturnType<typeof spyOn>
+
   beforeEach(() => {
     cleanup()
     mock.clearAllMocks()
-    mock(services.getCurrencies).mockResolvedValue(mockCurrencies)
+    // Suppress console.error for error tests
+    consoleErrorSpy = spyOn(console, 'error').mockImplementation(() => {})
+    mockGetCurrencies.mockResolvedValue(mockCurrencies)
+  })
+
+  afterEach(() => {
+    consoleErrorSpy?.mockRestore()
   })
 
   describe('Rendering and Initial State', () => {
     it('should show loading state when currencies are being fetched', () => {
-      mock(services.getCurrencies).mockReturnValue(new Promise(() => {})) // Never resolves
+      mockGetCurrencies.mockReturnValue(new Promise(() => {})) // Never resolves
       renderWithQueryClient()
       
       // getByText will throw if element is not found, so this is sufficient

@@ -97,7 +97,15 @@ function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-2 border-t border-muted-foreground/20 pt-6">
             <p className="text-xs text-center text-muted-foreground">
-              By continuing, you agree to our Terms of Service and Privacy Policy.
+              By continuing, you agree to our{' '}
+              <a href="/terms" className="text-accent hover:underline">
+                Terms of Service
+              </a>{' '}
+              and{' '}
+              <a href="/privacy" className="text-accent hover:underline">
+                Privacy Policy
+              </a>
+              .
             </p>
           </CardFooter>
         </Card>
@@ -105,7 +113,7 @@ function LoginPage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-muted-foreground">
             Need help?{" "}
-            <a href="#" className="text-accent hover:underline">
+            <a href="mailto:support@wishlist.com" className="text-accent hover:underline">
               Contact Support
             </a>
           </p>
