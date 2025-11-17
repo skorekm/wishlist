@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Gift, Share2, Bell, Lock, Heart, Users } from 'lucide-react'
 import { motion, useScroll, useTransform, useInView } from 'motion/react'
 import { useRef } from 'react'
-import { fadeIn, stagger, listItem, cardHover } from '@/lib/motion'
+import { fadeIn, stagger, listItem } from '@/lib/motion'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
