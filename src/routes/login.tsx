@@ -9,11 +9,16 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
-  beforeLoad: async () => {
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      redirect: search?.redirect as string | undefined,
+    }
+  },
+  beforeLoad: async ({ search }) => {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
       throw redirect({
-        to: '/wishlists',
+        to: search.redirect || '/wishlists',
       })
     }
   }
@@ -21,6 +26,7 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   const [loading, setLoading] = useState(false)
+  const { redirect } = Route.useSearch()
 
   const handleGoogleLogin = async () => {
     setLoading(true)
@@ -29,7 +35,7 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/wishlists`,
+          redirectTo: redirect ? `${window.location.origin}${redirect}` : `${window.location.origin}/wishlists`,
         },
       })
 

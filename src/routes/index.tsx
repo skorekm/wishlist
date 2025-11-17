@@ -4,14 +4,17 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { Gift, Share2, Bell, Lock, Heart, Users, Sparkles, Star } from 'lucide-react'
 import { motion, useScroll, useTransform, useInView } from 'motion/react'
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { fadeIn, stagger, listItem } from '@/lib/motion'
+import { supabase } from '@/supabaseClient'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
 })
 
 function LandingPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const heroRef = useRef(null)
   const featuresRef = useRef(null)
   const howItWorksRef = useRef(null)
@@ -24,6 +27,18 @@ function LandingPage() {
   const featuresInView = useInView(featuresRef, { once: true, margin: "-100px" })
   const howItWorksInView = useInView(howItWorksRef, { once: true, margin: "-100px" })
   const ctaInView = useInView(ctaRef, { once: false, margin: "-100px" })
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+      setIsCheckingAuth(false)
+    }
+    checkAuth()
+  }, [])
+
+  const ctaDestination = isAuthenticated ? '/wishlists' : '/login'
+  const ctaText = isAuthenticated ? 'Go to My Wishlists' : 'Start Building Your Wishlist'
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -56,9 +71,11 @@ function LandingPage() {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Link to="/login">
-              <Button variant="default">Sign In</Button>
-            </Link>
+            {!isCheckingAuth && (
+              <Link to={ctaDestination}>
+                <Button variant="default">{isAuthenticated ? 'My Wishlists' : 'Sign In'}</Button>
+              </Link>
+            )}
           </div>
         </div>
       </motion.header>
@@ -250,11 +267,13 @@ function LandingPage() {
             initial="hidden"
             animate="show"
           >
-            <Link to="/login">
-              <Button size="lg" className="text-lg px-8 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300">
-                Start Building Your Wishlist
-              </Button>
-            </Link>
+            {!isCheckingAuth && (
+              <Link to={ctaDestination}>
+                <Button size="lg" className="text-lg px-8 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300">
+                  {ctaText}
+                </Button>
+              </Link>
+            )}
           </motion.div>
         </motion.div>
       </section>
@@ -457,11 +476,13 @@ function LandingPage() {
             Join hundreds of users who've already discovered a better way to celebrate. 
             Free to start, easy to love.
           </p>
-          <Link to="/login">
-            <Button size="lg" className="text-lg px-8 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300">
-              Create Your First Wishlist
-            </Button>
-          </Link>
+          {!isCheckingAuth && (
+            <Link to={ctaDestination}>
+              <Button size="lg" className="text-lg px-8 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300">
+                {isAuthenticated ? 'Go to My Wishlists' : 'Create Your First Wishlist'}
+              </Button>
+            </Link>
+          )}
         </motion.div>
       </section>
 

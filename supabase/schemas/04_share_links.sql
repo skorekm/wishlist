@@ -19,6 +19,16 @@ create policy "Authenticated users can view share links they created"
   to authenticated
   using (created_by = (select auth.uid()));
 
+-- Allow authenticated users to verify share links by token (same as anonymous)
+create policy "Authenticated users can verify share links by token"
+  on public.share_links
+  as permissive
+  for select
+  to authenticated
+  using (
+    revoked_at IS NULL
+  );
+
 -- Add anonymous access policy to wishlists table (now that share_links exists)
 -- This allows anyone with a valid share link to view the wishlist
 create policy "Public can view wishlists via active share links"
@@ -26,6 +36,20 @@ create policy "Public can view wishlists via active share links"
   for select
   to anon
   using (
+    exists (
+      select 1 from public.share_links
+      where share_links.wishlist_id = wishlists.id
+      and share_links.revoked_at is null
+    )
+  );
+
+-- Allow authenticated users to view wishlists via active share links
+create policy "Authenticated users can view wishlists via active share links"
+  on public.wishlists
+  for select
+  to authenticated
+  using (
+    -- Allow viewing if there's an active share link for this wishlist
     exists (
       select 1 from public.share_links
       where share_links.wishlist_id = wishlists.id
@@ -43,16 +67,14 @@ create policy "Anyone can verify share links by token"
     revoked_at IS NULL
   );
 
--- Only authenticated users can create share links for their own wishlists
+-- Only authenticated users can create share links (ownership verified in service layer)
+-- Simplified to avoid circular dependency with wishlists RLS policies
 create policy "Users can create share links for their wishlists"
   on public.share_links
   for insert
   to authenticated
   with check (
     created_by = (select auth.uid())
-    and wishlist_id in (
-      select id from public.wishlists where author_id = (select auth.uid())
-    )
   );
 
 -- Only the share link creator can update their share links

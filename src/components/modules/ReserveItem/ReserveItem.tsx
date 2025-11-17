@@ -18,7 +18,12 @@ const reserveItemSchema = z.object({
 
 export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
 
-export function ReserveItem({ item }: { item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } } }) {
+interface ReserveItemProps {
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
+  authenticatedUser?: { id: string; email?: string } | null
+}
+
+export function ReserveItem({ item, authenticatedUser }: ReserveItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -26,8 +31,8 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
     resolver: zodResolver(reserveItemSchema),
     mode: 'onChange',
     defaultValues: {
-      name: '',
-      email: '',
+      name: authenticatedUser?.email?.split('@')[0] || '',
+      email: authenticatedUser?.email || '',
     },
   });
 
@@ -47,7 +52,10 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
   }
 
   const closeDialog = () => {
-    reset();
+    reset({
+      name: authenticatedUser?.email?.split('@')[0] || '',
+      email: authenticatedUser?.email || '',
+    });
     setIsOpen(false);
   }
 

@@ -663,6 +663,15 @@ using ((revoked_at IS NULL));
 
 
 
+  create policy "Authenticated users can verify share links by token"
+  on "public"."share_links"
+  as permissive
+  for select
+  to authenticated
+using ((revoked_at IS NULL));
+
+
+
   create policy "Authenticated users can view share links they created"
   on "public"."share_links"
   as permissive
@@ -677,9 +686,7 @@ using ((created_by = ( SELECT auth.uid() AS uid)));
   as permissive
   for insert
   to authenticated
-with check (((created_by = ( SELECT auth.uid() AS uid)) AND (wishlist_id IN ( SELECT wishlists.id
-   FROM public.wishlists
-  WHERE (wishlists.author_id = ( SELECT auth.uid() AS uid))))));
+with check ((created_by = ( SELECT auth.uid() AS uid)));
 
 
 
@@ -793,6 +800,17 @@ using ((created_by = ( SELECT auth.uid() AS uid)));
   for select
   to authenticated
 using ((user_id = ( SELECT auth.uid() AS uid)));
+
+
+
+  create policy "Authenticated users can view wishlists via active share links"
+  on "public"."wishlists"
+  as permissive
+  for select
+  to authenticated
+using ((EXISTS ( SELECT 1
+   FROM public.share_links
+  WHERE ((share_links.wishlist_id = wishlists.id) AND (share_links.revoked_at IS NULL)))));
 
 
 

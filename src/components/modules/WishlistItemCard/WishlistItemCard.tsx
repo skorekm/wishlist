@@ -28,6 +28,7 @@ interface WishlistItemCardProps {
   wishlistUuid: string
   permissions?: WishlistItemPermissions
   reservationCode?: string
+  authenticatedUser?: { id: string; email?: string } | null
 }
 
 const priorityColors: Record<string, string> = {
@@ -55,7 +56,7 @@ const statusConfig = {
   }
 };
 
-export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
@@ -124,7 +125,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
               </Button>
             )}
             {canGrab && !showActions && !canMarkPurchased && isAvailable && (
-              <ReserveItem item={item} />
+              <ReserveItem item={item} authenticatedUser={authenticatedUser} />
             )}
             {showActions && (
               <div className="flex items-start">
