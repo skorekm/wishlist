@@ -95,6 +95,7 @@ function generateEmailTemplate(
   name: string,
   wishlistLink: string,
   expiresAt: string,
+  origin: string,
 ): string {
   const expirationDate = new Date(expiresAt);
   const formattedDate = expirationDate.toLocaleString('en-US', {
@@ -140,6 +141,17 @@ function generateEmailTemplate(
               <a href="mailto:support@wishlist.com">support@wishlist.com</a>
             </p>
             <p>Best regards,<br/>The Wishlist Team</p>
+            
+            <!-- Legal Footer (CAN-SPAM Compliance) -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af;">
+              <p style="margin: 5px 0;">Wishlist | Marcin Skorek</p>
+              <p style="margin: 5px 0;">Physical address available upon request via support@wishlist.com</p>
+              <p style="margin: 10px 0 5px 0;">
+                <a href="${origin}/settings" style="color: #6366f1; text-decoration: none;">Email Preferences</a> | 
+                <a href="${origin}/privacy" style="color: #6366f1; text-decoration: none;">Privacy Policy</a> | 
+                <a href="${origin}/terms" style="color: #6366f1; text-decoration: none;">Terms of Service</a>
+              </p>
+            </div>
           </div>
         </div>
       </body>
@@ -147,7 +159,7 @@ function generateEmailTemplate(
   `;
 }
 
-const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string, expiresAt: string) => {
+const sendReservationEmail = async (wishlistLink: string, reserverEmail: string, reserverName: string, expiresAt: string, origin: string) => {
   const client = new SMTPClient({
     connection: {
       hostname: "host.docker.internal",
@@ -164,7 +176,7 @@ const sendReservationEmail = async (wishlistLink: string, reserverEmail: string,
       from: "admin@wishlist.com",
       to: reserverEmail,
       subject: "Your reservation details",
-      html: generateEmailTemplate(reserverName, wishlistLink, expiresAt),
+      html: generateEmailTemplate(reserverName, wishlistLink, expiresAt, origin),
     });
   } catch (error) {
     console.error("Failed to send email", error);
@@ -260,7 +272,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const emailResult = await sendReservationEmail(wishlistLink, email, name, newReservation.expires_at);
+    const emailResult = await sendReservationEmail(wishlistLink, email, name, newReservation.expires_at, origin);
     if (emailResult.error) {
       console.error('Failed to send reservation email', emailResult.error);
     }

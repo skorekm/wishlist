@@ -46,6 +46,22 @@ function generateReminderEmailTemplate(
           <p>Or copy this link: <br/><code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 13px;">${wishlistLink}</code></p>
           <div class="footer">
             <p>Best regards,<br/>The Wishlist Team</p>
+            
+            <!-- Opt-out Message -->
+            <p style="font-size: 12px; color: #6b7280; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+              Don't want these reminders? 
+              <a href="${origin}/settings" style="color: #6366f1; text-decoration: underline;">Update your email preferences</a>
+            </p>
+            
+            <!-- Legal Footer (CAN-SPAM Compliance) -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af;">
+              <p style="margin: 5px 0;">Wishlist | Marcin Skorek</p>
+              <p style="margin: 5px 0;">Physical address available upon request via support@wishlist.com</p>
+              <p style="margin: 10px 0 5px 0;">
+                <a href="${origin}/privacy" style="color: #6366f1; text-decoration: none;">Privacy Policy</a> | 
+                <a href="${origin}/terms" style="color: #6366f1; text-decoration: none;">Terms of Service</a>
+              </p>
+            </div>
           </div>
         </div>
       </body>

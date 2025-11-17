@@ -265,8 +265,8 @@ function TermsOfService() {
                 <div>
                   <h3 className="font-medium text-foreground mb-2">12.2 Governing Law</h3>
                   <p>
-                    These Terms shall be governed by and construed in accordance with the laws of the jurisdiction 
-                    in which Wishlist operates, without regard to its conflict of law provisions.
+                    These Terms shall be governed by and construed in accordance with the laws of Poland, 
+                    without regard to its conflict of law provisions.
                   </p>
                 </div>
 
@@ -311,8 +311,10 @@ function TermsOfService() {
               <div className="text-muted-foreground space-y-2">
                 <p>If you have questions about these Terms, please contact us:</p>
                 <ul className="list-none space-y-1">
-                  <li>Email: <a href="mailto:legal@wishlist.com" className="text-primary hover:underline">legal@wishlist.com</a></li>
-                  <li>Support: <a href="mailto:support@wishlist.com" className="text-primary hover:underline">support@wishlist.com</a></li>
+                  <li><strong>Service Provider:</strong> Marcin Skorek</li>
+                  <li><strong>Email:</strong> <a href="mailto:legal@wishlist.com" className="text-primary hover:underline">legal@wishlist.com</a></li>
+                  <li><strong>Support:</strong> <a href="mailto:support@wishlist.com" className="text-primary hover:underline">support@wishlist.com</a></li>
+                  <li><strong>Address:</strong> Available upon request via support@wishlist.com</li>
                 </ul>
               </div>
             </section>
