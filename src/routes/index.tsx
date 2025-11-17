@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Gift, Share2, Bell, Lock, Heart, Users } from 'lucide-react'
+import { Gift, Share2, Bell, Lock, Heart, Users, Sparkles, Star } from 'lucide-react'
 import { motion, useScroll, useTransform, useInView } from 'motion/react'
 import { useRef } from 'react'
 import { fadeIn, stagger, listItem } from '@/lib/motion'
@@ -27,11 +27,19 @@ function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background Gradient */}
+      {/* Animated Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl animate-blob" />
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-1/2 left-1/3 w-full h-full bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl animate-blob animation-delay-4000" />
+        {/* Gradient Blobs with enhanced movement */}
+        <div className="absolute -top-1/2 -left-1/2 w-[120%] h-[120%] bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl animate-blob" />
+        <div className="absolute -top-1/2 -right-1/2 w-[120%] h-[120%] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-1/2 left-1/3 w-[120%] h-[120%] bg-accent/5 dark:bg-accent/10 rounded-full blur-3xl animate-blob animation-delay-4000" />
+        <div className="absolute top-1/4 right-1/4 w-full h-full bg-primary/3 dark:bg-primary/8 rounded-full blur-3xl animate-blob animation-delay-6000" />
+        
+        {/* Shimmer overlay */}
+        <div className="absolute inset-0 animate-shimmer" />
+        
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(249,113,113,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(249,113,113,0.03)_1px,transparent_1px)] bg-size-[64px_64px] mask-[radial-gradient(ellipse_80%_50%_at_50%_0%,black_40%,transparent_100%)]" />
       </div>
 
       {/* Header */}
@@ -57,18 +65,175 @@ function LandingPage() {
 
       {/* Hero Section */}
       <section ref={heroRef} className="container mx-auto px-4 py-20 text-center relative">
+        {/* Floating decorative elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Gift boxes */}
+          <motion.div
+            className="absolute top-20 left-[10%] text-accent/20 dark:text-accent/30"
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, 5, 0],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <Gift className="w-12 h-12" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute top-40 right-[15%] text-accent/20 dark:text-accent/30"
+            animate={{
+              y: [0, 20, 0],
+              rotate: [0, -5, 0],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+          >
+            <Gift className="w-16 h-16" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute bottom-20 left-[20%] text-accent/15 dark:text-accent/25"
+            animate={{
+              y: [0, -15, 0],
+              rotate: [0, 8, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+          >
+            <Gift className="w-10 h-10" />
+          </motion.div>
+          
+          {/* Stars */}
+          <motion.div
+            className="absolute top-32 right-[25%] text-accent/25 dark:text-accent/35"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360],
+              opacity: [0.3, 0.6, 0.3],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <Star className="w-6 h-6 fill-current" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute top-60 left-[15%] text-accent/25 dark:text-accent/35"
+            animate={{
+              scale: [1, 1.3, 1],
+              rotate: [0, -180, -360],
+              opacity: [0.3, 0.7, 0.3],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5,
+            }}
+          >
+            <Star className="w-5 h-5 fill-current" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute bottom-32 right-[18%] text-accent/25 dark:text-accent/35"
+            animate={{
+              scale: [1, 1.15, 1],
+              rotate: [0, 180, 360],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 3,
+            }}
+          >
+            <Star className="w-7 h-7 fill-current" />
+          </motion.div>
+          
+          {/* Sparkles */}
+          <motion.div
+            className="absolute top-48 right-[8%] text-accent/30 dark:text-accent/40"
+            animate={{
+              scale: [1, 1.4, 1],
+              opacity: [0.4, 1, 0.4],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <Sparkles className="w-4 h-4" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute top-36 left-[8%] text-accent/30 dark:text-accent/40"
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.4, 1, 0.4],
+            }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
+          >
+            <Sparkles className="w-3 h-3" />
+          </motion.div>
+          
+          <motion.div
+            className="absolute bottom-40 left-[12%] text-accent/30 dark:text-accent/40"
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.9, 0.4],
+            }}
+            transition={{
+              duration: 3.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2,
+            }}
+          >
+            <Sparkles className="w-5 h-5" />
+          </motion.div>
+        </div>
+        
         <motion.div 
-          className="max-w-3xl mx-auto space-y-6"
+          className="max-w-3xl mx-auto space-y-6 relative z-10"
           style={{ y: heroY, opacity: heroOpacity }}
         >
+          {/* Radial glow behind text */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 dark:bg-accent/20 rounded-full blur-[100px] animate-pulse-glow -z-10" />
+          
           <motion.h1 
-            className="text-5xl md:text-6xl font-bold tracking-tight"
+            className="text-5xl md:text-6xl font-bold tracking-tight relative"
             variants={fadeIn("up", 0.2)}
             initial="hidden"
             animate="show"
           >
             Gift-Giving,
-            <span className="text-accent"> Perfected</span>
+            <span className="text-accent relative inline-block">
+              {" "}Perfected
+              {/* Subtle text glow effect */}
+              <span className="absolute inset-0 blur-sm text-accent opacity-50" aria-hidden="true"> Perfected</span>
+            </span>
           </motion.h1>
           <motion.p 
             className="text-xl text-muted-foreground max-w-2xl mx-auto"
