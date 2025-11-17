@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Gift, Home, Search } from 'lucide-react'
+import { Gift, Search } from 'lucide-react'
 
 export function NotFoundPage() {
   return (
@@ -53,18 +53,6 @@ export function NotFoundPage() {
           <CardFooter className="flex flex-col gap-3 pt-2">
             <Button
               asChild
-              variant="default"
-              size="lg"
-              className="w-full"
-            >
-              <Link to="/wishlists">
-                <Home className="h-4 w-4 mr-2" />
-                View My Wishlists
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
               size="lg"
               className="w-full"
               onClick={() => window.history.back()}
