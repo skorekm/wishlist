@@ -29,7 +29,7 @@ function AuthenticatedLayout() {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        navigate({ to: '/login' })
+        navigate({ to: '/login', search: { redirect: undefined } })
       }
     }
     checkAuth()
