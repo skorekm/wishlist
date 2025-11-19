@@ -5,8 +5,8 @@ import { Gift, Search } from 'lucide-react'
 
 export function NotFoundPage() {
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-4 w-full h-full bg-linear-to-b from-background to-muted/20">
-      <div className="max-w-lg w-full">
+    <main className="w-screen h-screen flex items-center justify-center p-4 bg-linear-to-b from-background to-muted/20">
+      <div className="max-w-lg w-full mx-auto">
         <Card className="border-none shadow-2xl px-6 py-10 bg-card/80 backdrop-blur">
           <CardHeader className="text-center space-y-6 pb-8">
             {/* Decorative Icon */}

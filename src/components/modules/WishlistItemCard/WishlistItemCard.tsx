@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "motion/react"
-import { ExternalLink, MoreHorizontal } from "lucide-react"
+import { ExternalLink, MoreHorizontal, Clock } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,7 @@ interface WishlistItemCardProps {
     status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
     userHasReserved?: boolean
     userReservationCode?: string
+    expiresAt?: string
   }
   wishlistUuid: string
   permissions?: WishlistItemPermissions
@@ -60,6 +61,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState<string>('')
 
   // Secure by default: permissions default to false
   const { canEdit = false, canDelete = false, canGrab = false } = permissions
@@ -74,6 +76,39 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
   // Check if user can mark as purchased
   const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
+
+  // Calculate time remaining for reservation
+  useEffect(() => {
+    if (!item.expiresAt || itemStatus !== 'reserved') return
+
+    const updateTimeRemaining = () => {
+      const now = new Date()
+      const expiresDate = new Date(item.expiresAt!)
+      const diff = expiresDate.getTime() - now.getTime()
+
+      if (diff <= 0) {
+        setTimeRemaining('Expired')
+        return
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+
+      if (hours > 24) {
+        const days = Math.floor(hours / 24)
+        setTimeRemaining(`${days}d ${hours % 24}h`)
+      } else if (hours > 0) {
+        setTimeRemaining(`${hours}h ${minutes}m`)
+      } else {
+        setTimeRemaining(`${minutes}m`)
+      }
+    }
+
+    updateTimeRemaining()
+    const interval = setInterval(updateTimeRemaining, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [item.expiresAt, itemStatus])
 
   return (
     <motion.div
@@ -111,6 +146,15 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                     className={`bg-secondary text-secondary-foreground ${priorityColors[item.priority.toLowerCase()] || ""}`}
                   >
                     {getPriorityLabel(item.priority)}
+                  </Badge>
+                )}
+                {timeRemaining && item.expiresAt && itemStatus === 'reserved' && (
+                  <Badge
+                    variant="outline"
+                    className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/50"
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    {timeRemaining}
                   </Badge>
                 )}
               </div>

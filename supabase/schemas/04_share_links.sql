@@ -12,21 +12,13 @@ create table if not exists "share_links" (
 -- Add row-level security policies
 alter table public.share_links enable row level security;
 
--- Authenticated users can view share links they created (no circular check)
-create policy "Authenticated users can view share links they created"
+-- Authenticated users can view share links they created OR any non-revoked share links
+create policy "Authenticated users can view share links"
   on public.share_links
-  for select
-  to authenticated
-  using (created_by = (select auth.uid()));
-
--- Allow authenticated users to verify share links by token (same as anonymous)
-create policy "Authenticated users can verify share links by token"
-  on public.share_links
-  as permissive
   for select
   to authenticated
   using (
-    revoked_at IS NULL
+    created_by = (select auth.uid()) OR revoked_at IS NULL
   );
 
 -- Add anonymous access policy to wishlists table (now that share_links exists)

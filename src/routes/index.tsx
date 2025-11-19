@@ -246,7 +246,7 @@ function LandingPage() {
             animate="show"
           >
             Gift-Giving,
-            <span className="text-accent relative inline-block ml-1">
+            <span className="text-accent relative inline-block ml-2">
               Perfected
               {/* Subtle text glow effect */}
               <span className="absolute inset-0 blur-sm text-accent opacity-50" aria-hidden="true"> Perfected</span>

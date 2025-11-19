@@ -663,21 +663,12 @@ using ((revoked_at IS NULL));
 
 
 
-  create policy "Authenticated users can verify share links by token"
+  create policy "Authenticated users can view share links"
   on "public"."share_links"
   as permissive
   for select
   to authenticated
-using ((revoked_at IS NULL));
-
-
-
-  create policy "Authenticated users can view share links they created"
-  on "public"."share_links"
-  as permissive
-  for select
-  to authenticated
-using ((created_by = ( SELECT auth.uid() AS uid)));
+using (((created_by = ( SELECT auth.uid() AS uid)) OR (revoked_at IS NULL)));
 
 
 
