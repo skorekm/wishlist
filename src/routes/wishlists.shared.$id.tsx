@@ -23,6 +23,57 @@ export const Route = createFileRoute('/wishlists/shared/$id')({
   },
 })
 
+interface SharedWishlistNavbarProps {
+  user: { id: string; email?: string } | null
+  shareToken: string
+  reservationCode?: string
+  onLogout: () => void
+}
+
+function SharedWishlistNavbar({ user, shareToken, reservationCode, onLogout }: SharedWishlistNavbarProps) {
+  const currentPath = `/wishlists/shared/${shareToken}${reservationCode ? `?code=${reservationCode}` : ''}`
+  
+  return (
+    <nav className="bg-background border-b border-border py-3 sticky top-0 z-50 w-full">
+      <div className="container mx-auto px-4 flex items-center justify-between">
+        <Link to={user ? "/wishlists" : "/"}>
+          <motion.div
+            className="flex items-center gap-2"
+            variants={fadeIn("right")}
+            initial="hidden"
+            animate="show"
+          >
+            <GiftIcon className="size-5 text-accent" />
+            <span className="font-medium dark:text-gray-100">Wishlist</span>
+          </motion.div>
+        </Link>
+        <motion.div
+          className="flex items-center gap-3"
+          variants={fadeIn("left")}
+          initial="hidden"
+          animate="show"
+        >
+          <ThemeToggle />
+          {user ? (
+            <>
+              <Link to="/settings">
+                <Button variant="ghost" size="icon" title="Account Settings">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Button onClick={onLogout} variant="outline">Logout</Button>
+            </>
+          ) : (
+            <Link to="/login" search={{ redirect: currentPath }}>
+              <Button variant="outline">Login</Button>
+            </Link>
+          )}
+        </motion.div>
+      </div>
+    </nav>
+  )
+}
+
 function SharedWishlist() {
   const { id: shareToken } = Route.useParams()
   const { code: reservationCode } = Route.useSearch()
@@ -65,65 +116,22 @@ function SharedWishlist() {
     setUser(null)
   }
 
-  const renderNavbar = () => {
-    const currentPath = `/wishlists/shared/${shareToken}${reservationCode ? `?code=${reservationCode}` : ''}`
-    
-    return (
-      <nav className="bg-background border-b border-border py-3 sticky top-0 z-50 w-full">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <Link to={user ? "/wishlists" : "/"}>
-            <motion.div
-              className="flex items-center gap-2"
-              variants={fadeIn("right")}
-              initial="hidden"
-              animate="show"
-            >
-              <GiftIcon className="size-5 text-accent" />
-              <span className="font-medium dark:text-gray-100">Wishlist</span>
-            </motion.div>
-          </Link>
-          <motion.div
-            className="flex items-center gap-3"
-            variants={fadeIn("left")}
-            initial="hidden"
-            animate="show"
-          >
-            <ThemeToggle />
-            {user ? (
-              <>
-                <Link to="/settings">
-                  <Button variant="ghost" size="icon" title="Account Settings">
-                    <Settings className="h-5 w-5" />
-                  </Button>
-                </Link>
-                <Button onClick={handleLogout} variant="outline">Logout</Button>
-              </>
-            ) : (
-              <Link to="/login" search={{ redirect: currentPath }}>
-                <Button variant="outline">Login</Button>
-              </Link>
-            )}
-          </motion.div>
-        </div>
-      </nav>
-    )
-  }
-
-  if (isLoading) {
-    return (
-      <>
-        {renderNavbar()}
+  return (
+    <>
+      <SharedWishlistNavbar 
+        user={user} 
+        shareToken={shareToken} 
+        reservationCode={reservationCode}
+        onLogout={handleLogout}
+      />
+      
+      {isLoading && (
         <div className="container mx-auto py-8 flex items-center justify-center min-h-[50vh]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
-      </>
-    )
-  }
+      )}
 
-  if (error || !wishlist) {
-    return (
-      <>
-        {renderNavbar()}
+      {(error || !wishlist) && !isLoading && (
         <div className="container mx-auto py-8">
           <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
             <div className="p-4 rounded-full bg-secondary flex items-center justify-center mb-4">
@@ -138,16 +146,34 @@ function SharedWishlist() {
             </Link>
           </div>
         </div>
-      </>
-    )
-  }
+      )}
 
+      {wishlist && !isLoading && !error && (
+        <WishlistContent 
+          wishlist={wishlist}
+          isOwner={isOwner}
+          reservationCode={reservationCode}
+          user={user}
+        />
+      )}
+    </>
+  )
+}
+
+type SharedWishlist = Awaited<ReturnType<typeof getWishlistByShareToken>>
+
+interface WishlistContentProps {
+  wishlist: SharedWishlist
+  isOwner: boolean
+  reservationCode?: string
+  user: { id: string; email?: string } | null
+}
+
+function WishlistContent({ wishlist, isOwner, reservationCode, user }: WishlistContentProps) {
   const eventStatus = getEventStatus(wishlist.event_date)
 
   return (
-    <>
-      {renderNavbar()}
-      <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -210,7 +236,6 @@ function SharedWishlist() {
           <p className="text-muted-foreground max-w-md">The owner hasn't added any items yet. Check back later!</p>
         </motion.div>
       )}
-      </div>
-    </>
+    </div>
   )
 }
