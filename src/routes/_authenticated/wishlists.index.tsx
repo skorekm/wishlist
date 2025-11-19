@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { List } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
@@ -10,6 +10,7 @@ import { getWishlists, getUserReservations } from '@/services'
 import { Fragment } from 'react/jsx-runtime'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/supabaseClient'
+import { Badge } from '@/components/ui/badge'
 
 // the trailing slash is important
 export const Route = createFileRoute('/_authenticated/wishlists/')({
@@ -145,14 +146,12 @@ function RouteComponent() {
                       >
                         <div className="relative pt-3">
                           {item.wishlist && (
-                            <Link 
-                              to="/wishlists/shared/$id" 
-                              params={{ id: item.wishlist.uuid }}
-                              search={{ code: reservation.reservation_code }}
-                              className="absolute top-0 left-2 z-10 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-md hover:bg-primary/90 transition-colors inline-block"
+                            <Badge 
+                              variant="outline"
+                              className="absolute top-0 left-2 z-10 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-md hover:bg-secondary/90 transition-colors inline-block"
                             >
                               {item.wishlist.name}
-                            </Link>
+                            </Badge>
                           )}
                           <WishlistItemCard
                             item={{
