@@ -75,7 +75,7 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
       >
         <Card
           className={cn(
-            "group relative h-full flex flex-col p-3 rounded-lg border border-border bg-card",
+            "group relative h-full flex flex-col p-4 sm:p-3 rounded-lg border border-border bg-card",
             "transition-all duration-200 hover:border-foreground/20 hover:shadow-sm border-l-4",
             statusBorderClass
           )}
@@ -84,20 +84,20 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               {/* Title */}
-              <h3 className="text-lg font-medium text-foreground tracking-tight leading-tight line-clamp-1 flex-1">
+              <h3 className="text-base sm:text-lg font-medium text-foreground tracking-tight leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
                 {list.name}
               </h3>
               
               {/* Actions */}
-              <div className="flex items-center gap-0.5 -mt-0.5 -mr-1">
+              <div className="flex items-center gap-0.5 sm:gap-0.5 -mt-0.5 -mr-1">
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={openShareModal}
                   aria-label="Share wishlist"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                  className="h-8 w-8 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-muted"
                 >
-                  <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Share2 className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
                 </Button>
                 
                 <DropdownMenu modal={false}>
@@ -106,9 +106,9 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
                       variant="ghost" 
                       size="icon"
                       aria-label="More options"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                      className="h-8 w-8 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-muted"
                     >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                      <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">

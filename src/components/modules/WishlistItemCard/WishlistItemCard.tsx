@@ -130,7 +130,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
   // Memoized computed values
   const showPriority = useMemo(
-    () => item.priority && VISIBLE_PRIORITIES.includes(item.priority.toLowerCase() as any),
+    () => item.priority && (VISIBLE_PRIORITIES as readonly string[]).includes(item.priority),
     [item.priority]
   )
 
@@ -145,7 +145,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
     <div className="h-full">
       <Card
         className={cn(
-          "group relative h-full flex flex-col p-3 rounded-lg border border-border bg-card",
+          "group relative h-full flex flex-col p-4 sm:p-3 rounded-lg border border-border bg-card",
           "transition-all duration-200 hover:border-foreground/20 hover:shadow-sm border-l-4",
           statusBorderClass,
           stateClasses,
@@ -155,19 +155,19 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
         <CardContent className="p-0 flex flex-col h-full gap-2">
           {/* Header */}
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-base font-medium text-foreground leading-tight line-clamp-1 flex-1">
+            <h3 className="text-sm sm:text-base font-medium text-foreground leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
               {item.name}
             </h3>
             
             {/* Actions */}
-            <div className="flex items-center gap-1 -mt-0.5 -mr-1">
+            <div className="flex items-center gap-1 sm:gap-0.5 -mt-0.5 -mr-1">
               {canMarkPurchased && (
                 <Button
                   size="sm"
                   onClick={() => setMarkPurchasedModal(true)}
-                  className="h-7 text-xs shrink-0"
+                  className="h-8 sm:h-7 text-xs shrink-0"
                 >
-                  Mark Purchased
+                  <span className="hidden xs:inline">Mark </span>Purchased
                 </Button>
               )}
               
@@ -182,9 +182,9 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                       variant="ghost" 
                       size="icon"
                       aria-label="More options"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                      className="h-8 w-8 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-muted"
                     >
-                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                      <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
@@ -206,7 +206,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           </div>
 
           {/* Metadata Line */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground/70 flex-wrap">
             {/* Price */}
             <span className="tabular-nums">
               {item.price.toFixed(2)} {item.currency.code}
