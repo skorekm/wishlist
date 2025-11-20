@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react"
-import { motion } from "motion/react"
-import { ExternalLink, MoreHorizontal, Clock } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { ExternalLink, MoreHorizontal } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Database } from "@/database.types"
 import { EditWishlistItem } from "@/components/modules/EditWishlistItem/EditWishlistItem"
-import { getPriorityLabel } from "@/lib/utils"
-import { Badge } from "../../ui/badge"
+import { getPriorityLabel, cn } from "@/lib/utils"
 import { ReserveItem } from "../ReserveItem/ReserveItem"
 import { DeleteItemDialog } from "./DeleteItemDialog"
 import { MarkPurchasedDialog } from "./MarkPurchasedDialog"
+import { VISIBLE_PRIORITIES, ITEM_STATUS } from "@/constants"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
@@ -18,44 +17,46 @@ export interface WishlistItemPermissions {
   canGrab?: boolean
 }
 
+// Extracted complex type for better reusability
+export type WishlistItemWithStatus = Omit<
+  Database['public']['Tables']['wishlist_items']['Row'], 
+  'currency'
+> & {
+  currency: { code: string }
+  status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
+  userHasReserved?: boolean
+  userReservationCode?: string
+  expiresAt?: string
+}
+
 interface WishlistItemCardProps {
-  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & {
-    currency: { code: string }
-    status?: 'available' | 'reserved' | 'purchased' | 'cancelled'
-    userHasReserved?: boolean
-    userReservationCode?: string
-    expiresAt?: string
-  }
+  item: WishlistItemWithStatus
   wishlistUuid: string
   permissions?: WishlistItemPermissions
   reservationCode?: string
   authenticatedUser?: { id: string; email?: string } | null
 }
 
-const priorityColors: Record<string, string> = {
-  low: "border-yellow-500 bg-yellow-500/20",
-  medium: "border-orange-500 bg-orange-500/20",
-  high: "border-red-500 bg-red-500/20",
-};
-
-const statusConfig = {
-  available: {
-    label: "Available",
-    badgeColor: "border-green-500 bg-green-500/20 text-green-700 dark:text-green-400",
-  },
-  reserved: {
-    label: "Reserved",
-    badgeColor: "border-blue-500 bg-blue-500/20 text-blue-700 dark:text-blue-400",
-  },
-  purchased: {
-    label: "Purchased",
-    badgeColor: "border-purple-500 bg-purple-500/20 text-purple-700 dark:text-purple-400",
-  },
-  cancelled: {
-    label: "Cancelled",
-    badgeColor: "border-gray-500 bg-gray-500/20 text-gray-700 dark:text-gray-400",
+// Helper to safely parse URL hostname
+const getUrlHostname = (url: string): string => {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return 'View link'
   }
-};
+}
+
+// Helper to get status border class
+const getStatusBorderClass = (
+  isReserved: boolean,
+  isPurchased: boolean,
+  itemStatus: string
+): string => {
+  if (isReserved) return 'border-l-amber-500 dark:border-l-amber-400'
+  if (isPurchased) return 'border-l-green-500 dark:border-l-green-400'
+  if (itemStatus === ITEM_STATUS.CANCELLED) return 'border-l-gray-400 dark:border-l-gray-500'
+  return 'border-l-transparent'
+}
 
 export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
@@ -69,21 +70,24 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
   // Show dropdown only if user has edit or delete permissions
   const showActions = canEdit || canDelete
 
-  // Get status configuration
-  const itemStatus = item.status || 'available'
-  const statusInfo = statusConfig[itemStatus]
-  const isAvailable = itemStatus === 'available'
+  // Get status information
+  const itemStatus = item.status || ITEM_STATUS.AVAILABLE
+  const isAvailable = itemStatus === ITEM_STATUS.AVAILABLE
+  const isReserved = itemStatus === ITEM_STATUS.RESERVED
+  const isPurchased = itemStatus === ITEM_STATUS.PURCHASED
 
   // Check if user can mark as purchased
-  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && itemStatus !== 'purchased'
+  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && !isPurchased
 
   // Calculate time remaining for reservation
   useEffect(() => {
-    if (!item.expiresAt || itemStatus !== 'reserved') return
+    if (!item.expiresAt || !isReserved) return
 
     const updateTimeRemaining = () => {
+      if (!item.expiresAt) return
+      
       const now = new Date()
-      const expiresDate = new Date(item.expiresAt!)
+      const expiresDate = new Date(item.expiresAt)
       const diff = expiresDate.getTime() - now.getTime()
 
       if (diff <= 0) {
@@ -96,11 +100,11 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
       if (hours > 24) {
         const days = Math.floor(hours / 24)
-        setTimeRemaining(`${days}d ${hours % 24}h`)
+        setTimeRemaining(`${days}d ${hours % 24}h left`)
       } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m`)
+        setTimeRemaining(`${hours}h ${minutes}m left`)
       } else {
-        setTimeRemaining(`${minutes}m`)
+        setTimeRemaining(`${minutes}m left`)
       }
     }
 
@@ -108,105 +112,166 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
     const interval = setInterval(updateTimeRemaining, 60000) // Update every minute
 
     return () => clearInterval(interval)
-  }, [item.expiresAt, itemStatus])
+  }, [item.expiresAt, isReserved])
+
+  // Status border color - using helper function
+  const statusBorderClass = getStatusBorderClass(isReserved, isPurchased, itemStatus)
+
+  // State-based visual modifiers
+  const stateClasses = isPurchased
+    ? 'opacity-60'
+    : isReserved && !item.userHasReserved
+    ? 'opacity-80'
+    : ''
+
+  const userReservedBg = item.userHasReserved
+    ? 'bg-blue-50/30 dark:bg-blue-950/10'
+    : ''
+
+  // Memoized computed values
+  const showPriority = useMemo(
+    () => item.priority && VISIBLE_PRIORITIES.includes(item.priority.toLowerCase() as any),
+    [item.priority]
+  )
+
+  const priorityClass = useMemo(() => {
+    const priority = item.priority?.toLowerCase()
+    if (priority === 'high') return 'text-red-600 dark:text-red-400'
+    if (priority === 'medium') return 'text-orange-600 dark:text-orange-400'
+    return ''
+  }, [item.priority])
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-    >
-      <Card className="overflow-hidden transition-all duration-200 hover:shadow-md bg-card text-card-foreground h-full flex flex-col">
-        <CardContent className="p-4">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="font-medium text-foreground line-clamp-1">{item.name}</h3>
-                <Badge
-                  variant="outline"
-                  className={`${statusInfo.badgeColor} shrink-0`}
+    <div className="h-full">
+      <Card
+        className={cn(
+          "group relative h-full flex flex-col p-3 rounded-lg border border-border bg-card",
+          "transition-all duration-200 hover:border-foreground/20 hover:shadow-sm border-l-4",
+          statusBorderClass,
+          stateClasses,
+          userReservedBg
+        )}
+      >
+        <CardContent className="p-0 flex flex-col h-full gap-2">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-base font-medium text-foreground leading-tight line-clamp-1 flex-1">
+              {item.name}
+            </h3>
+            
+            {/* Actions */}
+            <div className="flex items-center gap-1 -mt-0.5 -mr-1">
+              {canMarkPurchased && (
+                <Button
+                  size="sm"
+                  onClick={() => setMarkPurchasedModal(true)}
+                  className="h-7 text-xs shrink-0"
                 >
-                  {statusInfo.label}
-                </Badge>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                <Badge variant="outline" className="bg-transparent">{item.price.toFixed(2)} {item.currency.code}</Badge>
-                {item.category && (
-                  <Badge
-                    key={item.category}
-                    variant="outline"
-                    className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                  >
-                    {item.category}
-                  </Badge>
-                )}
-                {item.priority && (
-                  <Badge
-                    key={item.priority}
-                    variant="outline"
-                    className={`bg-secondary text-secondary-foreground ${priorityColors[item.priority.toLowerCase()] || ""}`}
-                  >
-                    {getPriorityLabel(item.priority)}
-                  </Badge>
-                )}
-                {timeRemaining && item.expiresAt && itemStatus === 'reserved' && (
-                  <Badge
-                    variant="outline"
-                    className="bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/50"
-                  >
-                    <Clock className="h-3 w-3 mr-1" />
-                    {timeRemaining}
-                  </Badge>
-                )}
-              </div>
-            </div>
-            {canMarkPurchased && (
-              <Button
-                size="sm"
-                onClick={() => setMarkPurchasedModal(true)}
-                className="shrink-0"
-              >
-                Mark Purchased
-              </Button>
-            )}
-            {canGrab && !showActions && !canMarkPurchased && isAvailable && (
-              <ReserveItem item={item} authenticatedUser={authenticatedUser} />
-            )}
-            {showActions && (
-              <div className="flex items-start">
+                  Mark Purchased
+                </Button>
+              )}
+              
+              {canGrab && !showActions && !canMarkPurchased && isAvailable && (
+                <ReserveItem item={item} authenticatedUser={authenticatedUser} />
+              )}
+              
+              {showActions && (
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 rounded-full">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      aria-label="More options"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
+                    >
+                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="w-40">
                     {canEdit && (
-                      <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer">
-                        Edit Item
+                      <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer text-sm">
+                        Edit
                       </DropdownMenuItem>
                     )}
                     {canEdit && canDelete && <DropdownMenuSeparator />}
                     {canDelete && (
-                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive">
-                        Delete Item
+                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive focus:text-destructive text-sm">
+                        Delete
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
+              )}
+            </div>
+          </div>
+
+          {/* Metadata Line */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 flex-wrap">
+            {/* Price */}
+            <span className="tabular-nums">
+              {item.price.toFixed(2)} {item.currency.code}
+            </span>
+            
+            {/* Category */}
+            {item.category && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span>{item.category}</span>
+              </>
+            )}
+            
+            {/* Priority (only medium/high) */}
+            {showPriority && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className={cn(priorityClass, "font-medium")}>
+                  {getPriorityLabel(item.priority)}
+                </span>
+              </>
+            )}
+
+            {/* Status text for reserved/purchased */}
+            {isReserved && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-amber-600 dark:text-amber-400">
+                  {item.userHasReserved ? 'Reserved by you' : 'Reserved'}
+                </span>
+                {timeRemaining && (
+                  <>
+                    <span className="text-muted-foreground/40">•</span>
+                    <span aria-live="polite" aria-atomic="true">{timeRemaining}</span>
+                  </>
+                )}
+              </>
+            )}
+            
+            {isPurchased && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-green-600 dark:text-green-400">Purchased</span>
+              </>
             )}
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-3">{item.notes}</p>
+
+          {/* Description/Notes */}
+          {item.notes && (
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {item.notes}
+            </p>
+          )}
+
+          {/* External Link */}
           {item.link && (
             <a
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline flex items-center gap-1 mt-2"
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mt-auto transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              <ExternalLink className="size-4" />
-              {new URL(item.link).hostname}
+              <ExternalLink className="h-3 w-3" />
+              {getUrlHostname(item.link)}
             </a>
           )}
         </CardContent>
@@ -239,7 +304,6 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           onOpenChange={setMarkPurchasedModal}
         />
       )}
-    </motion.div>
+    </div>
   )
 }
-
