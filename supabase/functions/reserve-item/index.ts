@@ -25,6 +25,7 @@ const createReservation = async (
   name: string,
   itemId: string,
   wishlistEventDate: string | null,
+  userId: string | null = null,
 ) => {
   const reservationCode = crypto.randomUUID();
   
@@ -52,6 +53,7 @@ const createReservation = async (
       reservation_code: reservationCode,
       expires_at: expiresAt.toISOString(),
       status: "reserved",
+      user_id: userId,
     })
     .select()
     .single();
@@ -193,6 +195,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    
+    // Get the authenticated user if present
+    const authHeader = req.headers.get("Authorization");
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+    
     const { email, name, itemId } = await req.json();
 
     const { exists, error: reservationError } = await checkExistingReservation(supabase, itemId);
@@ -254,7 +267,8 @@ Deno.serve(async (req) => {
       email, 
       name, 
       itemId, 
-      wishlistData?.event_date || null
+      wishlistData?.event_date || null,
+      userId
     );
 
     if (createReservationError) {

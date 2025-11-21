@@ -72,7 +72,7 @@ function SettingsPage() {
     try {
       await deleteUserAccount()
       toast.success('Your account has been deleted successfully')
-      navigate({ to: '/login' })
+      navigate({ to: '/login', search: { redirect: undefined } })
     } catch (error) {
       console.error('Error deleting account:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to delete account. Please try again.')

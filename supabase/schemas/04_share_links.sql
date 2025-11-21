@@ -12,12 +12,14 @@ create table if not exists "share_links" (
 -- Add row-level security policies
 alter table public.share_links enable row level security;
 
--- Authenticated users can view share links they created (no circular check)
-create policy "Authenticated users can view share links they created"
+-- Authenticated users can view share links they created OR any non-revoked share links
+create policy "Authenticated users can view share links"
   on public.share_links
   for select
   to authenticated
-  using (created_by = (select auth.uid()));
+  using (
+    created_by = (select auth.uid()) OR revoked_at IS NULL
+  );
 
 -- Add anonymous access policy to wishlists table (now that share_links exists)
 -- This allows anyone with a valid share link to view the wishlist
@@ -26,6 +28,20 @@ create policy "Public can view wishlists via active share links"
   for select
   to anon
   using (
+    exists (
+      select 1 from public.share_links
+      where share_links.wishlist_id = wishlists.id
+      and share_links.revoked_at is null
+    )
+  );
+
+-- Allow authenticated users to view wishlists via active share links
+create policy "Authenticated users can view wishlists via active share links"
+  on public.wishlists
+  for select
+  to authenticated
+  using (
+    -- Allow viewing if there's an active share link for this wishlist
     exists (
       select 1 from public.share_links
       where share_links.wishlist_id = wishlists.id
@@ -43,16 +59,14 @@ create policy "Anyone can verify share links by token"
     revoked_at IS NULL
   );
 
--- Only authenticated users can create share links for their own wishlists
+-- Only authenticated users can create share links (ownership verified in service layer)
+-- Simplified to avoid circular dependency with wishlists RLS policies
 create policy "Users can create share links for their wishlists"
   on public.share_links
   for insert
   to authenticated
   with check (
     created_by = (select auth.uid())
-    and wishlist_id in (
-      select id from public.wishlists where author_id = (select auth.uid())
-    )
   );
 
 -- Only the share link creator can update their share links

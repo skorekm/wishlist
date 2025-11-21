@@ -18,7 +18,13 @@ const reserveItemSchema = z.object({
 
 export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
 
-export function ReserveItem({ item }: { item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } } }) {
+interface ReserveItemProps {
+  item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
+  authenticatedUser?: { id: string; email?: string } | null
+  trigger?: React.ReactNode
+}
+
+export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -26,20 +32,19 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
     resolver: zodResolver(reserveItemSchema),
     mode: 'onChange',
     defaultValues: {
-      name: '',
-      email: '',
+      name: authenticatedUser?.email?.split('@')[0] || '',
+      email: authenticatedUser?.email || '',
     },
   });
 
   const onSubmit = async (data: ReserveItemFormData) => {
-    const { data: response, error } = await supabase.functions.invoke('reserve-item', {
+    const { error } = await supabase.functions.invoke('reserve-item', {
       body: { name: data.name, email: data.email, itemId: item.id },
     })
     if (error) {
       console.error('Error reserving item', error);
       toast.error("Error while reserving an item")
     } else {
-      console.log('Item reserved', response);
       toast.success('Item reserved')
       queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
     }
@@ -47,14 +52,17 @@ export function ReserveItem({ item }: { item: Omit<Database['public']['Tables'][
   }
 
   const closeDialog = () => {
-    reset();
+    reset({
+      name: authenticatedUser?.email?.split('@')[0] || '',
+      email: authenticatedUser?.email || '',
+    });
     setIsOpen(false);
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : closeDialog()}>
       <DialogTrigger asChild>
-        <Button>Grab</Button>
+        {trigger || <Button>Grab</Button>}
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>

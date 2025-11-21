@@ -84,3 +84,36 @@ export async function getReservationsForCode(reservationCode: string, wishlistId
   return data;
 }
 
+/**
+ * Gets all active reservations for the authenticated user
+ */
+export async function getUserReservations() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error('Authentication required to get reservations');
+  }
+
+  // Clean up expired reservations before fetching
+  await supabase.rpc('cancel_expired_reservations');
+
+  const { data, error } = await supabase
+    .from('reservations')
+    .select(`
+      *,
+      wishlist_item:wishlist_items(
+        *,
+        currency:currencies(code),
+        wishlist:wishlists(id, uuid, name, author_id)
+      )
+    `)
+    .eq('user_id', user.id)
+    .in('status', ['reserved', 'purchased'])
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
