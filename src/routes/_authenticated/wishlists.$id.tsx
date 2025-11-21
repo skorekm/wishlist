@@ -1,3 +1,4 @@
+import { supabase } from '@/supabaseClient'
 import { AnimatePresence, motion } from 'motion/react'
 import { List, Calendar, Share2 } from 'lucide-react'
 import { useState } from 'react'
@@ -30,6 +31,15 @@ export const Route = createFileRoute('/_authenticated/wishlists/$id')({
 
 function WishlistDetailed() {
   const { id: wishlistUuid } = Route.useParams()
+
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data.user;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: wishlist, isLoading: isLoadingWishlist, error: wishlistError } = useQuery({
     queryKey: ['wishlist', wishlistUuid],
@@ -73,17 +83,20 @@ function WishlistDetailed() {
   const canAddItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.CREATE)
   const canEditItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.EDIT)
   const canDeleteItems = canPerformAction(PERMISSIONS.WISHLIST_ITEM.DELETE)
+  const canGrab = !isOwner
 
   return (
     <WishlistContent
       wishlist={wishlist}
       wishlistUuid={wishlistUuid}
       isOwner={isOwner}
+      user={user}
       permissions={{
         canShare,
         canAddItems,
         canEditItems,
         canDeleteItems,
+        canGrab,
       }}
     />
   )
@@ -95,15 +108,17 @@ interface WishlistContentProps {
   wishlist: Wishlist
   wishlistUuid: string
   isOwner: boolean
+  user?: { id: string; email?: string } | null
   permissions: {
     canShare: boolean
     canAddItems: boolean
     canEditItems: boolean
     canDeleteItems: boolean
+    canGrab: boolean
   }
 }
 
-function WishlistContent({ wishlist, wishlistUuid, isOwner, permissions }: WishlistContentProps) {
+function WishlistContent({ wishlist, wishlistUuid, isOwner, user, permissions }: WishlistContentProps) {
   const [shareModal, setShareModal] = useState(false)
   const eventStatus = getEventStatus(wishlist.event_date)
 
@@ -158,7 +173,12 @@ function WishlistContent({ wishlist, wishlistUuid, isOwner, permissions }: Wishl
                 <WishlistItemCard
                   item={item}
                   wishlistUuid={wishlistUuid}
-                  permissions={{ canEdit: permissions.canEditItems, canDelete: permissions.canDeleteItems }}
+                  permissions={{ 
+                    canEdit: permissions.canEditItems, 
+                    canDelete: permissions.canDeleteItems,
+                    canGrab: permissions.canGrab 
+                  }}
+                  authenticatedUser={user}
                 />
               </motion.div>
             ))}

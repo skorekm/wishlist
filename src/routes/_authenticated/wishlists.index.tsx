@@ -10,7 +10,6 @@ import { getWishlists, getUserReservations } from '@/services'
 import { Fragment } from 'react/jsx-runtime'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/supabaseClient'
-import { Badge } from '@/components/ui/badge'
 
 // the trailing slash is important
 export const Route = createFileRoute('/_authenticated/wishlists/')({
@@ -144,29 +143,23 @@ function RouteComponent() {
                         transition={{ type: "spring", stiffness: 300, damping: 24 }}
                         layout
                       >
-                        <div className="relative pt-3">
-                          {item.wishlist && (
-                            <Badge 
-                              variant="outline"
-                              className="absolute top-0 left-2 z-10 text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded-md hover:bg-secondary/90 transition-colors inline-block"
-                            >
-                              {item.wishlist.name}
-                            </Badge>
-                          )}
-                          <WishlistItemCard
-                            item={{
-                              ...item,
-                              status: reservation.status,
-                              userHasReserved: true,
-                              userReservationCode: reservation.reservation_code,
-                              expiresAt: reservation.expires_at,
-                            }}
-                            wishlistUuid={item.wishlist?.uuid || ''}
-                            permissions={{}}
-                            reservationCode={reservation.reservation_code}
-                            authenticatedUser={user ?? null}
-                          />
-                        </div>
+                        <WishlistItemCard
+                          item={{
+                            ...item,
+                            status: reservation.status,
+                            userHasReserved: true,
+                            userReservationCode: reservation.reservation_code,
+                            expiresAt: reservation.expires_at,
+                          }}
+                          wishlistUuid={item.wishlist?.uuid || ''}
+                          permissions={{}}
+                          reservationCode={reservation.reservation_code}
+                          authenticatedUser={user ?? null}
+                          wishlistContext={item.wishlist ? {
+                            name: item.wishlist.name,
+                            id: item.wishlist.uuid
+                          } : undefined}
+                        />
                       </motion.div>
                     );
                   })}

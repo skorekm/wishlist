@@ -20,11 +20,18 @@ export async function getWishlists() {
 }
 
 export async function getWishlist(id: string, skipAuth = false) {
+  let userId: string | undefined;
+
   if (!skipAuth) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       throw new Error('Authentication required to get a wishlist');
     }
+    userId = user.id;
+  } else {
+    // Try to get user anyway if available, for reservation checking
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id;
   }
 
   // Clean up expired reservations before fetching
@@ -34,7 +41,7 @@ export async function getWishlist(id: string, skipAuth = false) {
     .from('wishlists')
     .select(`
       *,
-      items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, expires_at))
+      items:wishlist_items(*, currency:currencies(code), reservations(status, created_at, expires_at, user_id, reservation_code))
     `)
     .eq('uuid', id)
     .single();
@@ -59,12 +66,20 @@ export async function getWishlist(id: string, skipAuth = false) {
     
     const latestReservation = activeReservations?.[0];
     
+    // Check if the current user has reserved this item
+    const userReservation = userId 
+      ? activeReservations?.find(r => r.user_id === userId && r.status === 'reserved')
+      : null;
+    
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { reservations, ...itemWithoutReservations } = item;
 
     return {
       ...itemWithoutReservations,
       status: latestReservation?.status ?? 'available',
+      userHasReserved: !!userReservation,
+      userReservationCode: userReservation?.reservation_code,
+      expiresAt: userReservation?.expires_at || latestReservation?.expires_at,
     };
   });
 

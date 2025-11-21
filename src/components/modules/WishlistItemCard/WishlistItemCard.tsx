@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
-import { ExternalLink, MoreHorizontal } from "lucide-react"
+import { ExternalLink, MoreHorizontal, Gift, Check } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { ReserveItem } from "../ReserveItem/ReserveItem"
 import { DeleteItemDialog } from "./DeleteItemDialog"
 import { MarkPurchasedDialog } from "./MarkPurchasedDialog"
 import { VISIBLE_PRIORITIES, ITEM_STATUS } from "@/constants"
+import { Link } from "@tanstack/react-router"
 
 export interface WishlistItemPermissions {
   canEdit?: boolean
@@ -35,6 +36,10 @@ interface WishlistItemCardProps {
   permissions?: WishlistItemPermissions
   reservationCode?: string
   authenticatedUser?: { id: string; email?: string } | null
+  wishlistContext?: {
+    name: string
+    id: string
+  }
 }
 
 // Helper to safely parse URL hostname
@@ -53,12 +58,12 @@ const getStatusBorderClass = (
   itemStatus: string
 ): string => {
   if (isReserved) return 'border-l-amber-500 dark:border-l-amber-400'
-  if (isPurchased) return 'border-l-green-500 dark:border-l-green-400'
+  if (isPurchased) return 'border-l-emerald-500 dark:border-l-emerald-400'
   if (itemStatus === ITEM_STATUS.CANCELLED) return 'border-l-gray-400 dark:border-l-gray-500'
   return 'border-l-transparent'
 }
 
-export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser }: WishlistItemCardProps) {
+export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser, wishlistContext }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
@@ -77,7 +82,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
   const isPurchased = itemStatus === ITEM_STATUS.PURCHASED
 
   // Check if user can mark as purchased
-  const canMarkPurchased = item.userHasReserved && item.userReservationCode && reservationCode === item.userReservationCode && !isPurchased
+  const canMarkPurchased = item.userReservationCode && (item.userHasReserved || (reservationCode && reservationCode === item.userReservationCode)) && !isPurchased
 
   // Calculate time remaining for reservation
   useEffect(() => {
@@ -119,13 +124,13 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
   // State-based visual modifiers
   const stateClasses = isPurchased
-    ? 'opacity-60'
+    ? 'opacity-60 bg-emerald-50 dark:bg-emerald-950/10'
     : isReserved && !item.userHasReserved
     ? 'opacity-80'
     : ''
 
   const userReservedBg = item.userHasReserved
-    ? 'bg-blue-50/30 dark:bg-blue-950/10'
+    ? 'bg-amber-50 dark:bg-amber-950/10'
     : ''
 
   // Memoized computed values
@@ -142,66 +147,63 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
   }, [item.priority])
 
   return (
-    <div className="h-full">
+    <div className="h-full flex flex-col">
       <Card
         className={cn(
-          "group relative h-full flex flex-col p-4 sm:p-3 rounded-lg border border-border bg-card",
+          "group relative flex-1 flex flex-col rounded-lg border border-border bg-card overflow-hidden",
           "transition-all duration-200 hover:border-foreground/20 hover:shadow-sm border-l-4",
           statusBorderClass,
           stateClasses,
           userReservedBg
         )}
       >
-        <CardContent className="p-0 flex flex-col h-full gap-2">
+        <CardContent className="p-4 sm:p-3 flex flex-col h-full gap-2">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="text-sm sm:text-base font-medium text-foreground leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
-              {item.name}
-            </h3>
-            
-            {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-0.5 -mt-0.5 -mr-1">
-              {canMarkPurchased && (
-                <Button
-                  size="sm"
-                  onClick={() => setMarkPurchasedModal(true)}
-                  className="h-8 sm:h-7 text-xs shrink-0"
-                >
-                  <span className="hidden xs:inline">Mark </span>Purchased
-                </Button>
-              )}
+          <div className="flex flex-col gap-1">
+            {wishlistContext && (
+              <Link 
+                to="/wishlists/$id" 
+                params={{ id: wishlistContext.id }}
+                className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors w-fit"
+              >
+                From <span className="font-medium text-foreground/80">{wishlistContext.name}</span>
+              </Link>
+            )}
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-sm sm:text-base font-medium text-foreground leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
+                {item.name}
+              </h3>
               
-              {canGrab && !showActions && !canMarkPurchased && isAvailable && (
-                <ReserveItem item={item} authenticatedUser={authenticatedUser} />
-              )}
-              
-              {showActions && (
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      aria-label="More options"
-                      className="h-8 w-8 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-muted"
-                    >
-                      <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    {canEdit && (
-                      <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer text-sm">
-                        Edit
-                      </DropdownMenuItem>
-                    )}
-                    {canEdit && canDelete && <DropdownMenuSeparator />}
-                    {canDelete && (
-                      <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive focus:text-destructive text-sm">
-                        Delete
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {/* Actions - Only Kebab Menu here now */}
+              <div className="flex items-center gap-1 sm:gap-0.5 -mt-0.5 -mr-1">
+                {showActions && (
+                  <DropdownMenu modal={false}>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        aria-label="More options"
+                        className="h-8 w-8 sm:h-6 sm:w-6 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-muted"
+                      >
+                        <MoreHorizontal className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-muted-foreground" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      {canEdit && (
+                        <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer text-sm">
+                          Edit
+                        </DropdownMenuItem>
+                      )}
+                      {canEdit && canDelete && <DropdownMenuSeparator />}
+                      {canDelete && (
+                        <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive focus:text-destructive text-sm">
+                          Delete
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
             </div>
           </div>
 
@@ -231,6 +233,12 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             )}
 
             {/* Status text for reserved/purchased */}
+            {isAvailable && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-slate-500 dark:text-slate-400">Available</span>
+              </>
+            )}
             {isReserved && (
               <>
                 <span className="text-muted-foreground/40">•</span>
@@ -249,14 +257,14 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             {isPurchased && (
               <>
                 <span className="text-muted-foreground/40">•</span>
-                <span className="text-green-600 dark:text-green-400">Purchased</span>
+                <span className="text-emerald-600 dark:text-emerald-400">Purchased</span>
               </>
             )}
           </div>
 
           {/* Description/Notes */}
           {item.notes && (
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed mb-2">
               {item.notes}
             </p>
           )}
@@ -267,7 +275,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mt-auto transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mt-auto transition-colors w-fit"
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="h-3 w-3" />
@@ -275,6 +283,35 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             </a>
           )}
         </CardContent>
+
+        {/* Footer Actions */}
+        {(canGrab || canMarkPurchased) && (
+          <div className="p-3 pt-0 mt-auto">
+            {canMarkPurchased && (
+              <Button
+                className="w-full gap-2 shadow-sm"
+                variant="default"
+                onClick={() => setMarkPurchasedModal(true)}
+              >
+                <Check className="h-4 w-4" />
+                Mark Purchased
+              </Button>
+            )}
+            
+            {canGrab && !canMarkPurchased && isAvailable && (
+              <ReserveItem 
+                item={item} 
+                authenticatedUser={authenticatedUser}
+                trigger={
+                  <Button className="w-full gap-2 shadow-sm" variant="default">
+                    <Gift className="h-4 w-4" />
+                    Grab this item
+                  </Button>
+                }
+              />
+            )}
+          </div>
+        )}
       </Card>
 
       {canDelete && (

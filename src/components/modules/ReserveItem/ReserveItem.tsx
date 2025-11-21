@@ -21,9 +21,10 @@ export type ReserveItemFormData = z.infer<typeof reserveItemSchema>;
 interface ReserveItemProps {
   item: Omit<Database['public']['Tables']['wishlist_items']['Row'], 'currency'> & { currency: { code: string } }
   authenticatedUser?: { id: string; email?: string } | null
+  trigger?: React.ReactNode
 }
 
-export function ReserveItem({ item, authenticatedUser }: ReserveItemProps) {
+export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemProps) {
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -37,14 +38,13 @@ export function ReserveItem({ item, authenticatedUser }: ReserveItemProps) {
   });
 
   const onSubmit = async (data: ReserveItemFormData) => {
-    const { data: response, error } = await supabase.functions.invoke('reserve-item', {
+    const { error } = await supabase.functions.invoke('reserve-item', {
       body: { name: data.name, email: data.email, itemId: item.id },
     })
     if (error) {
       console.error('Error reserving item', error);
       toast.error("Error while reserving an item")
     } else {
-      console.log('Item reserved', response);
       toast.success('Item reserved')
       queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
     }
@@ -62,7 +62,7 @@ export function ReserveItem({ item, authenticatedUser }: ReserveItemProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : closeDialog()}>
       <DialogTrigger asChild>
-        <Button>Grab</Button>
+        {trigger || <Button>Grab</Button>}
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>

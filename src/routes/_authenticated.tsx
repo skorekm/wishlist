@@ -8,7 +8,6 @@ import { motion } from "motion/react"
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ location }) => {
     const { data: { user } } = await supabase.auth.getUser()
-    console.log('user', user)
     if (!user) {
       throw redirect({
         to: '/login',
