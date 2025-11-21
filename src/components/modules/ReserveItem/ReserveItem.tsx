@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,10 +32,19 @@ export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemPro
     resolver: zodResolver(reserveItemSchema),
     mode: 'onChange',
     defaultValues: {
-      name: authenticatedUser?.email?.split('@')[0] || '',
-      email: authenticatedUser?.email || '',
+      name: '',
+      email: '',
     },
   });
+
+  useEffect(() => {
+    if (authenticatedUser) {
+      reset({
+        name: authenticatedUser.email?.split('@')[0] || '',
+        email: authenticatedUser.email || '',
+      });
+    }
+  }, [authenticatedUser]);
 
   const onSubmit = async (data: ReserveItemFormData) => {
     const { error } = await supabase.functions.invoke('reserve-item', {
@@ -52,15 +61,11 @@ export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemPro
   }
 
   const closeDialog = () => {
-    reset({
-      name: authenticatedUser?.email?.split('@')[0] || '',
-      email: authenticatedUser?.email || '',
-    });
     setIsOpen(false);
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => open ? setIsOpen(true) : closeDialog()}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || <Button>Grab</Button>}
       </DialogTrigger>

@@ -44,8 +44,8 @@ export function Navbar({
   const isDetailedPage = showBackButton && pathname.match(/\/[^/]+\/[^/]+$/)
   
   // Determine if user is authenticated
-  // If user prop is provided, use it; otherwise assume authenticated (default behavior)
-  const isAuthenticated = user !== undefined ? user !== null : true
+  // If user prop is provided, use it; otherwise assume unauthenticated
+  const isAuthenticated = user !== undefined ? user !== null : false
   const finalHomeLink = homeLink || (isAuthenticated ? "/wishlists" : "/")
 
   return (

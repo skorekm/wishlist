@@ -17,9 +17,7 @@ create policy "Authenticated users can view share links"
   on public.share_links
   for select
   to authenticated
-  using (
-    created_by = (select auth.uid()) OR revoked_at IS NULL
-  );
+  using (created_by = (select auth.uid()));
 
 -- Add anonymous access policy to wishlists table (now that share_links exists)
 -- This allows anyone with a valid share link to view the wishlist

@@ -201,9 +201,30 @@ Deno.serve(async (req) => {
     let userId: string | null = null;
     
     if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user } } = await supabase.auth.getUser(token);
-      userId = user?.id || null;
+      try {
+        // Create a temporary client with anon key and user's JWT for auth validation
+        const userClient = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!,
+          {
+            global: {
+              headers: {
+                Authorization: authHeader,
+              },
+            },
+          }
+        );
+        
+        // Validate token and extract user.id
+        const { data: { user }, error } = await userClient.auth.getUser();
+        
+        if (!error && user) {
+          userId = user.id;
+        }
+      } catch (error) {
+        // Invalid token - userId remains null
+        console.warn("Failed to validate user token:", error);
+      }
     }
     
     const { email, name, itemId } = await req.json();

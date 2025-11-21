@@ -63,6 +63,11 @@ const getStatusBorderClass = (
   return 'border-l-transparent'
 }
 
+// Helper to check if an item status allows reservation
+const isReservableStatus = (status: string): boolean => {
+  return status === ITEM_STATUS.AVAILABLE || status === ITEM_STATUS.CANCELLED
+}
+
 export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser, wishlistContext }: WishlistItemCardProps) {
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
@@ -77,9 +82,10 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
   // Get status information
   const itemStatus = item.status || ITEM_STATUS.AVAILABLE
-  const isAvailable = itemStatus === ITEM_STATUS.AVAILABLE
+  const isAvailable = isReservableStatus(itemStatus)
   const isReserved = itemStatus === ITEM_STATUS.RESERVED
   const isPurchased = itemStatus === ITEM_STATUS.PURCHASED
+  const isCancelled = itemStatus === ITEM_STATUS.CANCELLED
 
   // Check if user can mark as purchased
   const canMarkPurchased = item.userReservationCode && (item.userHasReserved || (reservationCode && reservationCode === item.userReservationCode)) && !isPurchased
@@ -97,6 +103,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
       if (diff <= 0) {
         setTimeRemaining('Expired')
+        clearInterval(interval)
         return
       }
 
@@ -233,10 +240,16 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             )}
 
             {/* Status text for reserved/purchased */}
-            {isAvailable && (
+            {isAvailable && !isCancelled && (
               <>
                 <span className="text-muted-foreground/40">•</span>
                 <span className="text-slate-500 dark:text-slate-400">Available</span>
+              </>
+            )}
+            {isCancelled && (
+              <>
+                <span className="text-muted-foreground/40">•</span>
+                <span className="text-gray-500 dark:text-gray-400">Cancelled</span>
               </>
             )}
             {isReserved && (

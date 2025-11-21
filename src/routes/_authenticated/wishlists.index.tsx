@@ -8,8 +8,6 @@ import { WishlistCard } from '@/components/modules/WishlistCard/WishlistCard'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { getWishlists, getUserReservations } from '@/services'
 import { Fragment } from 'react/jsx-runtime'
-import { useState, useEffect } from 'react'
-import { supabase } from '@/supabaseClient'
 
 // the trailing slash is important
 export const Route = createFileRoute('/_authenticated/wishlists/')({
@@ -17,15 +15,8 @@ export const Route = createFileRoute('/_authenticated/wishlists/')({
 })
 
 function RouteComponent() {
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
-  
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      setUser(authUser)
-    }
-    loadUser()
-  }, [])
+  // Get user from route context instead of making another auth call
+  const { user } = Route.useRouteContext()
 
   const { data: wishlists, isLoading, refetch } = useQuery({
     queryKey: ['wishlists'],

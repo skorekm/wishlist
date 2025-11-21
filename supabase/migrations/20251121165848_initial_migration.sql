@@ -668,7 +668,7 @@ using ((revoked_at IS NULL));
   as permissive
   for select
   to authenticated
-using (((created_by = ( SELECT auth.uid() AS uid)) OR (revoked_at IS NULL)));
+using ((created_by = ( SELECT auth.uid() AS uid)));
 
 
 

@@ -51,12 +51,10 @@ function SharedWishlist() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
-  // Redirect to 404 if wishlist not found
-  useEffect(() => {
-    if (!isLoading && (error || !wishlist)) {
-      throw notFound()
-    }
-  }, [isLoading, error, wishlist])
+  // Redirect to 404 if wishlist not found  
+  if (!isLoading && (error || !wishlist)) {
+    throw notFound()
+  }
 
   // Use the permission system to check if the user is the owner
   const { isOwner } = useWishlistPermissions({
