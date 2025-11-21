@@ -62,6 +62,18 @@ export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemPro
 
   const closeDialog = () => {
     setIsOpen(false);
+    // Reset form to default values (or authenticated user values if available)
+    if (authenticatedUser) {
+      reset({
+        name: authenticatedUser.email?.split('@')[0] || '',
+        email: authenticatedUser.email || '',
+      });
+    } else {
+      reset({
+        name: '',
+        email: '',
+      });
+    }
   }
 
   return (
