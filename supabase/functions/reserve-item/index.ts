@@ -25,6 +25,7 @@ const createReservation = async (
   name: string,
   itemId: string,
   wishlistEventDate: string | null,
+  userId: string | null = null,
 ) => {
   const reservationCode = crypto.randomUUID();
   
@@ -52,6 +53,7 @@ const createReservation = async (
       reservation_code: reservationCode,
       expires_at: expiresAt.toISOString(),
       status: "reserved",
+      user_id: userId,
     })
     .select()
     .single();
@@ -193,6 +195,38 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    
+    // Get the authenticated user if present
+    const authHeader = req.headers.get("Authorization");
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      try {
+        // Create a temporary client with anon key and user's JWT for auth validation
+        const userClient = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!,
+          {
+            global: {
+              headers: {
+                Authorization: authHeader,
+              },
+            },
+          }
+        );
+        
+        // Validate token and extract user.id
+        const { data: { user }, error } = await userClient.auth.getUser();
+        
+        if (!error && user) {
+          userId = user.id;
+        }
+      } catch (error) {
+        // Invalid token - userId remains null
+        console.warn("Failed to validate user token:", error);
+      }
+    }
+    
     const { email, name, itemId } = await req.json();
 
     const { exists, error: reservationError } = await checkExistingReservation(supabase, itemId);
@@ -254,7 +288,8 @@ Deno.serve(async (req) => {
       email, 
       name, 
       itemId, 
-      wishlistData?.event_date || null
+      wishlistData?.event_date || null,
+      userId
     );
 
     if (createReservationError) {

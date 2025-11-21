@@ -6,6 +6,7 @@ function generateReminderEmailTemplate(
   name: string,
   wishlistLink: string,
   hoursRemaining: number,
+  origin: string,
 ): string {
   return `
     <!DOCTYPE html>
@@ -74,6 +75,7 @@ const sendReminderEmail = async (
   name: string,
   wishlistLink: string,
   hoursRemaining: number,
+  origin: string,
 ) => {
   const client = new SMTPClient({
     connection: {
@@ -91,7 +93,7 @@ const sendReminderEmail = async (
       from: "admin@wishlist.com",
       to: email,
       subject: `⏰ Your reservation expires in ${hoursRemaining} hours`,
-      html: generateReminderEmailTemplate(name, wishlistLink, hoursRemaining),
+      html: generateReminderEmailTemplate(name, wishlistLink, hoursRemaining, origin),
     });
     return { success: true };
   } catch (error) {
@@ -202,7 +204,8 @@ Deno.serve(async () => {
         reservation.reserver_email,
         reservation.reserver_name,
         wishlistLink,
-        hoursRemaining
+        hoursRemaining,
+        origin
       );
 
       results.push({ 

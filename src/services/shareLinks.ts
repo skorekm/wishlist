@@ -138,9 +138,14 @@ export async function getWishlistByShareToken(shareToken: string, reservationCod
     .select('wishlist_id')
     .eq('share_token', shareToken)
     .is('revoked_at', null)
-    .single();
+    .maybeSingle();
 
   if (shareLinkError) {
+    console.error('Share link error:', shareLinkError);
+    throw new Error('Invalid or revoked share link');
+  }
+
+  if (!shareLink) {
     throw new Error('Invalid or revoked share link');
   }
 
@@ -181,6 +186,7 @@ export async function getWishlistByShareToken(shareToken: string, reservationCod
       status: latestReservation?.status ?? 'available',
       userHasReserved: !!userReservation,
       userReservationCode: userReservation?.reservation_code,
+      expiresAt: userReservation?.expires_at || latestReservation?.expires_at,
       reservations: undefined, // Remove the reservations array from the final object
     };
   });
