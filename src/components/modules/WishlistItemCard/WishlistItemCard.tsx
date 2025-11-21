@@ -170,7 +170,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
               </Link>
             )}
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-sm sm:text-base font-medium text-foreground leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
+              <h3 className="text-base font-medium text-foreground leading-tight line-clamp-2 sm:line-clamp-1 flex-1">
                 {item.name}
               </h3>
               
@@ -208,7 +208,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
           </div>
 
           {/* Metadata Line */}
-          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground/70 flex-wrap">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 flex-wrap">
             {/* Price */}
             <span className="tabular-nums">
               {item.price.toFixed(2)} {item.currency.code}

@@ -164,7 +164,7 @@ function SettingsPage() {
           <CardDescription>Export or delete your data</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-start justify-between p-4 border rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-4">
             <div className="flex-1">
               <h3 className="font-medium mb-1">Export Your Data</h3>
               <p className="text-sm text-muted-foreground">
@@ -175,7 +175,7 @@ function SettingsPage() {
               variant="outline" 
               onClick={handleExportData}
               disabled={isExporting}
-              className="ml-4"
+              className="w-full sm:w-auto"
             >
               <Download className="h-4 w-4 mr-2" />
               {isExporting ? 'Exporting...' : 'Export'}
@@ -194,7 +194,7 @@ function SettingsPage() {
           <CardDescription>Irreversible actions</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-start justify-between p-4 border border-destructive/50 rounded-lg bg-destructive/5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-destructive/50 rounded-lg bg-destructive/5 gap-4">
             <div className="flex-1">
               <h3 className="font-medium mb-1">Delete Account</h3>
               <p className="text-sm text-muted-foreground mb-3">
@@ -218,7 +218,7 @@ function SettingsPage() {
             <Button 
               variant="destructive" 
               onClick={() => setDeleteDialogOpen(true)}
-              className="ml-4"
+              className="w-full sm:w-auto"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete Account
