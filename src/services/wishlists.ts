@@ -7,14 +7,48 @@ export async function getWishlists() {
     throw new Error('Authentication required to get wishlists');
   }
 
-  const { data, error } = await supabase.from('wishlists').select('*, items:wishlist_items(count)').eq('author_id', user.id);
+  const { data, error } = await supabase
+    .from('wishlists')
+    .select(`
+      *,
+      items:wishlist_items(
+        id,
+        reservations(status, expires_at)
+      )
+    `)
+    .eq('author_id', user.id);
+
   if (error) {
     throw error;
   }
-  const wishlists = data.map((wishlist) => ({
-    ...wishlist,
-    items: wishlist.items?.[0]?.count ?? 0,
-  }));
+
+  const wishlists = data.map((wishlist) => {
+    const items = wishlist.items ?? [];
+    const totalItems = items.length;
+    
+    const claimedItems = items.filter((item) => {
+      // Check if item has any active reservation
+      const activeReservation = item.reservations?.find((r) => {
+        const isReservedOrPurchased = ['reserved', 'purchased'].includes(r.status);
+        if (!isReservedOrPurchased) return false;
+        
+        // Check expiration for reserved items
+        if (r.status === 'reserved' && r.expires_at && new Date(r.expires_at) < new Date()) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      return !!activeReservation;
+    }).length;
+
+    return {
+      ...wishlist,
+      items: totalItems,
+      claimedItems,
+    };
+  });
 
   return wishlists;
 }

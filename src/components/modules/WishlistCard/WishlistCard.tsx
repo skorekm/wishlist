@@ -12,6 +12,7 @@ import { DeleteListDialog } from "./DeleteListDialog"
 
 type WishlistCard = Database['public']['Tables']['wishlists']['Row'] & {
   items: number
+  claimedItems: number
 }
 
 interface WishlistCardProps {
@@ -26,8 +27,7 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
   
   const eventStatus = getEventStatus(list.event_date)
   
-  // Mock progress data - replace with actual data when available
-  const claimedItems = 0
+  const claimedItems = list.claimedItems ?? 0
 
   const handleDropdownClick = (e: React.MouseEvent) => {
     e.preventDefault()
