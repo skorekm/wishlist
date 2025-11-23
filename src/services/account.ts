@@ -215,7 +215,7 @@ export async function deleteUserAccount() {
   if (error) {
     console.error('Error deleting account:', error)
     // Try to extract error message from the response data
-    const errorMessage = (data as any)?.error || error.message || 'Failed to delete account'
+    const errorMessage = data?.error || error.message || 'Failed to delete account'
     throw new Error(errorMessage)
   }
 
