@@ -134,22 +134,21 @@ function generateEmailTemplate(
         <div class="container">
           <h2>Hello ${name}! 👋</h2>
           <p>Thank you for reserving an item from the wishlist.</p>
-          <p>Use the link below to mark the item as purchased once you've completed your purchase:</p>
-          <a href="${wishlistLink}" class="button">View Wishlist & Confirm Purchase</a>
+          <p>You can view the wishlist and update the reservation status at any time using the link below:</p>
+          <a href="${wishlistLink}" class="button">View Wishlist & Manage Reservation</a>
           <p>Or copy this link: <br/><code>${wishlistLink}</code></p>
           <p><strong>Important:</strong> This reservation will expire on ${formattedDate}.</p>
           <div class="footer">
             <p>If you have any questions, please contact us at:
-              <a href="mailto:support@wishlist.com">support@wishlist.com</a>
+              <a href="mailto:admin@wishlist.com">admin@wishlist.com</a>
             </p>
             <p>Best regards,<br/>The Wishlist Team</p>
             
             <!-- Legal Footer (CAN-SPAM Compliance) -->
             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af;">
-              <p style="margin: 5px 0;">Wishlist | Marcin Skorek</p>
-              <p style="margin: 5px 0;">Physical address available upon request via support@wishlist.com</p>
+              <p style="margin: 5px 0;">Wishlist</p>
+              <p style="margin: 5px 0;">For support, contact us at admin@wishlist.com</p>
               <p style="margin: 10px 0 5px 0;">
-                <a href="${origin}/settings" style="color: #6366f1; text-decoration: none;">Email Preferences</a> | 
                 <a href="${origin}/privacy" style="color: #6366f1; text-decoration: none;">Privacy Policy</a> | 
                 <a href="${origin}/terms" style="color: #6366f1; text-decoration: none;">Terms of Service</a>
               </p>
@@ -177,7 +176,7 @@ const sendReservationEmail = async (wishlistLink: string, reserverEmail: string,
     await client.send({
       from: "admin@wishlist.com",
       to: reserverEmail,
-      subject: "Your reservation details",
+      subject: "✓ Wishlist Item Reserved - Confirmation",
       html: generateEmailTemplate(reserverName, wishlistLink, expiresAt, origin),
     });
   } catch (error) {

@@ -44,7 +44,7 @@ export function ReserveItem({ item, authenticatedUser, trigger }: ReserveItemPro
         email: authenticatedUser.email || '',
       });
     }
-  }, [authenticatedUser]);
+  }, [authenticatedUser, reset]);
 
   const onSubmit = async (data: ReserveItemFormData) => {
     const { error } = await supabase.functions.invoke('reserve-item', {

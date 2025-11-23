@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_authenticated')({
 })
 
 function AuthenticatedLayout() {
-
+  const { user } = Route.useRouteContext()
   return (
     <motion.div
       className="bg-background min-h-screen transition-colors duration-300"
@@ -30,7 +30,9 @@ function AuthenticatedLayout() {
       animate="show"
       variants={fadeIn()}
     >
-      <Navbar />
+      <Navbar
+        user={user}
+      />
       <main className="container mx-auto px-4 py-6">
         <Outlet />
         <TanStackRouterDevtools />

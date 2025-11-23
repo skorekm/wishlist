@@ -235,31 +235,33 @@ function SettingsPage() {
               <AlertTriangle className="h-5 w-5 text-destructive" />
               Delete Account Permanently?
             </DialogTitle>
-            <DialogDescription>
-              <p className="mb-3">This will permanently delete:</p>
-              <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>Your account and profile</li>
-                <li>All {stats?.wishlists || 0} wishlists you've created</li>
-                <li>All {stats?.items || 0} wishlist items</li>
-                <li>All {stats?.shareLinks || 0} share links</li>
-                <li>All permissions you've granted</li>
-              </ul>
-              <p className="text-sm font-medium pt-2">
-                Your {stats?.reservations || 0} reservation(s) will be anonymized but preserved for wishlist owners.
-              </p>
-              <div className="pt-4 space-y-2">
-                <label htmlFor="deleteConfirmation" className="text-sm block mb-2 font-medium">
-                  Type <span className="font-bold text-destructive">DELETE</span> to confirm:
-                </label>
-                <input
-                  id="deleteConfirmation"
-                  type="text"
-                  value={deleteConfirmation}
-                  onChange={(e) => setDeleteConfirmation(e.target.value.trim())}
-                  placeholder="DELETE"
-                  className="w-full px-3 py-2 border rounded-md bg-background"
-                  disabled={isDeleting}
-                />
+            <DialogDescription asChild>
+              <div>
+                <p className="mb-3">This will permanently delete:</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>Your account and profile</li>
+                  <li>All {stats?.wishlists || 0} wishlists you've created</li>
+                  <li>All {stats?.items || 0} wishlist items</li>
+                  <li>All {stats?.shareLinks || 0} share links</li>
+                  <li>All permissions you've granted</li>
+                </ul>
+                <p className="text-sm font-medium pt-2">
+                  Your {stats?.reservations || 0} reservation(s) will be anonymized but preserved for wishlist owners.
+                </p>
+                <div className="pt-4 space-y-2">
+                  <label htmlFor="deleteConfirmation" className="text-sm block mb-2 font-medium">
+                    Type <span className="font-bold text-destructive">DELETE</span> to confirm:
+                  </label>
+                  <input
+                    id="deleteConfirmation"
+                    type="text"
+                    value={deleteConfirmation}
+                    onChange={(e) => setDeleteConfirmation(e.target.value.trim())}
+                    placeholder="DELETE"
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                    disabled={isDeleting}
+                  />
+                </div>
               </div>
             </DialogDescription>
           </DialogHeader>
