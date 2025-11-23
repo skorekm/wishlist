@@ -8,6 +8,7 @@ import { WishlistCard } from '@/components/modules/WishlistCard/WishlistCard'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { getWishlists, getUserReservations } from '@/services'
 import { Fragment } from 'react/jsx-runtime'
+import { useTranslation } from 'react-i18next'
 
 // the trailing slash is important
 export const Route = createFileRoute('/_authenticated/wishlists/')({
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/_authenticated/wishlists/')({
 })
 
 function RouteComponent() {
+  const { t } = useTranslation()
   const { user } = Route.useRouteContext()
 
   const { data: wishlists, isLoading, refetch } = useQuery({
@@ -62,8 +64,8 @@ function RouteComponent() {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
       >
         <div>
-          <h1 className="text-2xl md:text-3xl font-medium dark:text-gray-100">My Wishlists</h1>
-          <p className="text-muted-foreground mt-1">Manage and organize all your wishlists</p>
+          <h1 className="text-2xl md:text-3xl font-medium dark:text-gray-100">{t('wishlists.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('wishlists.manage_desc', 'Manage and organize all your wishlists')}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -81,7 +83,7 @@ function RouteComponent() {
           />
         </div>
       </div>
-      {isLoading && <div>Loading...</div>}
+      {isLoading && <div>{t('common.loading')}</div>}
       {!isLoading && wishlists && wishlists?.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <motion.div
@@ -117,8 +119,8 @@ function RouteComponent() {
         <div className="p-4 rounded-full bg-secondary flex items-center justify-center mb-4">
           <List className="h-12 w-12 text-accent" />
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-2">Ooops, no wishlists found</h3>
-        <p className="text-muted-foreground mb-6 max-w-md">Create a new wishlist to get started</p>
+        <h3 className="text-lg font-medium text-foreground mb-2">{t('wishlists.no_wishlists')}</h3>
+        <p className="text-muted-foreground mb-6 max-w-md">{t('wishlists.create_first')}</p>
         <AddList
           onSuccess={refetch}
         />
@@ -128,11 +130,11 @@ function RouteComponent() {
       {reservations && reservations.length > 0 && (
         <>
           <div className="mt-12 mb-6">
-            <h2 className="text-2xl md:text-3xl font-medium dark:text-gray-100">Items I'm Grabbing</h2>
-            <p className="text-muted-foreground mt-1">Items you've reserved from shared wishlists</p>
+            <h2 className="text-2xl md:text-3xl font-medium dark:text-gray-100">{t('navbar.items_grabbing')}</h2>
+            <p className="text-muted-foreground mt-1">{t('wishlists.items_grabbing_desc', "Items you've reserved from shared wishlists")}</p>
           </div>
 
-          {isLoadingReservations && <div>Loading...</div>}
+          {isLoadingReservations && <div>{t('common.loading')}</div>}
           
           {!isLoadingReservations && reservations && reservations.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -1,0 +1,86 @@
+{
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Wystąpił błąd",
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "delete": "Usuń",
+    "edit": "Edytuj",
+    "create": "Utwórz",
+    "back": "Wróć",
+    "of": "z",
+    "item": "przedmiot",
+    "items": "przedmioty",
+    "from": "Z",
+    "view_link": "Zobacz link",
+    "share": "Udostępnij"
+  },
+  "status": {
+    "available": "Dostępny",
+    "reserved": "Zarezerwowany",
+    "reserved_by_you": "Zarezerwowany przez Ciebie",
+    "purchased": "Kupiony",
+    "cancelled": "Anulowany",
+    "expired": "Wygasł",
+    "left": "pozostało"
+  },
+  "actions": {
+    "mark_purchased": "Oznacz jako kupiony",
+    "grab_item": "Rezerwuj"
+  },
+  "navbar": {
+    "wishlists": "Listy życzeń",
+    "items_grabbing": "Rezerwacje",
+    "profile": "Profil",
+    "logout": "Wyloguj",
+    "login": "Zaloguj"
+  },
+  "wishlists": {
+    "title": "Moje listy",
+    "create_new": "Nowa lista",
+    "no_wishlists": "Nie masz jeszcze żadnych list.",
+    "create_first": "Utwórz pierwszą!"
+  },
+  "landing": {
+    "hero": {
+      "title_part1": "Dawanie Prezentów,",
+      "title_part2": "Udoskonalone",
+      "subtitle": "Zmień sposób dzielenia się życzeniami z najważniejszymi osobami. Twórz piękne listy życzeń, udostępniaj je bez wysiłku i wyeliminuj zgadywanie z każdej okazji.",
+      "cta_auth": "Przejdź do Moich List",
+      "cta_guest": "Zacznij Tworzyć Listę",
+      "signin": "Zaloguj się"
+    },
+    "features": {
+      "title": "Stworzone dla Nowoczesnych Obdarowujących",
+      "subtitle": "Potężne funkcje w intuicyjnym wydaniu",
+      "organize_title": "Organizuj z Celowością",
+      "organize_desc": "Twórz nieograniczone listy życzeń na każdą okazję—urodziny, śluby, święta lub bez okazji. Trzymaj swoje życzenia uporządkowane i zawsze pod ręką.",
+      "share_title": "Jeden Link, Natychmiastowy Dostęp",
+      "share_desc": "Bez zbędnych przeszkód. Twoi znajomi i rodzina widzą Twoją listę natychmiast—bez rejestracji, pobierania, bez problemów. Po prostu kliknij i przeglądaj.",
+      "duplicates_title": "Nigdy Więcej Duplikatów",
+      "duplicates_desc": "Twój kuzyn rezerwuje sweter. Twoja przyjaciółka widzi, że jest zajęty i wybiera coś innego. Koordynacja dzieje się automatycznie—bez niezręcznych czatów grupowych.",
+      "control_title": "Ty Decydujesz Kto Co Widzi",
+      "control_desc": "Twórz oddzielne listy dla różnych grup. Lista ślubna dla wszystkich, drogie przedmioty tylko dla bliskiej rodziny. Cofnij dostęp w każdej chwili. Twoje listy, Twoje zasady.",
+      "context_title": "Bogaty Kontekst Wizualny",
+      "context_desc": "Wyjdź poza proste listy. Dodawaj zdjęcia produktów, ceny, linki do sklepów i osobiste notatki, aby dać obdarowującym pełny kontekst.",
+      "scale_title": "Skaluje się z Tobą",
+      "scale_desc": "Niezależnie od tego, czy planujesz wymianę prezentów w rodzinie, czy koordynujesz z dużą grupą przyjaciół, Wishlist dostosowuje się do Twoich potrzeb bezproblemowo."
+    },
+    "how_it_works": {
+      "title": "Twoja Idealna Lista w Minuty",
+      "subtitle": "Trzy proste kroki do lepszego obdarowywania",
+      "step1_title": "Zaloguj się Bezpiecznie",
+      "step1_desc": "Uwierzytelnij się przez Google jednym kliknięciem. Szanujemy Twoje dane i nigdy nie prosimy o więcej niż to konieczne.",
+      "step2_title": "Buduj Swoje Listy",
+      "step2_desc": "Dodawaj przedmioty ze szczegółami—zdjęcia, ceny, linki i notatki. Ułatw bliskim trafienie z idealnym prezentem.",
+      "step3_title": "Udostępnij i Świętuj",
+      "step3_desc": "Wyślij link do swojej listy i pozwól magii działać. Obserwuj jak prezenty są rezerwowane, a niespodzianki stają się rzeczywistością."
+    },
+    "cta": {
+      "title": "Gotowy na Zmianę w Obdarowywaniu?",
+      "subtitle": "Dołącz do setek użytkowników, którzy już odkryli lepszy sposób na świętowanie. Za darmo na start, łatwe do pokochania.",
+      "button_auth": "Przejdź do Moich List",
+      "button_guest": "Utwórz Swoją Pierwszą Listę"
+    }
+  }
+}

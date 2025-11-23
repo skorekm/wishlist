@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { ExternalLink, MoreHorizontal, Gift, Check } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -47,7 +48,7 @@ const getUrlHostname = (url: string): string => {
   try {
     return new URL(url).hostname
   } catch {
-    return 'View link'
+    return 'View link' // This will be handled by translation in component
   }
 }
 
@@ -69,6 +70,7 @@ const isReservableStatus = (status: string): boolean => {
 }
 
 export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reservationCode, authenticatedUser, wishlistContext }: WishlistItemCardProps) {
+  const { t } = useTranslation()
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [markPurchasedModal, setMarkPurchasedModal] = useState(false)
@@ -102,7 +104,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
       const diff = expiresDate.getTime() - now.getTime()
 
       if (diff <= 0) {
-        setTimeRemaining('Expired')
+        setTimeRemaining(t('status.expired'))
         clearInterval(interval)
         return
       }
@@ -112,11 +114,11 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
 
       if (hours > 24) {
         const days = Math.floor(hours / 24)
-        setTimeRemaining(`${days}d ${hours % 24}h left`)
+        setTimeRemaining(`${days}d ${hours % 24}h ${t('status.left')}`)
       } else if (hours > 0) {
-        setTimeRemaining(`${hours}h ${minutes}m left`)
+        setTimeRemaining(`${hours}h ${minutes}m ${t('status.left')}`)
       } else {
-        setTimeRemaining(`${minutes}m left`)
+        setTimeRemaining(`${minutes}m ${t('status.left')}`)
       }
     }
 
@@ -173,7 +175,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                 params={{ id: wishlistContext.id }}
                 className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors w-fit"
               >
-                From <span className="font-medium text-foreground/80">{wishlistContext.name}</span>
+                {t('common.from')} <span className="font-medium text-foreground/80">{wishlistContext.name}</span>
               </Link>
             )}
             <div className="flex items-start justify-between gap-3">
@@ -198,13 +200,13 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                     <DropdownMenuContent align="end" className="w-40">
                       {canEdit && (
                         <DropdownMenuItem onClick={() => setEditModal(true)} className="cursor-pointer text-sm">
-                          Edit
+                          {t('common.edit')}
                         </DropdownMenuItem>
                       )}
                       {canEdit && canDelete && <DropdownMenuSeparator />}
                       {canDelete && (
                         <DropdownMenuItem onClick={() => setDeleteModal(true)} className="cursor-pointer text-destructive focus:text-destructive text-sm">
-                          Delete
+                          {t('common.delete')}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -243,20 +245,20 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             {isAvailable && !isCancelled && (
               <>
                 <span className="text-muted-foreground/40">•</span>
-                <span className="text-slate-500 dark:text-slate-400">Available</span>
+                <span className="text-slate-500 dark:text-slate-400">{t('status.available')}</span>
               </>
             )}
             {isCancelled && (
               <>
                 <span className="text-muted-foreground/40">•</span>
-                <span className="text-gray-500 dark:text-gray-400">Cancelled</span>
+                <span className="text-gray-500 dark:text-gray-400">{t('status.cancelled')}</span>
               </>
             )}
             {isReserved && (
               <>
                 <span className="text-muted-foreground/40">•</span>
                 <span className="text-amber-600 dark:text-amber-400">
-                  {item.userHasReserved ? 'Reserved by you' : 'Reserved'}
+                  {item.userHasReserved ? t('status.reserved_by_you') : t('status.reserved')}
                 </span>
                 {timeRemaining && (
                   <>
@@ -270,7 +272,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
             {isPurchased && (
               <>
                 <span className="text-muted-foreground/40">•</span>
-                <span className="text-emerald-600 dark:text-emerald-400">Purchased</span>
+                <span className="text-emerald-600 dark:text-emerald-400">{t('status.purchased')}</span>
               </>
             )}
           </div>
@@ -292,7 +294,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
               onClick={(e) => e.stopPropagation()}
             >
               <ExternalLink className="h-3 w-3" />
-              {getUrlHostname(item.link)}
+              {getUrlHostname(item.link) === 'View link' ? t('common.view_link') : getUrlHostname(item.link)}
             </a>
           )}
         </CardContent>
@@ -307,7 +309,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                 onClick={() => setMarkPurchasedModal(true)}
               >
                 <Check className="h-4 w-4" />
-                Mark Purchased
+                {t('actions.mark_purchased')}
               </Button>
             )}
             
@@ -318,7 +320,7 @@ export function WishlistItemCard({ item, wishlistUuid, permissions = {}, reserva
                 trigger={
                   <Button className="w-full gap-2 shadow-sm" variant="default">
                     <Gift className="h-4 w-4" />
-                    Grab this item
+                    {t('actions.grab_item')}
                   </Button>
                 }
               />

@@ -7,12 +7,21 @@ import { motion, useScroll, useTransform, useInView } from 'motion/react'
 import { useRef, useState, useEffect } from 'react'
 import { fadeIn, stagger, listItem } from '@/lib/motion'
 import { supabase } from '@/supabaseClient'
+import { useTranslation } from 'react-i18next'
+import { Globe } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
 })
 
 function LandingPage() {
+  const { t, i18n } = useTranslation()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const heroRef = useRef(null)
@@ -38,7 +47,11 @@ function LandingPage() {
   }, [])
 
   const ctaDestination = isAuthenticated ? '/wishlists' : '/login'
-  const ctaText = isAuthenticated ? 'Go to My Wishlists' : 'Start Building Your Wishlist'
+  const ctaText = isAuthenticated ? t('landing.hero.cta_auth') : t('landing.hero.cta_guest')
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -71,9 +84,24 @@ function LandingPage() {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" title="Change Language">
+                  <Globe className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                  English
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => changeLanguage('pl')}>
+                  Polski
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             {!isCheckingAuth && (
               <Link to={ctaDestination}>
-                <Button variant="default">{isAuthenticated ? 'My Wishlists' : 'Sign In'}</Button>
+                <Button variant="default">{isAuthenticated ? t('landing.hero.cta_auth') : t('landing.hero.signin')}</Button>
               </Link>
             )}
           </div>
@@ -245,11 +273,11 @@ function LandingPage() {
             initial="hidden"
             animate="show"
           >
-            Gift-Giving,
+            {t('landing.hero.title_part1')}
             <span className="text-accent relative inline-block ml-2">
-              Perfected
+              {t('landing.hero.title_part2')}
               {/* Subtle text glow effect */}
-              <span className="absolute inset-0 blur-sm text-accent opacity-50" aria-hidden="true"> Perfected</span>
+              <span className="absolute inset-0 blur-sm text-accent opacity-50" aria-hidden="true"> {t('landing.hero.title_part2')}</span>
             </span>
           </motion.h1>
           <motion.p
@@ -258,8 +286,7 @@ function LandingPage() {
             initial="hidden"
             animate="show"
           >
-            Transform how you share wishes with the people who matter most. Create beautiful wishlists,
-            share them effortlessly, and eliminate the guesswork from every celebration.
+            {t('landing.hero.subtitle')}
           </motion.p>
           <motion.div
             className="flex gap-4 justify-center pt-4"
@@ -286,9 +313,9 @@ function LandingPage() {
           animate={featuresInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Built for Modern Gift-Givers</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.features.title')}</h2>
           <p className="text-lg text-muted-foreground">
-            Powerful features wrapped in an intuitive experience
+            {t('landing.features.subtitle')}
           </p>
         </motion.div>
 
@@ -304,10 +331,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Gift className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>Organize with Purpose</CardTitle>
+                <CardTitle>{t('landing.features.organize_title')}</CardTitle>
                 <CardDescription>
-                  Create unlimited wishlists tailored to every occasion—birthdays, weddings, holidays, or just because.
-                  Keep your wishes organized and always within reach.
+                  {t('landing.features.organize_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -319,10 +345,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Share2 className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>One Link, Instant Access</CardTitle>
+                <CardTitle>{t('landing.features.share_title')}</CardTitle>
                 <CardDescription>
-                  No hoops to jump through. Your friends and family view your wishlist instantly—no signups,
-                  no downloads, no hassle. Just click and browse.
+                  {t('landing.features.share_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -334,10 +359,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Bell className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>Never Get Duplicates</CardTitle>
+                <CardTitle>{t('landing.features.duplicates_title')}</CardTitle>
                 <CardDescription>
-                  Your cousin reserves the sweater. Your best friend sees it's taken and picks something else.
-                  Coordination happens automatically—no awkward group chats required.
+                  {t('landing.features.duplicates_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -349,10 +373,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Lock className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>You Control Who Sees What</CardTitle>
+                <CardTitle>{t('landing.features.control_title')}</CardTitle>
                 <CardDescription>
-                  Create separate lists for different circles. Wedding registry for everyone, pricey items for close
-                  family only. Revoke access anytime. Your wishlists, your rules.
+                  {t('landing.features.control_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -364,10 +387,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Heart className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>Rich, Visual Context</CardTitle>
+                <CardTitle>{t('landing.features.context_title')}</CardTitle>
                 <CardDescription>
-                  Go beyond simple lists. Attach product images, prices, purchase links, and personal notes to give
-                  gift-givers all the context they need.
+                  {t('landing.features.context_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -379,10 +401,9 @@ function LandingPage() {
                 <div className="w-14 h-14 rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center mb-3">
                   <Users className="h-7 w-7 text-accent" />
                 </div>
-                <CardTitle>Scales with You</CardTitle>
+                <CardTitle>{t('landing.features.scale_title')}</CardTitle>
                 <CardDescription>
-                  Whether you're planning a family gift exchange or coordinating with a large friend group,
-                  Wishlist adapts to your needs seamlessly.
+                  {t('landing.features.scale_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -403,9 +424,9 @@ function LandingPage() {
               animate={howItWorksInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Perfect Wishlist in Minutes</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('landing.how_it_works.title')}</h2>
               <p className="text-lg text-muted-foreground">
-                Three simple steps to better gift-giving
+                {t('landing.how_it_works.subtitle')}
               </p>
             </motion.div>
 
@@ -422,9 +443,9 @@ function LandingPage() {
                     1
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold">Sign In Securely</h3>
+                <h3 className="text-xl font-semibold">{t('landing.how_it_works.step1_title')}</h3>
                 <p className="text-muted-foreground">
-                  Authenticate with Google in one click. We respect your data and never ask for more than necessary.
+                  {t('landing.how_it_works.step1_desc')}
                 </p>
               </motion.div>
 
@@ -435,9 +456,9 @@ function LandingPage() {
                     2
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold">Build Your Lists</h3>
+                <h3 className="text-xl font-semibold">{t('landing.how_it_works.step2_title')}</h3>
                 <p className="text-muted-foreground">
-                  Add items with rich details—images, prices, links, and notes. Make it easy for loved ones to nail the perfect gift.
+                  {t('landing.how_it_works.step2_desc')}
                 </p>
               </motion.div>
 
@@ -448,9 +469,9 @@ function LandingPage() {
                     3
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold">Share & Celebrate</h3>
+                <h3 className="text-xl font-semibold">{t('landing.how_it_works.step3_title')}</h3>
                 <p className="text-muted-foreground">
-                  Send your wishlist link and let the magic happen. Watch as gifts get reserved and surprises come to life.
+                  {t('landing.how_it_works.step3_desc')}
                 </p>
               </motion.div>
             </motion.div>
@@ -470,16 +491,15 @@ function LandingPage() {
           <div className="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-primary/10 dark:from-accent/5 dark:to-primary/5 rounded-3xl blur-3xl -z-10" />
 
           <h2 className="text-3xl md:text-4xl font-bold">
-            Ready to Transform Gift-Giving?
+            {t('landing.cta.title')}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Join hundreds of users who've already discovered a better way to celebrate.
-            Free to start, easy to love.
+            {t('landing.cta.subtitle')}
           </p>
           {!isCheckingAuth && (
             <Link to={ctaDestination}>
               <Button size="lg" className="text-lg px-8 shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 hover:scale-105 transition-all duration-300">
-                {isAuthenticated ? 'Go to My Wishlists' : 'Create Your First Wishlist'}
+                {isAuthenticated ? t('landing.cta.button_auth') : t('landing.cta.button_guest')}
               </Button>
             </Link>
           )}

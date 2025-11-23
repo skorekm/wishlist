@@ -1,0 +1,86 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "of": "of",
+    "item": "item",
+    "items": "items",
+    "from": "From",
+    "view_link": "View link",
+    "share": "Share"
+  },
+  "status": {
+    "available": "Available",
+    "reserved": "Reserved",
+    "reserved_by_you": "Reserved by you",
+    "purchased": "Purchased",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "left": "left"
+  },
+  "actions": {
+    "mark_purchased": "Mark Purchased",
+    "grab_item": "Grab this item"
+  },
+  "navbar": {
+    "wishlists": "Wishlists",
+    "items_grabbing": "Items I'm Grabbing",
+    "profile": "Profile",
+    "logout": "Log out",
+    "login": "Log in"
+  },
+  "wishlists": {
+    "title": "My Wishlists",
+    "create_new": "Create New Wishlist",
+    "no_wishlists": "You don't have any wishlists yet.",
+    "create_first": "Create your first one!"
+  },
+  "landing": {
+    "hero": {
+      "title_part1": "Gift-Giving,",
+      "title_part2": "Perfected",
+      "subtitle": "Transform how you share wishes with the people who matter most. Create beautiful wishlists, share them effortlessly, and eliminate the guesswork from every celebration.",
+      "cta_auth": "Go to My Wishlists",
+      "cta_guest": "Start Building Your Wishlist",
+      "signin": "Sign In"
+    },
+    "features": {
+      "title": "Built for Modern Gift-Givers",
+      "subtitle": "Powerful features wrapped in an intuitive experience",
+      "organize_title": "Organize with Purpose",
+      "organize_desc": "Create unlimited wishlists tailored to every occasion—birthdays, weddings, holidays, or just because. Keep your wishes organized and always within reach.",
+      "share_title": "One Link, Instant Access",
+      "share_desc": "No hoops to jump through. Your friends and family view your wishlist instantly—no signups, no downloads, no hassle. Just click and browse.",
+      "duplicates_title": "Never Get Duplicates",
+      "duplicates_desc": "Your cousin reserves the sweater. Your best friend sees it's taken and picks something else. Coordination happens automatically—no awkward group chats required.",
+      "control_title": "You Control Who Sees What",
+      "control_desc": "Create separate lists for different circles. Wedding registry for everyone, pricey items for close family only. Revoke access anytime. Your wishlists, your rules.",
+      "context_title": "Rich, Visual Context",
+      "context_desc": "Go beyond simple lists. Attach product images, prices, purchase links, and personal notes to give gift-givers all the context they need.",
+      "scale_title": "Scales with You",
+      "scale_desc": "Whether you're planning a family gift exchange or coordinating with a large friend group, Wishlist adapts to your needs seamlessly."
+    },
+    "how_it_works": {
+      "title": "Your Perfect Wishlist in Minutes",
+      "subtitle": "Three simple steps to better gift-giving",
+      "step1_title": "Sign In Securely",
+      "step1_desc": "Authenticate with Google in one click. We respect your data and never ask for more than necessary.",
+      "step2_title": "Build Your Lists",
+      "step2_desc": "Add items with rich details—images, prices, links, and notes. Make it easy for loved ones to nail the perfect gift.",
+      "step3_title": "Share & Celebrate",
+      "step3_desc": "Send your wishlist link and let the magic happen. Watch as gifts get reserved and surprises come to life."
+    },
+    "cta": {
+      "title": "Ready to Transform Gift-Giving?",
+      "subtitle": "Join hundreds of users who've already discovered a better way to celebrate. Free to start, easy to love.",
+      "button_auth": "Go to My Wishlists",
+      "button_guest": "Create Your First Wishlist"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Link } from "@tanstack/react-router"
 import { MoreHorizontal, Share2 } from "lucide-react"
 import { Database } from "@/database.types"
@@ -21,6 +22,7 @@ interface WishlistCardProps {
 }
 
 export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
+  const { t } = useTranslation()
   const [deleteModal, setDeleteModal] = useState(false)
   const [editModal, setEditModal] = useState(false)
   const [shareModal, setShareModal] = useState(false)
@@ -113,14 +115,14 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-40">
                     <DropdownMenuItem onClick={openEditModal} className="cursor-pointer text-sm">
-                      Edit
+                      {t('common.edit')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={openShareModal} className="cursor-pointer text-sm">
-                      Share
+                      {t('common.share')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={openDeleteModal} className="cursor-pointer text-destructive focus:text-destructive text-sm">
-                      Delete
+                      {t('common.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -138,8 +140,8 @@ export function WishlistCard({ list, refetchWishlists }: WishlistCardProps) {
             <div className="flex items-center gap-1.5 mt-auto text-xs text-muted-foreground/70">
               {/* Item count */}
               <span className="tabular-nums">
-                {claimedItems > 0 ? `${claimedItems} of ${list.items}` : list.items} 
-                {' '}{list.items === 1 ? 'item' : 'items'}
+                {claimedItems > 0 ? `${claimedItems} ${t('common.of')} ${list.items}` : list.items} 
+                {' '}{list.items === 1 ? t('common.item') : t('common.items')}
               </span>
               
               {/* Separator + Event date */}

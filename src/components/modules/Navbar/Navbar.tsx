@@ -6,6 +6,14 @@ import { fadeIn } from "@/lib/motion"
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Globe } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   /** Override the home link destination */
@@ -29,7 +37,12 @@ export function Navbar({
 }: NavbarProps = {}) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { t, i18n } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   const handleLogout = async () => {
     if (onLogout) {
@@ -76,18 +89,33 @@ export function Navbar({
           animate="show"
         >
           <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" title="Change Language">
+                <Globe className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage('pl')}>
+                Polski
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           {isAuthenticated ? (
             <>
               <Link to="/settings">
-                <Button variant="ghost" size="icon" title="Account Settings">
+                <Button variant="ghost" size="icon" title={t('navbar.profile')}>
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button onClick={handleLogout} variant="outline">Logout</Button>
+              <Button onClick={handleLogout} variant="outline">{t('navbar.logout')}</Button>
             </>
           ) : (
             <Link to="/login" search={{ redirect: loginRedirect }}>
-              <Button variant="outline">Login</Button>
+              <Button variant="outline">{t('navbar.login')}</Button>
             </Link>
           )}
         </motion.div>
@@ -95,6 +123,21 @@ export function Navbar({
         {/* Mobile Menu Toggle */}
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" title="Change Language">
+                <Globe className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => changeLanguage('en')}>
+                English
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage('pl')}>
+                Polski
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button 
             variant="ghost" 
             size="icon" 
@@ -126,11 +169,11 @@ export function Navbar({
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <Settings className="h-4 w-4" />
-                      <span>Settings</span>
+                      <span>{t('navbar.profile')}</span>
                     </Link>
                   </div>
                   <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
-                    Logout
+                    {t('navbar.logout')}
                   </Button>
                 </>
               ) : (
@@ -139,7 +182,7 @@ export function Navbar({
                   search={{ redirect: loginRedirect }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <Button variant="outline" className="w-full">Login</Button>
+                  <Button variant="outline" className="w-full">{t('navbar.login')}</Button>
                 </Link>
               )}
             </div>

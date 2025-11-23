@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from 'next-themes'
 import { hasConsent } from '@/hooks/useCookieConsent'
 import './index.css'
+import './i18n'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
