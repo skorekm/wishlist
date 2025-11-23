@@ -197,50 +197,31 @@ export async function exportUserData(): Promise<UserDataExport> {
 
 /**
  * Delete user account and all associated data
- * This performs a complete cascade deletion as per GDPR requirements
- * 
-  * The delete_user() database function deletes the user from auth.users,
-  * which triggers CASCADE deletion of:
- * - wishlists (ON DELETE CASCADE)
- * - wishlist_items (via wishlist_id FK with CASCADE)
- * - share_links (via wishlist_id and created_by FK with CASCADE)
- * - wishlist_permissions (via user_id and created_by FK with CASCADE)
- * 
- * Reservations are handled separately as they use SET NULL instead of CASCADE
- * to preserve anonymized records for wishlist owners.
+ * This calls a secure Edge Function to perform the deletion
  */
 export async function deleteUserAccount() {
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
   
-  if (!user) {
+  if (!session) {
     throw new Error('User not authenticated')
   }
 
-  // Step 1: Anonymize reservations (SET NULL on user_id)
-  // We keep reserver_name and reserver_email for wishlist owner's benefit
-  // but break the link to the authenticated user account
-  const { error: reservationsError } = await supabase
-    .from('reservations')
-    .update({ user_id: null })
-    .eq('user_id', user.id)
+  const { data, error } = await supabase.functions.invoke('delete-account', {
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+  })
 
-  if (reservationsError) {
-    console.error('Error anonymizing reservations:', reservationsError)
-    throw new Error('Failed to anonymize reservations')
+  if (error) {
+    console.error('Error deleting account:', error)
+    // Try to extract error message from the response data
+    const errorMessage = (data as any)?.error || error.message || 'Failed to delete account'
+    throw new Error(errorMessage)
   }
 
-  // Step 2: Delete the user account from Supabase Auth
-  // This will CASCADE delete all other data via database constraints
-  const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user.id)
-
-  if (deleteUserError) {
-    console.error('Error deleting user account:', deleteUserError)
-    throw new Error('Failed to delete account. Please contact support.')
-  }
-
-  // Sign out the user
+  // Sign out the user locally
   await supabase.auth.signOut()
 
-  return { success: true }
+  return data
 }
 
