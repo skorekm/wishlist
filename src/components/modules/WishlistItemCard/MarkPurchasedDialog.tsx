@@ -26,8 +26,9 @@ export function MarkPurchasedDialog({
     onSuccess: () => {
       toast.success('Item marked as purchased! 🎉')
       onOpenChange(false)
-      // Invalidate the query to refresh the list
+      // Invalidate queries to refresh the lists
       queryClient.invalidateQueries({ queryKey: ['shared-wishlist'] })
+      queryClient.invalidateQueries({ queryKey: ['user-reservations'] })
     },
     onError: (error) => {
       toast.error('Failed to mark item as purchased')

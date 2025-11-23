@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { listItem, stagger } from '@/lib/motion'
 import { AddList } from '@/components/modules/AddList/AddList'
 import { WishlistCard } from '@/components/modules/WishlistCard/WishlistCard'
-import { getWishlists } from '@/services'
+import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
+import { getWishlists, getUserReservations } from '@/services'
 import { Fragment } from 'react/jsx-runtime'
 
 // the trailing slash is important
@@ -14,16 +15,49 @@ export const Route = createFileRoute('/_authenticated/wishlists/')({
 })
 
 function RouteComponent() {
+  const { user } = Route.useRouteContext()
+
   const { data: wishlists, isLoading, refetch } = useQuery({
     queryKey: ['wishlists'],
     queryFn: getWishlists,
-    retry: 2,
+    retry: false, // Disable retry to prevent loops
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
 
+  const { data: reservations, isLoading: isLoadingReservations } = useQuery({
+    queryKey: ['user-reservations'],
+    queryFn: getUserReservations,
+    retry: false, // Disable retry to prevent loops
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  })
+
+  const prepareReservationItem = (reservation: NonNullable<typeof reservations>[number]) => {
+    const item = reservation.wishlist_item!;
+    
+    return {
+      item: {
+        ...item,
+        status: reservation.status,
+        userHasReserved: true,
+        userReservationCode: reservation.reservation_code,
+        expiresAt: reservation.expires_at,
+      },
+      wishlistUuid: item.wishlist?.uuid || '',
+      permissions: {},
+      reservationCode: reservation.reservation_code,
+      authenticatedUser: user ?? null,
+      wishlistContext: item.wishlist ? {
+        name: item.wishlist.name,
+        id: item.wishlist.uuid
+      } : undefined
+    };
+  }
+
   return (
     <Fragment>
+      {/* My Wishlists Section */}
       <div
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
       >
@@ -89,6 +123,45 @@ function RouteComponent() {
           onSuccess={refetch}
         />
       </motion.div>}
+
+      {/* Reserved Items Section */}
+      {reservations && reservations.length > 0 && (
+        <>
+          <div className="mt-12 mb-6">
+            <h2 className="text-2xl md:text-3xl font-medium dark:text-gray-100">Items I'm Grabbing</h2>
+            <p className="text-muted-foreground mt-1">Items you've reserved from shared wishlists</p>
+          </div>
+
+          {isLoadingReservations && <div>Loading...</div>}
+          
+          {!isLoadingReservations && reservations && reservations.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <motion.div
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                className="contents"
+              >
+                <AnimatePresence mode="popLayout">
+                  {reservations
+                    .filter((reservation) => reservation.wishlist_item !== null)
+                    .map((reservation) => (
+                      <motion.div
+                        key={reservation.id}
+                        variants={listItem}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 24 }}
+                        layout
+                      >
+                        <WishlistItemCard {...prepareReservationItem(reservation)} />
+                      </motion.div>
+                    ))}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </>
+      )}
     </Fragment>
   )
 }
