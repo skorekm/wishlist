@@ -15,7 +15,6 @@ export const Route = createFileRoute('/_authenticated/wishlists/')({
 })
 
 function RouteComponent() {
-  // Get user from route context instead of making another auth call
   const { user } = Route.useRouteContext()
 
   const { data: wishlists, isLoading, refetch } = useQuery({
@@ -33,6 +32,28 @@ function RouteComponent() {
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
+
+  const prepareReservationItem = (reservation: NonNullable<typeof reservations>[number]) => {
+    const item = reservation.wishlist_item!;
+    
+    return {
+      item: {
+        ...item,
+        status: reservation.status,
+        userHasReserved: true,
+        userReservationCode: reservation.reservation_code,
+        expiresAt: reservation.expires_at,
+      },
+      wishlistUuid: item.wishlist?.uuid || '',
+      permissions: {},
+      reservationCode: reservation.reservation_code,
+      authenticatedUser: user ?? null,
+      wishlistContext: item.wishlist ? {
+        name: item.wishlist.name,
+        id: item.wishlist.uuid
+      } : undefined
+    };
+  }
 
   return (
     <Fragment>
@@ -122,11 +143,9 @@ function RouteComponent() {
                 className="contents"
               >
                 <AnimatePresence mode="popLayout">
-                  {reservations.map((reservation) => {
-                    const item = reservation.wishlist_item;
-                    if (!item) return null;
-                    
-                    return (
+                  {reservations
+                    .filter((reservation) => reservation.wishlist_item !== null)
+                    .map((reservation) => (
                       <motion.div
                         key={reservation.id}
                         variants={listItem}
@@ -134,26 +153,9 @@ function RouteComponent() {
                         transition={{ type: "spring", stiffness: 300, damping: 24 }}
                         layout
                       >
-                        <WishlistItemCard
-                          item={{
-                            ...item,
-                            status: reservation.status,
-                            userHasReserved: true,
-                            userReservationCode: reservation.reservation_code,
-                            expiresAt: reservation.expires_at,
-                          }}
-                          wishlistUuid={item.wishlist?.uuid || ''}
-                          permissions={{}}
-                          reservationCode={reservation.reservation_code}
-                          authenticatedUser={user ?? null}
-                          wishlistContext={item.wishlist ? {
-                            name: item.wishlist.name,
-                            id: item.wishlist.uuid
-                          } : undefined}
-                        />
+                        <WishlistItemCard {...prepareReservationItem(reservation)} />
                       </motion.div>
-                    );
-                  })}
+                    ))}
                 </AnimatePresence>
               </motion.div>
             </div>
