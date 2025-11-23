@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Gift, Calendar } from 'lucide-react'
+import { Helmet } from 'react-helmet-async'
 import { getWishlistByShareToken } from '@/services'
 import { WishlistItemCard } from '@/components/modules/WishlistItemCard/WishlistItemCard'
 import { Button } from '@/components/ui/button'
@@ -110,9 +111,20 @@ interface WishlistContentProps {
 
 function WishlistContent({ wishlist, isOwner, reservationCode, user }: WishlistContentProps) {
   const eventStatus = getEventStatus(wishlist.event_date)
+  const pageTitle = `${wishlist.name} - Wishlist`
+  const pageDescription = wishlist.description || `Check out ${wishlist.name} on Wishlist!`
 
   return (
     <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="twitter:title" content={pageTitle} />
+        <meta property="twitter:description" content={pageDescription} />
+      </Helmet>
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <div className="flex items-center gap-3 mb-2">
